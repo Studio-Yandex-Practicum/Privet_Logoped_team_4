@@ -8,9 +8,13 @@ certifi==2024.7.4
 frozenlist==1.4.1
 idna==3.7
 magic-filter==1.0.12
+mccabe==0.7.0
 multidict==6.0.5
+pycodestyle==2.12.0
 pydantic==2.8.2
+pydantic-settings==2.3.4
 pydantic_core==2.20.1
+pyflakes==3.2.0
 python-dotenv==1.0.1
 typing_extensions==4.12.2
 yarl==1.9.4
