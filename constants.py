@@ -1,0 +1,2 @@
+TELEGRAM = 'Telegram'
+VK = 'Вконтакте'
