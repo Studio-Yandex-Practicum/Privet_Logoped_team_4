@@ -5,7 +5,7 @@ services:
   telegram_bot:
     env_file: .env
     build:
-      context: ../telegram_bot
+      context: src/telegram_bot
       dockerfile: Dockerfile
     depends_on:
       - db
@@ -13,7 +13,7 @@ services:
   vk_bot:
     env_file: .env
     build:
-      context: ../vk_bot
+      context: src/vk_bot
       dockerfile: Dockerfile
     depends_on:
       - db
