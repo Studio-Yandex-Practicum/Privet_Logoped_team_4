@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+
+  telegram-bot:
+    env_file: .env
+    build:
+      context: ./src/
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+
+  vk-bot:
+    env_file: .env
+    build:
+      context: ./src/
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+
+  db:
+    env_file: .env
+    image: postgres:13
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
