@@ -1,12 +1,12 @@
-from pydantic_settings import BaseSettings
+from vkbottle import API, BuiltinStateDispenser
+from vkbottle.bot import BotLabeler
+from environs import Env
 
+env = Env()
+env.read_env()
 
-class Settings(BaseSettings):
-    database_url: str
-    tg_token: str
+vk_token = env('VK_TOKEN')
 
-    class Config:
-        env_file = '.env'
-
-
-settings = Settings()
+api = API(vk_token)
+labeler = BotLabeler()
+state_dispenser = BuiltinStateDispenser()
