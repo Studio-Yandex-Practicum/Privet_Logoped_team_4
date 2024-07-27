@@ -1,2 +1,3 @@
-TELEGRAM = 'Telegram'
-VK = 'Вконтакте'
+class SocialNetworkName():
+    TELEGRAM = 'Telegram'
+    VK = 'Вконтакте'

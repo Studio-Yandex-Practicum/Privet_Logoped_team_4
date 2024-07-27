@@ -34,7 +34,13 @@
 
 ## Запуск
 
-Скоро будет
+### Пример оформления .env файла.
+
+```
+DATABASE_URL = 'postgresql+asyncpg://<username>:<password>@<db_ip_address:127.0.0.1>:<db_port:5433>/hello_speech_therapist'
+TG_TOKEN = 'tg_token'
+VK_TOKEN = 'vk_token_'
+```
 
 # Договорённости именования веток, стиль кода и т.п
 

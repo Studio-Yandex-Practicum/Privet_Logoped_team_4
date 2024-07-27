@@ -8,9 +8,11 @@ from models import (Link, PromoCode, Role, SocialNetworkType, User,
 
 
 async def add_data(session):
+    """Проверка на вставку данных в базу данных."""
+    admin_role = Role(role_name='Admin')
     parent_role = Role(role_name='Parent')
     therapist_role = Role(role_name='Speech Therapist')
-    session.add_all([parent_role, therapist_role])
+    session.add_all([admin_role, parent_role, therapist_role])
 
     user1 = User(
         username='Parent1', fullname='John Dou',
@@ -45,6 +47,7 @@ async def add_data(session):
 
 
 async def fetch_data(session):
+    """Проверка на получение данных из базы данных."""
     result = await session.execute(
         select(Role).options(selectinload(Role.users))
     )
@@ -89,5 +92,5 @@ async def async_main():
         await add_data(session)
         await fetch_data(session)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     asyncio.run(async_main())
