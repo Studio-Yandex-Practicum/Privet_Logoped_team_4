@@ -9,7 +9,7 @@ router = Router()
 
 
 @router.message(F.text == 'Логопед')
-async def faq_message(message: Message, state: FSMContext):
+async def therapist_message(message: Message, state: FSMContext):
     await state.set_state(Level.therapist)
     await message.answer('Здравствуйте! Вы нажали меню "Логопед"',
                          reply_markup=kb.therapist)
@@ -22,43 +22,43 @@ async def result_message(message: Message):
 
 
 @router.message(F.text == 'Обучение')
-async def result_message(message: Message):
+async def edication_message(message: Message):
     await message.answer('Здравствуйте! Вы нажали меню "Обучение"')
 
 
 
 @router.message(F.text == 'Учреждениям')
-async def result_message(message: Message):
+async def institutions_message(message: Message):
     await message.answer('Здравствуйте! Вы нажали меню "Учреждениям"')
 
 
 
 @router.message(F.text == 'Методические рекомендации')
-async def result_message(message: Message):
+async def recomendation_message(message: Message):
     await message.answer('Здравствуйте! Вы нажали меню "Методические рекомендации"')
 
 
 
 @router.message(F.text == 'Купить для iOS')
-async def result_message(message: Message):
+async def buy_message(message: Message):
     await message.answer('Здравствуйте! Вы нажали меню "Купить для iOS"')
 
 
 
 @router.message(F.text == 'Вывести на ПК')
-async def result_message(message: Message):
+async def pc_message(message: Message):
     await message.answer('Здравствуйте! Вы нажали меню "Вывести на ПК"')
 
 
 
 @router.message(F.text == 'Частые вопросы')
-async def result_message(message: Message):
+async def faq_message(message: Message):
     await message.answer('Здравствуйте! Вы нажали меню "Частые вопросы"')
 
 
 
 @router.message(F.text == 'Связаться с автором')
-async def result_message(message: Message):
+async def author_message(message: Message):
     await message.answer('Здравствуйте! Вы нажали меню "Связаться с автором"')
 
 
