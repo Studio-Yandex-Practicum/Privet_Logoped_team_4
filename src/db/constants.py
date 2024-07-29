@@ -1,3 +1,3 @@
-class SocialNetworkName():
-    TELEGRAM = 'Telegram'
-    VK = 'Вконтакте'
+class RoleName():
+    PARENT = 'Родитель'
+    SPEECH_THERAPIST = 'Логопед'

@@ -1,47 +1,39 @@
 import enum
 
-from sqlalchemy import (Column, DateTime, Enum, ForeignKey, Integer, String,
-                        func)
+from sqlalchemy import Column, DateTime, Enum, Integer, Numeric, String, func
 from sqlalchemy.ext.asyncio import (AsyncAttrs, AsyncSession,
                                     create_async_engine)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-from src.db.config import settings
-from src.db.constants import SocialNetworkName
+from src.db.config import database_url
+from src.db.constants import RoleName
 
 Base = declarative_base()
 
 
-class Role(AsyncAttrs, Base):
-    """Модель ролей пользователей."""
-    __tablename__ = 'roles'
-    role_id = Column(Integer, primary_key=True)
-    role_name = Column(String(50), unique=True, nullable=False)
-
-    users = relationship('User', back_populates='role')
-    links = relationship('Link', back_populates='role')
+class RoleType(enum.Enum):
+    """Enum типов ролей пользователей."""
+    PARENT = RoleName.PARENT
+    SPEECH_THERAPIST = RoleName.SPEECH_THERAPIST
 
 
-class SocialNetworkType(enum.Enum):
-    """Enum типов социальный сетей пользователей."""
-    TG = SocialNetworkName.TELEGRAM
-    VK = SocialNetworkName.VK
-
-
-class User(AsyncAttrs, Base):
-    """Модель пользователей."""
-    __tablename__ = 'users'
+class TGUser(AsyncAttrs, Base):
+    """Модель пользователя телеграм."""
+    __tablename__ = 'tg_users'
     user_id = Column(Integer, primary_key=True)
-    username = Column(String(100), unique=True, nullable=False)
-    fullname = Column(String(200), nullable=False)
-    role_id = Column(Integer, ForeignKey('roles.role_id'))
-    social_network = Column(
-        Enum(SocialNetworkType), nullable=False
-    )
+    role = Column(Enum(RoleType), nullable=False)
+    is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
 
-    role = relationship('Role', back_populates='users')
+
+class VKUser(AsyncAttrs, Base):
+    """Модель пользователя вконтакте."""
+    __tablename__ = 'vk_users'
+    user_id = Column(Integer, primary_key=True)
+    role = Column(Enum(RoleType), nullable=False)
+    is_admin = Column(Numeric, default=0)
+    created_at = Column(DateTime, default=func.now())
 
 
 class Link(AsyncAttrs, Base):
@@ -50,9 +42,7 @@ class Link(AsyncAttrs, Base):
     link_id = Column(Integer, primary_key=True)
     link = Column(String(250), unique=True, nullable=False)
     link_name = Column(String(100), nullable=False)
-    to_role_id = Column(Integer, ForeignKey('roles.role_id'))
-
-    role = relationship('Role', back_populates='links')
+    to_role = Column(Enum(RoleType), nullable=False)
 
 
 class PromoCode(AsyncAttrs, Base):
@@ -63,7 +53,7 @@ class PromoCode(AsyncAttrs, Base):
     file_path = Column(String(100), nullable=False)
 
 
-engine = create_async_engine(settings.database_url, echo=False)
+engine = create_async_engine(database_url, echo=False)
 
 async_session = sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession
