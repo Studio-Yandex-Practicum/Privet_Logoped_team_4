@@ -1,42 +1,47 @@
 import argparse
-import sqlite3
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+
+DATABASE_URL = 'sqlite:///admins.db'
+engine = create_engine(DATABASE_URL)
+Base = declarative_base()
+
+class Admin(Base):
+    __tablename__ = 'admins'
+
+    id = Column(Integer, primary_key=True)
+    platform = Column(String, nullable=False)
 
 def init_db():
-    connection = sqlite3.connect('admins.db')
-    cursor = connection.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS admins (
-            id INTEGER PRIMARY KEY,
-            platform TEXT NOT NULL
-        )
-    ''')
-    connection.commit()
-    connection.close()
+    Base.metadata.create_all(engine)
 
 def add_admin(platform, user_id):
-    connection = sqlite3.connect('admins.db')
-    cursor = connection.cursor()
-    cursor.execute('INSERT INTO admins (id, platform) VALUES (?, ?)', (user_id, platform))
-    connection.commit()
-    connection.close()
-    print(f"Пользователь с ID {user_id} на платформе {platform} назначен администратором.")
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    new_admin = Admin(id=user_id, platform=platform)
+    session.add(new_admin)
+    session.commit()
+    session.close()
+    print(f'Пользователь с ID {user_id} на платформе {platform} назначен администратором.')
 
 def main():
     init_db()
 
-    parser = argparse.ArgumentParser(description="Командный интерфейс для управления ботом")
-    subparsers = parser.add_subparsers(dest="command")
+    parser = argparse.ArgumentParser(description='Командный интерфейс для управления ботом')
+    subparsers = parser.add_subparsers(dest='command')
 
-    admin_parser = subparsers.add_parser("admin")
-    admin_parser.add_argument("platform", choices=["telegram", "vk"], help="Платформа для назначения администратора")
-    admin_parser.add_argument("user_id", type=int, help="ID пользователя, которого нужно назначить администратором")
+    admin_parser = subparsers.add_parser('admin')
+    admin_parser.add_argument('platform', choices=['telegram', 'vk'])
+    admin_parser.add_argument('user_id', type=int,)
 
     args = parser.parse_args()
 
-    if args.command == "admin":
+    if args.command == 'admin':
         add_admin(args.platform, args.user_id)
     else:
-        print("Неизвестная команда.")
+        print('Неизвестная команда.')
 
 if __name__ == '__main__':
     main()
