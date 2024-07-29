@@ -26,7 +26,10 @@ async def add_data(session):
         link='https://example.com/some_link2', link_name='some_link2',
         to_role=RoleType.SPEECH_THERAPIST
     )
-    session.add_all([some_link1, some_link2])
+    some_link3 = Link(
+        link='https://example.com/some_link3', link_name='some_link3'
+    )
+    session.add_all([some_link1, some_link2, some_link3])
 
     promocode1 = PromoCode(
         promocode='promo1', file_path='/home/promocodes/1'

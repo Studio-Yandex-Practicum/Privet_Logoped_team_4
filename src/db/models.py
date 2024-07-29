@@ -42,7 +42,7 @@ class Link(AsyncAttrs, Base):
     link_id = Column(Integer, primary_key=True)
     link = Column(String(250), unique=True, nullable=False)
     link_name = Column(String(100), nullable=False)
-    to_role = Column(Enum(RoleType), nullable=False)
+    to_role = Column(Enum(RoleType))
 
 
 class PromoCode(AsyncAttrs, Base):
