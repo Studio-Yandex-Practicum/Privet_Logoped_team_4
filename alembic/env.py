@@ -9,7 +9,7 @@ from alembic import context
 
 from src.db.models import Base
 
-from src.db.config import settings
+from src.db.config import database_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -44,9 +44,8 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = settings.database_url
     context.configure(
-        url=url,
+        url=database_url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -70,7 +69,7 @@ async def run_async_migrations() -> None:
     """
 
     connectable = create_async_engine(
-        settings.database_url,
+        database_url,
         poolclass=pool.NullPool,
         future=True,
     )
