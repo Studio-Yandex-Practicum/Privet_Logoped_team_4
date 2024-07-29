@@ -1,6 +1,6 @@
 import asyncio
 
-from models import (Link, PromoCode, RoleType, TGUser,
+from models import (Link, LinkType, PromoCode, RoleType, TGUser,
                     VKUser, async_session)
 from sqlalchemy.future import select
 
@@ -20,14 +20,15 @@ async def add_data(session):
 
     some_link1 = Link(
         link='https://example.com/some_link1', link_name='some_link1',
-        to_role=RoleType.PARENT
+        link_type=LinkType.URL, to_role=RoleType.PARENT
     )
     some_link2 = Link(
         link='https://example.com/some_link2', link_name='some_link2',
-        to_role=RoleType.SPEECH_THERAPIST
+        link_type=LinkType.URL, to_role=RoleType.SPEECH_THERAPIST
     )
     some_link3 = Link(
-        link='https://example.com/some_link3', link_name='some_link3'
+        link='home/files/filepath1', link_name='filepath1',
+        link_type=LinkType.FILEPATH
     )
     session.add_all([some_link1, some_link2, some_link3])
 
