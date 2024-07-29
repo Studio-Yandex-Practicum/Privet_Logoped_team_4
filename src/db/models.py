@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import (AsyncAttrs, AsyncSession,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from config import database_url
-from constants import LinkResourseType, RoleName
+from src.db.config import database_url
+from src.db.constants import LinkResourseType, RoleName
 
 Base = declarative_base()
 
@@ -48,7 +48,7 @@ class Link(AsyncAttrs, Base):
     link_id = Column(Integer, primary_key=True)
     link = Column(String(250), unique=True, nullable=False)
     link_name = Column(String(100), nullable=False)
-    link_type = Column(Enum(LinkType))
+    link_type = Column(Enum(LinkType), nullable=False)
     to_role = Column(Enum(RoleType))
 
 
