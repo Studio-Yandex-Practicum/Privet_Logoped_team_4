@@ -2,6 +2,7 @@ from vkbottle.bot import BotLabeler, Message
 from vkbottle import Keyboard, KeyboardButtonColor, Text
 
 main_labeler = BotLabeler()
+main_labeler.vbml_ignore_case = True
 
 keyboard = (
     Keyboard(one_time=True, inline=False)
@@ -9,7 +10,8 @@ keyboard = (
     .add(Text('Опрос'))
     .row()
     .add(Text('Настройка уведомлений'))
-).get_json()
+    .get_json()
+)
 
 
 @main_labeler.message(text='Привет')
