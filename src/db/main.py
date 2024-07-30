@@ -2,7 +2,7 @@ import asyncio
 
 from models import (Link, LinkType, PromoCode, RoleType, TGUser,
                     VKUser, async_session)
-from sqlalchemy.future import select
+from sqlalchemy import select
 
 
 async def add_data(session):
