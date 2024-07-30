@@ -7,10 +7,10 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from db.models import RoleType, VKUser, async_session
+from db.models import RoleType, VKUser, async_session # noqa
 
 
-async def choose_and_change_role(
+async def role_handler(
     bot, message, UserStates,
     role_keyboard, parent_keyboard, speech_therapist_keyboard
         ):
