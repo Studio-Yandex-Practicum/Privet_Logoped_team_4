@@ -1,40 +1,36 @@
 import asyncio
 
+from models import (Link, LinkType, PromoCode, RoleType, TGUser,
+                    VKUser, async_session)
 from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload
-
-from models import (Link, PromoCode, Role, SocialNetworkType, User,
-                    async_session)
 
 
 async def add_data(session):
     """Проверка на вставку данных в базу данных."""
-    admin_role = Role(role_name='Admin')
-    parent_role = Role(role_name='Parent')
-    therapist_role = Role(role_name='Speech Therapist')
-    session.add_all([admin_role, parent_role, therapist_role])
-
-    user1 = User(
-        username='Parent1', fullname='John Dou',
-        role=parent_role, social_network=SocialNetworkType.TG
+    user1 = TGUser(
+        user_id=1, role=RoleType.PARENT
     )
-    user2 = User(
-        username='Parent2', fullname='Alice Black',
-        role=parent_role, social_network=SocialNetworkType.VK
+    user2 = VKUser(
+        user_id=2, role=RoleType.PARENT
     )
-    user3 = User(
-        username='Therapist1', fullname='Albert Mongo',
-        role=therapist_role, social_network=SocialNetworkType.VK
+    user3 = VKUser(
+        user_id=3, role=RoleType.SPEECH_THERAPIST
     )
     session.add_all([user1, user2, user3])
 
     some_link1 = Link(
-        link='https://example.com/some_link1', link_name='some_link1'
+        link='https://example.com/some_link1', link_name='some_link1',
+        link_type=LinkType.URL, to_role=RoleType.PARENT
     )
     some_link2 = Link(
-        link='https://example.com/some_link2', link_name='some_link2'
+        link='https://example.com/some_link2', link_name='some_link2',
+        link_type=LinkType.URL, to_role=RoleType.SPEECH_THERAPIST
     )
-    session.add_all([some_link1, some_link2])
+    some_link3 = Link(
+        link='home/files/filepath1', link_name='filepath1',
+        link_type=LinkType.FILEPATH
+    )
+    session.add_all([some_link1, some_link2, some_link3])
 
     promocode1 = PromoCode(
         promocode='promo1', file_path='/home/promocodes/1'
@@ -49,28 +45,25 @@ async def add_data(session):
 async def fetch_data(session):
     """Проверка на получение данных из базы данных."""
     result = await session.execute(
-        select(Role).options(selectinload(Role.users))
-    )
-    roles = result.scalars().all()
-    for role in roles:
-        print(f'Role: {role.role_name}')
-        for user in role.users:
-            print(
-                f'  User: {user.username}, Fullname: {user.fullname}'
-            )
-
-    result = await session.execute(
-        select(User).options(selectinload(User.role))
+        select(TGUser)
     )
     users = result.scalars().all()
     for user in users:
         print(
-            f'User: {user.username}, Fullname: {user.fullname}'
+            f'TGUser: {user.user_id}, '
+            f'Role: {user.role}, '
+            f'Created_at: {user.created_at}'
         )
+
+    result = await session.execute(
+        select(VKUser)
+    )
+    users = result.scalars().all()
+    for user in users:
         print(
-            f'User: {user.username}, Fullname: {user.fullname}, '
-            f'Role: {user.role.role_name}, '
-            f'SocialNetwork: {user.social_network.value}'
+            f'VKUser: {user.user_id}, '
+            f'Role: {user.role}, '
+            f'Created_at: {user.created_at}'
         )
 
     result = await session.execute(select(Link))

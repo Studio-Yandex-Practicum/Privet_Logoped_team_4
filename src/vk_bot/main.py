@@ -2,6 +2,7 @@ from config import api, labeler, state_dispenser
 from vkbottle import BaseStateGroup, Keyboard, KeyboardButtonColor, Text
 # from handlers import main_labeler, start_labeler
 from vkbottle.bot import Bot, Message
+from src.db.models import VKUser
 
 # labeler.load(start_labeler)
 # labeler.load(main_labeler)
@@ -87,6 +88,8 @@ async def greeting(message: Message):
 @bot.on.message(state=UserStates.ROLE_STATE)
 async def choose_role(message: Message):
     if message.text.lower() == 'родитель':
+        user_info = await message.get_user()
+        user = VKUser
         await message.answer('Вы выбрали роль Родитель. Вот ваши опции:',
                              keyboard=parent_keyboard)
         await bot.state_dispenser.set(
