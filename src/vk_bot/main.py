@@ -1,15 +1,8 @@
-import os
-import sys
-
 from config import api, labeler, state_dispenser
-from sqlalchemy import select, update
 from vkbottle import BaseStateGroup, Keyboard, KeyboardButtonColor, Text
 # from handlers import main_labeler, start_labeler
+from handlers.role_handler import choose_and_change_role
 from vkbottle.bot import Bot, Message
-
-parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(parent_folder_path)
-from db.models import RoleType, VKUser, async_session
 
 # labeler.load(start_labeler)
 # labeler.load(main_labeler)
@@ -94,65 +87,10 @@ async def greeting(message: Message):
 
 @bot.on.message(state=UserStates.ROLE_STATE)
 async def choose_role(message: Message):
-    if message.text.lower() == 'родитель':
-        user_info = await message.get_user()
-        async with async_session() as session:
-            result = await session.execute(
-                select(VKUser).where(VKUser.user_id == user_info.id)
-            )
-            user = result.scalars().first()
-            if not user:
-                print('')
-                print('1')
-                print('')
-                new_user = VKUser(user_id=user_info.id, role=RoleType.PARENT)
-                session.add(new_user)
-                await session.commit()
-            elif user and user.role != RoleType.PARENT:
-                print('')
-                print('2')
-                print('')
-                await session.execute(
-                    update(VKUser).where(VKUser.user_id == user_info.id).
-                    values(role=RoleType.PARENT)
-                )
-                await session.commit()
-        await message.answer('Вы выбрали роль Родитель. Вот ваши опции:',
-                             keyboard=parent_keyboard)
-        await bot.state_dispenser.set(
-            message.peer_id, UserStates.PARENT_STATE)
-    elif message.text.lower() == 'логопед':
-        user_info = await message.get_user()
-        async with async_session() as session:
-            result = await session.execute(
-                select(VKUser).where(VKUser.user_id == user_info.id)
-            )
-            user = result.scalars().first()
-            if not user:
-                print('')
-                print('3')
-                print('')
-                new_user = VKUser(user_id=user_info.id,
-                                  role=RoleType.SPEECH_THERAPIST)
-                session.add(new_user)
-                await session.commit()
-            elif user and user.role != RoleType.SPEECH_THERAPIST:
-                print('')
-                print('4')
-                print('')
-                await session.execute(
-                    update(VKUser).where(VKUser.user_id == user_info.id).
-                    values(role=RoleType.SPEECH_THERAPIST)
-                )
-                await session.commit()
-        await message.answer('Вы выбрали роль Логопед. Вот ваши опции:',
-                             keyboard=speech_therapist_keyboard)
-        await bot.state_dispenser.set(
-            message.peer_id, UserStates.SPEECH_THERAPIST_STATE)
-    else:
-        await message.answer(
-            'Пожалуйста, выберите одну из предложенных ролей:',
-            keyboard=role_keyboard)
+    await choose_and_change_role(
+        bot, message, UserStates,
+        role_keyboard, parent_keyboard, speech_therapist_keyboard
+    )
 
 
 @bot.on.message(state=UserStates.PARENT_STATE)
