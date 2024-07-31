@@ -55,3 +55,12 @@ speech_therapist_keyboard = (
     .add(Text('Связаться с автором'), color=KeyboardButtonColor.SECONDARY)
     .add(Text('Изменить роль'), color=KeyboardButtonColor.SECONDARY)
 )
+
+admin_keyboard = (
+    Keyboard(one_time=False)
+    .add(Text('Материалы'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Промокоды'),
+         color=KeyboardButtonColor.PRIMARY)
+)

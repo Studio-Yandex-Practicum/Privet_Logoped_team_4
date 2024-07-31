@@ -1,6 +1,10 @@
+import configparser
+import json
+
 from config import api, labeler, state_dispenser
-from handlers import (faq_handler, parent_handler, role_handler,
-                      speech_therapist_handler, start_handler)
+from handlers import (admin_handler, admin_start_handler, faq_handler,
+                      parent_handler, role_handler, speech_therapist_handler,
+                      start_handler)
 from vkbottle import BaseStateGroup
 from vkbottle.bot import Bot, Message
 
@@ -13,6 +17,27 @@ class UserStates(BaseStateGroup):
     PARENT_STATE = 'parent_options'
     FAQ_STATE = 'faq_options'
     SPEECH_THERAPIST_STATE = 'speech_therapist_options'
+
+
+class AdminStates(BaseStateGroup):
+    ADMIN_STATE = 'admin_options'
+
+
+@bot.on.message(lev='/admin')
+async def admin_start(message: Message):
+    config = configparser.ConfigParser()
+    # config.add_section('Admins')
+    # config['Admins'] = {'admins_ids': json.dumps([61200163,])}
+    # with open('./config.ini', 'w') as configfile:
+    #     config.write(configfile)
+    config.read('./config.ini')
+    admins_ids = json.loads(config['Admins']['admins_ids'])
+    await admin_start_handler(bot, message, AdminStates, admins_ids)
+
+
+@bot.on.message(state=AdminStates.ADMIN_STATE)
+async def admin_options(message: Message):
+    await admin_handler(bot, message)
 
 
 @bot.on.message(lev='/start')
