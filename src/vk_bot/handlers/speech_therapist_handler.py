@@ -1,7 +1,7 @@
-async def speech_therapist_handler(
-    bot, message, UserStates,
-    role_keyboard, speech_therapist_keyboard
-        ):
+from keyboards.keyboards import role_keyboard, speech_therapist_keyboard
+
+
+async def speech_therapist_handler(bot, message, UserStates):
     if message.text.lower() == 'отметить результат занятий':
         await message.answer('Вы выбрали Отметить результат занятий.')
     elif message.text.lower() == 'обучение':
@@ -18,7 +18,7 @@ async def speech_therapist_handler(
         await message.answer('Вы выбрали Частые вопросы.')
     elif message.text.lower() == 'связаться с автором':
         await message.answer('Вы выбрали Связаться с автором.')
-    elif message.text.lower() == 'назад':
+    elif message.text.lower() == 'изменить роль':
         await message.answer('Возвращаемся к выбору роли.',
                              keyboard=role_keyboard)
         await bot.state_dispenser.set(

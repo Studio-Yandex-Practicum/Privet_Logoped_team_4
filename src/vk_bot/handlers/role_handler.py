@@ -7,13 +7,13 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from db.models import RoleType, VKUser, async_session # noqa
+from keyboards.keyboards import (parent_keyboard, role_keyboard, # noqa
+                                 speech_therapist_keyboard)
+
+from db.models import RoleType, VKUser, async_session  # noqa
 
 
-async def role_handler(
-    bot, message, UserStates,
-    role_keyboard, parent_keyboard, speech_therapist_keyboard
-        ):
+async def role_handler(bot, message, UserStates):
     if message.text.lower() == 'родитель':
         user_info = await message.get_user()
         async with async_session() as session:

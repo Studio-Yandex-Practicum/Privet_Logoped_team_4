@@ -1,7 +1,7 @@
-async def faq_handler(
-    bot, message, UserStates,
-    parent_keyboard, faq_keyboard
-        ):
+from keyboards.keyboards import parent_keyboard, faq_keyboard
+
+
+async def faq_handler(bot, message, UserStates):
     if message.text.lower() == 'как заниматься':
         await message.answer('Вы выбрали Как заниматься.')
     elif message.text.lower() == 'не получается заниматься':

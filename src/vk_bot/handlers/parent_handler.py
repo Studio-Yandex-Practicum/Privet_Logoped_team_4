@@ -1,6 +1,7 @@
-async def parent_handler(
-    bot, message, UserStates, role_keyboard, parent_keyboard, faq_keyboard
-        ):
+from keyboards.keyboards import role_keyboard, parent_keyboard, faq_keyboard
+
+
+async def parent_handler(bot, message, UserStates):
     if message.text.lower() == 'отметить результат занятий':
         await message.answer('Вы выбрали Отметить результат занятий.')
     elif message.text.lower() == 'пройти диагностику':
@@ -19,7 +20,7 @@ async def parent_handler(
         await message.answer('Вы выбрали Получать напоминания.')
     elif message.text.lower() == 'связаться с логопедом':
         await message.answer('Вы выбрали Связаться с логопедом.')
-    elif message.text.lower() == 'назад':
+    elif message.text.lower() == 'изменить роль':
         await message.answer('Возвращаемся к выбору роли.',
                              keyboard=role_keyboard)
         await bot.state_dispenser.set(
