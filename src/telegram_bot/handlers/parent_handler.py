@@ -1,9 +1,16 @@
+import os
+import sys
+
 from aiogram import F, Router
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
 import keyboard.keyboard as kb
 from .state import Level
+
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_folder_path)
+from db_user_add import chose_role
 
 router = Router()
 
@@ -13,6 +20,9 @@ async def parent_message(message: Message, state: FSMContext):
     await state.set_state(Level.parent)
     await message.answer('Здравствуйте! Вы нажали меню "Родитель"',
                          reply_markup=kb.parent)
+    user_id = message.from_user.id
+    role_type = 'parent'
+    await chose_role(user_id, role_type)
 
 
 @router.message(F.text == 'Отметить результат занятий')

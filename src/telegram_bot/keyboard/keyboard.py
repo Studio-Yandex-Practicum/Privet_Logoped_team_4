@@ -13,7 +13,7 @@ parent = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отметить р
                                        [KeyboardButton(text='Частые вопросы'),
                                        KeyboardButton(text='Получать напоминания'),
                                        KeyboardButton(text='Связаться с логопедом')],
-                                       [KeyboardButton(text='Назад')]],
+                                       [KeyboardButton(text='Изменить роль')]],
                             resize_keyboard=True,
                             input_field_placeholder='Выберите пункт меню...')
 
@@ -34,6 +34,6 @@ therapist = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отметить
                                           KeyboardButton(text='Вывести на ПК')],
                                           [KeyboardButton(text='Частые вопросы'),
                                           KeyboardButton(text='Связаться с автором')],
-                                          [KeyboardButton(text='Назад')]],
+                                          [KeyboardButton(text='Изменить роль')]],
                                 resize_keyboard=True,
                                 input_field_placeholder='Выберите пункт меню...')
