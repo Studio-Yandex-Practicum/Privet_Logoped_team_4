@@ -4,7 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 
 from config import tg_token
-from handlers.start_handler import router
+from handlers import start_router, parent_router, faq_router, therapist_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 async def main():
     bot = Bot(token=tg_token)
     dp = Dispatcher()
-    dp.include_router(router)
+    dp.include_routers(faq_router, parent_router, start_router, therapist_router)
     await dp.start_polling(bot)
 
 
