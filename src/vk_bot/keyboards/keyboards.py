@@ -64,3 +64,33 @@ admin_keyboard = (
     .add(Text('Промокоды'),
          color=KeyboardButtonColor.PRIMARY)
 )
+
+cancel_keyboard = (
+    Keyboard(one_time=True)
+    .add(Text('Отмена'),
+         color=KeyboardButtonColor.NEGATIVE)
+)
+
+admin_links_keyboard = (
+    Keyboard(one_time=False)
+    .add(Text('Добавить новую ссылку'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Удалить ссылку'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Назад'),
+         color=KeyboardButtonColor.NEGATIVE)
+)
+
+admin_promocodes_keyboard = (
+    Keyboard(one_time=False)
+    .add(Text('Добавить новый промокод'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Удалить промокод'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Назад'),
+         color=KeyboardButtonColor.NEGATIVE)
+)

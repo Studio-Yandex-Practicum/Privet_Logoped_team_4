@@ -14,7 +14,6 @@ from db.models import RoleType, VKUser, async_session  # noqa
 
 async def start_handler(bot, message, UserStates):
     user_info = await message.get_user()
-    first_name = user_info.first_name
     async with async_session() as session:
         result = await session.execute(
             select(VKUser).where(VKUser.user_id == user_info.id)
@@ -23,7 +22,7 @@ async def start_handler(bot, message, UserStates):
         if not user:
             await message.answer(
                 message=(
-                    f'Здравствуйте, {first_name}! '
+                    f'Здравствуйте, {user_info.first_name}! '
                     'Выберите одну из предложенных ролей:'
                 ),
                 keyboard=role_keyboard
@@ -33,7 +32,7 @@ async def start_handler(bot, message, UserStates):
         if user.role == RoleType.PARENT:
             await message.answer(
                 message=(
-                    f'Здравствуйте, {first_name}! '
+                    f'Здравствуйте, {user_info.first_name}! '
                     'Выберите одну из предложенных опций:'
                 ),
                 keyboard=parent_keyboard
@@ -43,7 +42,7 @@ async def start_handler(bot, message, UserStates):
         if user.role == RoleType.SPEECH_THERAPIST:
             await message.answer(
                 message=(
-                    f'Здравствуйте, {first_name}! '
+                    f'Здравствуйте, {user_info.first_name}! '
                     'Выберите одну из предложенных опций:'
                 ),
                 keyboard=speech_therapist_keyboard
