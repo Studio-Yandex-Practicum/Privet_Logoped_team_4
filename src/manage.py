@@ -12,7 +12,7 @@ from db.models import RoleType, TGUser, VKUser
 engine = create_async_engine(database_url, echo=False)
 
 
-async def add_admin(user_id, platform):
+async def promote_to_admin(user_id, platform):
     """Добавляет пользователя, как администратора для указанной платформы."""
     async_session = sessionmaker(
         bind=engine,
@@ -39,7 +39,7 @@ async def add_admin(user_id, platform):
         )
 
 
-async def delete_admin(user_id, platform):
+async def demote_admin(user_id, platform):
     """Снимает у пользователя статус администратора для указанной платформы."""
     async_session = sessionmaker(
         bind=engine,
@@ -71,7 +71,7 @@ async def main():
     subparsers = parser.add_subparsers(dest='command', help='Команды')
 
     admin_parser = subparsers.add_parser(
-        'admin', help='Назначить пользователя администратором'
+        'promote', help='Назначить пользователя администратором'
     )
     admin_parser.add_argument('user_id', type=int, help='ID пользователя')
     admin_parser.add_argument(
@@ -79,7 +79,7 @@ async def main():
     )
 
     not_admin_parser = subparsers.add_parser(
-        'not_admin', help='Снять у пользователя статус администратора'
+        'demote', help='Снять у пользователя статус администратора'
     )
     not_admin_parser.add_argument('user_id', type=int, help='ID пользователя')
     not_admin_parser.add_argument(
@@ -88,10 +88,10 @@ async def main():
 
     args = parser.parse_args()
 
-    if args.command == 'admin':
-        await add_admin(args.user_id, args.platform)
-    elif args.command == 'not_admin':
-        await delete_admin(args.user_id, args.platform)
+    if args.command == 'promote':
+        await promote_to_admin(args.user_id, args.platform)
+    elif args.command == 'demote':
+        await demote_admin(args.user_id, args.platform)
     else:
         parser.print_help()
 
