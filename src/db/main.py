@@ -1,6 +1,6 @@
 import asyncio
 
-from models import (Link, LinkType, PromoCode, RoleType, TGUser,
+from db.models import (Link, LinkType, PromoCode, RoleType, TGUser,
                     VKUser, async_session)
 from sqlalchemy import select
 
