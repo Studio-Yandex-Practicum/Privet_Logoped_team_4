@@ -1,17 +1,18 @@
 import os
-from aiogram import Router, F
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, FSInputFile
+from aiogram import Router
+from aiogram.types import (
+    Message, InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    CallbackQuery,
+    FSInputFile)
 from aiogram.filters import Command
 from sqlalchemy.future import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from utils import add_file
 from db.models import Link, LinkType, async_session
 
-
-
 router = Router()
-'
+
+
 os.makedirs('files', exist_ok=True)
 
 
@@ -50,23 +51,9 @@ async def handle_file_download(callback_query: CallbackQuery):
     file_path = link.link
 
     input_file = FSInputFile(file_path)
-        
+
     await callback_query.message.answer_document(
         document=input_file,
         caption="Ваш файл:" 
     )
     await callback_query.answer("Файл отправлен.")
-
-
-@router.message(F.document)
-async def handle_document(message: Message):
-    document = message.document
-    file_info = await message.bot.get_file(document.file_id)
-    file = await message.bot.download_file(file_info.file_path)
-
-    file_path = os.path.join('files', document.file_name)
-    with open(file_path, 'wb') as f:
-        f.write(file.read())
-
-    await add_file(file_path, document.file_name)
-    await message.answer(f"Файл {document.file_name} успешно сохранен.")
