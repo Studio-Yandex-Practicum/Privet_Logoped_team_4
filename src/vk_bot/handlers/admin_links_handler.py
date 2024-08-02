@@ -110,7 +110,7 @@ async def add_link(bot, message, AdminStates):
             await message.answer('Попробуйте еще раз.')
         else:
             await message.answer(
-                f'Ссылка {link} успешно добавлена.',
+                f'Ссылка {link_name} успешно добавлена.',
                 keyboard=admin_links_keyboard
             )
         finally:

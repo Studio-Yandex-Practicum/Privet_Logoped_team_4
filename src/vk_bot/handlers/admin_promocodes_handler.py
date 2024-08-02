@@ -36,7 +36,7 @@ async def get_promocode(bot, message, AdminStates):
 async def add_promocode(bot, message, AdminStates):
     if message.text.lower() == 'отмена':
         await message.answer(
-            'Отмена добавления ссылки.', keyboard=admin_promocodes_keyboard
+            'Отмена добавления промокода.', keyboard=admin_promocodes_keyboard
         )
         await bot.state_dispenser.set(
                     message.peer_id, AdminStates.PROMOCODES_STATE)
