@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import (AsyncAttrs, AsyncSession,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from src.db.config import database_url
-from src.db.constants import LinkResourseType, RoleName
+from db.config import database_url
+from db.constants import LinkResourseType, RoleName
 
 Base = declarative_base()
 
