@@ -25,14 +25,8 @@ async def chose_role(user_id, role_type):
         await session.commit()
 
 
-async def get_all_promo():
-    async with async_session() as session:
-        result = await session.execute(select(PromoCode.promocode))
-        all_promocode = result.scalars().all()
-        return all_promocode
-
-
-async def used_promocode(promo):
+async def get_promocode(promo):
+    """Получение промокода и его пути."""
     async with async_session() as session:
         result = await session.execute(
             select(PromoCode.file_path).where(PromoCode.promocode == promo)
