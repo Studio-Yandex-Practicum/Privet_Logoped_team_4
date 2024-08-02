@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import insert
 parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_folder_path)
 
-from db.models import RoleType, TGUser, async_session
+from db.models import RoleType, PromoCode, TGUser, async_session
 
 
 async def chose_role(user_id, role_type):
@@ -23,3 +23,13 @@ async def chose_role(user_id, role_type):
         )
         await session.execute(new_user)
         await session.commit()
+
+
+async def get_promocode(promo):
+    """Получение промокода и его пути."""
+    async with async_session() as session:
+        result = await session.execute(
+            select(PromoCode.file_path).where(PromoCode.promocode == promo)
+        )
+        promocode_user = result.scalars().first()
+        return promocode_user
