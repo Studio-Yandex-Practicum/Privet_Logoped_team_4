@@ -79,7 +79,37 @@ admin_links_keyboard = (
     .add(Text('Удалить ссылку'),
          color=KeyboardButtonColor.PRIMARY)
     .row()
+    .add(Text('Загрузить файл'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
     .add(Text('Назад'),
+         color=KeyboardButtonColor.NEGATIVE)
+)
+
+admin_links_types_keyboard = (
+    Keyboard(one_time=True)
+    .add(Text('Ссылка'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Путь к файлу'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Отмена'),
+         color=KeyboardButtonColor.NEGATIVE)
+)
+
+admin_links_to_role_keyboard = (
+    Keyboard(one_time=True)
+    .add(Text('Родитель'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Логопед'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Общее'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Отмена'),
          color=KeyboardButtonColor.NEGATIVE)
 )
 
@@ -89,6 +119,9 @@ admin_promocodes_keyboard = (
          color=KeyboardButtonColor.PRIMARY)
     .row()
     .add(Text('Удалить промокод'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Загрузить файл'),
          color=KeyboardButtonColor.PRIMARY)
     .row()
     .add(Text('Назад'),

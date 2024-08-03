@@ -5,7 +5,7 @@ from handlers import (add_link, add_promocode, admin_handler,
                       delete_promocode_handler, faq_handler, get_link,
                       get_link_name, get_link_type, get_promocode,
                       parent_handler, role_handler, speech_therapist_handler,
-                      start_handler)
+                      start_handler, upload_link_file_handler)
 from vkbottle import BaseStateGroup
 from vkbottle.bot import Bot, Message
 
@@ -24,14 +24,16 @@ class AdminStates(BaseStateGroup):
     ADMIN_STATE = 'admin_options'
     LINKS_STATE = 'links_options'
     PROMOCODES_STATE = 'promocodes_options'
-    WAITING_LINK = 'waiting_link'
     WAITING_LINK_NAME = 'waiting_link_name'
     WAITING_LINK_TYPE = 'waiting_link_type'
+    WAITING_LINK = 'waiting_link'
     WAITING_LINK_TO_ROLE = 'waiting_link_to_role'
     DELETE_LINK = 'delete_link'
     WAITING_PROMOCODE = 'waiting_promocode'
     WAITING_PROMOCODE_FILEPATH = 'waiting_promocode_filepath'
     DELETE_PROMOCODE = 'delete_promocode'
+    UPLOAD_LINK_FILE = 'upload_link_file'
+    UPLOAD_PROMOCODE_FILE = 'upload_promocode_file'
 
 
 @bot.on.private_message(lev='/admin')
@@ -94,7 +96,12 @@ async def delete_promocode(message: Message):
     await delete_promocode_handler(bot, message, AdminStates)
 
 
-@bot.on.private_message(lev='/start')
+@bot.on.private_message(state=AdminStates.UPLOAD_LINK_FILE)
+async def upload_link_file(message: Message):
+    await upload_link_file_handler(bot, message, AdminStates)
+
+
+@bot.on.private_message(lev=['/start', 'Начать'])
 async def greeting(message: Message):
     await start_handler(bot, message, UserStates)
 
