@@ -108,6 +108,12 @@ async def admin_promocodes_handler(bot, message, AdminStates):
         await message.answer('Введите id промокода:', keyboard=cancel_keyboard)
         await bot.state_dispenser.set(
                 message.peer_id, AdminStates.DELETE_PROMOCODE)
+    elif message.text.lower() == 'загрузить файл':
+        await message.answer(
+            'Прикрепите файл для загрузки.', keyboard=cancel_keyboard
+        )
+        await bot.state_dispenser.set(
+                message.peer_id, AdminStates.UPLOAD_PROMOCODE_FILE)
     elif message.text.lower() == 'назад':
         await message.answer('Вы выбрали Назад.',
                              keyboard=admin_keyboard)

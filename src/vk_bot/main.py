@@ -1,11 +1,11 @@
 from config import api, labeler, state_dispenser
 from handlers import (add_link, add_promocode, admin_handler,
                       admin_links_handler, admin_promocodes_handler,
-                      admin_start_handler, delete_link_handler,
-                      delete_promocode_handler, faq_handler, get_link,
-                      get_link_name, get_link_type, get_promocode,
-                      parent_handler, role_handler, speech_therapist_handler,
-                      start_handler, upload_link_file_handler)
+                      admin_start_handler, admin_upload_file_handler,
+                      delete_link_handler, delete_promocode_handler,
+                      faq_handler, get_link, get_link_name, get_link_type,
+                      get_promocode, parent_handler, role_handler,
+                      speech_therapist_handler, start_handler)
 from vkbottle import BaseStateGroup
 from vkbottle.bot import Bot, Message
 
@@ -96,9 +96,11 @@ async def delete_promocode(message: Message):
     await delete_promocode_handler(bot, message, AdminStates)
 
 
-@bot.on.private_message(state=AdminStates.UPLOAD_LINK_FILE)
-async def upload_link_file(message: Message):
-    await upload_link_file_handler(bot, message, AdminStates)
+@bot.on.private_message(
+    state=[AdminStates.UPLOAD_LINK_FILE, AdminStates.UPLOAD_PROMOCODE_FILE]
+)
+async def upload_file(message: Message):
+    await admin_upload_file_handler(bot, message, AdminStates)
 
 
 @bot.on.private_message(lev=['/start', 'Начать'])

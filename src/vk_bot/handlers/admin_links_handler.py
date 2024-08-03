@@ -1,12 +1,9 @@
 import os
 import sys
 
-from aiohttp import ClientSession
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from vkbottle import CtxStorage
-from vkbottle_types.objects import MessagesMessageAttachmentType
-import aiofiles
 
 grand_parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../../..')
@@ -167,85 +164,6 @@ async def delete_link_handler(bot, message, AdminStates):
                     'Ссылка успешно удалена.', keyboard=admin_links_keyboard
                 )
         finally:
-            await bot.state_dispenser.set(
-                        message.peer_id, AdminStates.LINKS_STATE)
-
-
-async def upload_link_file_handler(bot, message, AdminStates):
-    if message.text.lower() == 'отмена':
-        await message.answer(
-            'Отмена загрузки файла.', keyboard=admin_links_keyboard
-        )
-        await bot.state_dispenser.set(
-                    message.peer_id, AdminStates.LINKS_STATE)
-    else:
-        if not message.attachments:
-            await message.answer(
-                'Прикрепите файл для загрузки.', keyboard=cancel_keyboard
-            )
-
-        for attachment in message.attachments:
-            file_info = None
-            print('')
-            print(f'attachment {attachment}')
-            print('')
-
-            if attachment.type == MessagesMessageAttachmentType.DOC:
-                file_info = attachment.doc
-                print('')
-                print(f'attachment doc {attachment}')
-                print('')
-                print('')
-                print(f'file_info doc {file_info}')
-                print('')
-                file_url = file_info.url
-                file_name = file_info.title.split('.')[0]
-                file_extension = file_info.title.split('.')[1]
-            elif attachment.type == MessagesMessageAttachmentType.PHOTO:
-                file_info = attachment.photo.sizes[-1]
-                print('')
-                print(f'attachment photo {attachment}')
-                print('')
-                print('')
-                print(f'file_info photo {file_info}')
-                print('')
-                file_url = file_info.url
-                file_name = os.path.basename(
-                    file_url).split('?')[0].split('.')[0]
-                file_extension = os.path.basename(
-                    file_url).split('?')[0].split('.')[1]
-            # elif attachment.type == MessagesMessageAttachmentType.VIDEO:
-            #     file_info = attachment.video
-            #     print('')
-            #     print(f'attachment video {attachment}')
-            #     print('')
-            #     print('')
-            #     print(f'file_info video {file_info}')
-            #     print('')
-            #     file_url = file_info.url
-            #     file_name = 'video'
-            #     file_extension = 'mp4'
-
-            if file_info:
-                async with ClientSession() as session:
-                    async with session.get(file_url) as response:
-                        file_content = await response.read()
-
-                file_path = os.path.join(
-                    UPLOAD_DIRECTORY, f'{file_name}.{file_extension}'
-                )
-                async with aiofiles.open(file_path, 'wb') as f:
-                    await f.write(file_content)
-                await message.answer(
-                    f'Файл {file_name} загружен и сохранен '
-                    f'в директорию {UPLOAD_DIRECTORY}.',
-                    keyboard=admin_links_keyboard
-                )
-            else:
-                await message.answer(
-                    'Тип файла не поддерживается.',
-                    keyboard=admin_links_keyboard
-                )
             await bot.state_dispenser.set(
                         message.peer_id, AdminStates.LINKS_STATE)
 
