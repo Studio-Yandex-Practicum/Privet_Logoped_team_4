@@ -21,6 +21,7 @@ os.makedirs('files', exist_ok=True)
 
 @router.message(Command("files"))
 async def list_files(message: Message):
+    """Обработка ввода команды '/files'."""
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
@@ -45,6 +46,7 @@ async def list_files(message: Message):
 
 @router.callback_query(lambda c: c.data.startswith("get_file_"))
 async def handle_file_download(callback_query: CallbackQuery):
+    """Обработка ввода команды '/get_file_'."""
     file_id = int(callback_query.data.split("_")[2])
 
     async with async_session() as session:

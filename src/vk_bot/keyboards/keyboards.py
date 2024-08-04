@@ -73,7 +73,7 @@ cancel_keyboard = (
 
 admin_links_keyboard = (
     Keyboard(one_time=False)
-    .add(Text('Добавить новую ссылку'),
+    .add(Text('Добавить ссылку'),
          color=KeyboardButtonColor.PRIMARY)
     .row()
     .add(Text('Удалить ссылку'),
@@ -115,7 +115,7 @@ admin_links_to_role_keyboard = (
 
 admin_promocodes_keyboard = (
     Keyboard(one_time=False)
-    .add(Text('Добавить новый промокод'),
+    .add(Text('Добавить промокод'),
          color=KeyboardButtonColor.PRIMARY)
     .row()
     .add(Text('Удалить промокод'),

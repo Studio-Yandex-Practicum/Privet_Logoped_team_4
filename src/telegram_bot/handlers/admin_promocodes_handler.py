@@ -23,12 +23,14 @@ router = Router()
 
 @router.message(F.text == 'Добавить промокод')
 async def admin_add_promocode(message: Message, state: FSMContext):
+    """Обработка выбора кнопки 'Добавить промокод'."""
     await message.answer('Введите промокод:', reply_markup=kb.cancel)
     await state.set_state(AdminStates.waiting_promocode)
 
 
 @router.message(StateFilter(AdminStates.waiting_promocode))
 async def get_promocode(message: Message, state: FSMContext):
+    """Обработка ввода промокода."""
     if message.text == 'Отмена':
         await message.answer(
             'Отмена добавления промокода.', reply_markup=kb.promocodes
@@ -42,6 +44,7 @@ async def get_promocode(message: Message, state: FSMContext):
 
 @router.message(StateFilter(AdminStates.waiting_promocode_filepath))
 async def add_promocode(message: Message, state: FSMContext):
+    """Обработка ввода пути к файлу промокода и добавление записи в бд."""
     if message.text == 'Отмена':
         await message.answer(
             'Отмена добавления промокода.', reply_markup=kb.promocodes
@@ -73,12 +76,16 @@ async def add_promocode(message: Message, state: FSMContext):
 
 @router.message(F.text == 'Удалить промокод')
 async def admin_delete_promocode(message: Message, state: FSMContext):
+    """Обработка выбора кнопки 'Удалить промокод'."""
     await message.answer('Введите id промокода:', reply_markup=kb.cancel)
     await state.set_state(AdminStates.delete_promocode)
 
 
 @router.message(StateFilter(AdminStates.delete_promocode))
 async def delete_promocode(message: Message, state: FSMContext):
+    """
+    Обработка ввода id промокода и удаление записи из бд.
+    """
     if message.text == 'Отмена':
         await message.answer(
             'Отмена удаления промокода.', reply_markup=kb.links

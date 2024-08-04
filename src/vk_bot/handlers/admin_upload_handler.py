@@ -15,6 +15,7 @@ os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 
 async def admin_upload_file_handler(bot, message, AdminStates):
+    """Обработка выбора кнопки 'Загрузить файл' и дальнейшая загрузка файла."""
     state = await bot.state_dispenser.get(message.peer_id)
     if message.text.lower() == 'отмена':
         if state.state == 'AdminStates:upload_link_file':

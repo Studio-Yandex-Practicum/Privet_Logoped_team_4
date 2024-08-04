@@ -23,6 +23,7 @@ async def get_promocode(promo):
 
 
 async def parent_handler(bot, message, UserStates):
+    """Обработка выбора кнопки в меню 'Родитель'."""
     if message.text.lower() == 'отметить результат занятий':
         await message.answer('Вы выбрали Отметить результат занятий.')
     elif message.text.lower() == 'пройти диагностику':

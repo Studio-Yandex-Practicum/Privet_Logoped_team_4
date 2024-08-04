@@ -13,6 +13,7 @@ from db.models import RoleType, VKUser, async_session  # noqa
 
 
 async def role_handler(bot, message, UserStates):
+    """Обработка выбора кнопки в меню 'Роль'."""
     if message.text.lower() == 'родитель' or message.text.lower() == 'логопед':
         if message.text.lower() == 'родитель':
             role = RoleType.PARENT

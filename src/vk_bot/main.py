@@ -18,6 +18,7 @@ bot.labeler.vbml_ignore_case = True
 
 
 class UserStates(BaseStateGroup):
+    """Стейты пользователя."""
     ROLE_STATE = 'choose_role'
     PARENT_STATE = 'parent_options'
     FAQ_STATE = 'faq_options'
@@ -25,6 +26,7 @@ class UserStates(BaseStateGroup):
 
 
 class AdminStates(BaseStateGroup):
+    """Стейты администратора."""
     ADMIN_STATE = 'admin_options'
     LINKS_STATE = 'links_options'
     PROMOCODES_STATE = 'promocodes_options'

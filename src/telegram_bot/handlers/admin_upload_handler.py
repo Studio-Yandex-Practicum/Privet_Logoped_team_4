@@ -20,6 +20,7 @@ router = Router()
 
 @router.message(F.text == 'Загрузить файл')
 async def admin_upload_file(message: Message, state: FSMContext):
+    """Обработка выбора кнопки 'Загрузить файл'."""
     current_state = await state.get_state()
     await message.answer(
         'Прикрепите файл для загрузки.', reply_markup=kb.cancel
@@ -37,6 +38,9 @@ async def admin_upload_file(message: Message, state: FSMContext):
     )
 )
 async def updload_file(message: Message, state: FSMContext, bot: Bot):
+    """
+    Определение является ли этой гурппой файлов и загрузка файла/ов на сервер.
+    """
     current_state = await state.get_state()
     if message.text == 'Отмена':
         if current_state == 'AdminStates:upload_link_file':
@@ -112,6 +116,7 @@ async def updload_file(message: Message, state: FSMContext, bot: Bot):
 
 
 async def process_media_group(bot: Bot, media_group: list[Message]):
+    """Итерация по гурппе файлов и определение типа каждого файла."""
     for message in media_group:
         if message.photo:
             file_to_save = message.photo[-1]
@@ -134,6 +139,7 @@ async def process_media_group(bot: Bot, media_group: list[Message]):
 
 
 async def process_single_message(bot: Bot, message: Message, current_state):
+    """Определение типа файла."""
     if message.photo:
         file_to_save = message.photo[-1]
         file_path = os.path.join(
@@ -167,5 +173,6 @@ async def process_single_message(bot: Bot, message: Message, current_state):
 
 
 async def download_file(bot: Bot, file_id, destination):
+    """Загрузка файла на сервер."""
     file_to_save = await bot.get_file(file_id)
     await bot.download_file(file_to_save.file_path, destination)

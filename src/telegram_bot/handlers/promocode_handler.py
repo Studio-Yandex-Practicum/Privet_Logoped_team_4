@@ -9,13 +9,14 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')
 )
 sys.path.append(parent_folder_path)
-from db_user_add import get_promocode  # noqa
+from telegram_bot.crud import get_promocode  # noqa
 
 router = Router()
 
 
 @router.message()
 async def promo_message(message: Message, state: FSMContext):
+    """Обработка ввода текстового сообщения на соответствие промокоду."""
     current_state = await state.get_state()
     if not current_state.startswith('AdminStates'):
         promo = str(message.text)

@@ -10,6 +10,7 @@ from keyboards.keyboards import (admin_keyboard, admin_links_keyboard,  # noqa
 
 
 async def admin_handler(bot, message, AdminStates):
+    """Обработка выбора кнопок 'Материалы' или 'Промокоды'."""
     if message.text.lower() == 'материалы':
         await message.answer('Вы выбрали Материалы.',
                              keyboard=admin_links_keyboard)

@@ -28,6 +28,7 @@ async def change_role(message: Message, state: FSMContext):
 
 @router.message(F.text == 'Назад')
 async def back_message(message: Message, state: FSMContext):
+    """Обработка выбора кнопки 'Назад'."""
     current_state = await state.get_state()
     if current_state == Level.parent:
         key_reply = kb.main

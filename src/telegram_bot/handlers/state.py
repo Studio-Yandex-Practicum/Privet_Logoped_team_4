@@ -1,10 +1,8 @@
 from aiogram.fsm.state import State, StatesGroup
-from config import database_url
-
-DATABASE_URL = database_url
 
 
 class Level(StatesGroup):
+    """Стейты пользователя."""
     main = State()
     parent = State()
     faq = State()
@@ -13,6 +11,7 @@ class Level(StatesGroup):
 
 
 class AdminStates(StatesGroup):
+    """Стейты администратора."""
     admin = State()
     links = State()
     promocodes = State()

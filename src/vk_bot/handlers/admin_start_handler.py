@@ -12,6 +12,7 @@ from db.models import VKUser, async_session  # noqa
 
 
 async def admin_start_handler(bot, message, AdminStates):
+    """Обработка ввода команды '/admin'."""
     user_info = await message.get_user()
     async with async_session() as session:
         result = await session.execute(

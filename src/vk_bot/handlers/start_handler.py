@@ -13,6 +13,7 @@ from db.models import RoleType, VKUser, async_session  # noqa
 
 
 async def start_handler(bot, message, UserStates):
+    """Обработка ввода команды '/start' или 'Начать'."""
     user_info = await message.get_user()
     async with async_session() as session:
         result = await session.execute(
