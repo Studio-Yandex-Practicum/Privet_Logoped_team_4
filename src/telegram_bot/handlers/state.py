@@ -10,12 +10,12 @@ class Level(StatesGroup):
     faq = State()
     therapist = State()
     role_chose = State()
+
+
+class AdminStates(StatesGroup):
     admin = State()
     links = State()
     promocodes = State()
-
-
-class AdminOptions(StatesGroup):
     waiting_link_name = State()
     waiting_link_type = State()
     waiting_link = State()

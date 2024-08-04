@@ -9,7 +9,7 @@ from aiogram.types import Message
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 
-from .state import AdminOptions, Level
+from .state import AdminStates
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
@@ -24,29 +24,29 @@ router = Router()
 @router.message(F.text == 'Добавить промокод')
 async def admin_add_promocode(message: Message, state: FSMContext):
     await message.answer('Введите промокод:', reply_markup=kb.cancel)
-    await state.set_state(AdminOptions.waiting_promocode)
+    await state.set_state(AdminStates.waiting_promocode)
 
 
-@router.message(StateFilter(AdminOptions.waiting_promocode))
+@router.message(StateFilter(AdminStates.waiting_promocode))
 async def get_promocode(message: Message, state: FSMContext):
     if message.text == 'Отмена':
         await message.answer(
             'Отмена добавления промокода.', reply_markup=kb.promocodes
         )
-        await state.set_state(Level.promocodes)
+        await state.set_state(AdminStates.promocodes)
     else:
         await state.update_data(waiting_promocode=message.text)
         await message.answer('Введите путь к файлу:', reply_markup=kb.cancel)
-        await state.set_state(AdminOptions.waiting_promocode_filepath)
+        await state.set_state(AdminStates.waiting_promocode_filepath)
 
 
-@router.message(StateFilter(AdminOptions.waiting_promocode_filepath))
+@router.message(StateFilter(AdminStates.waiting_promocode_filepath))
 async def add_promocode(message: Message, state: FSMContext):
     if message.text == 'Отмена':
         await message.answer(
             'Отмена добавления промокода.', reply_markup=kb.promocodes
         )
-        await state.set_state(Level.promocodes)
+        await state.set_state(AdminStates.promocodes)
     else:
         await state.update_data(waiting_promocode_filepath=message.text)
         data = await state.get_data()
@@ -68,22 +68,22 @@ async def add_promocode(message: Message, state: FSMContext):
                 reply_markup=kb.promocodes
             )
         finally:
-            await state.set_state(Level.promocodes)
+            await state.set_state(AdminStates.promocodes)
 
 
 @router.message(F.text == 'Удалить промокод')
 async def admin_delete_promocode(message: Message, state: FSMContext):
     await message.answer('Введите id промокода:', reply_markup=kb.cancel)
-    await state.set_state(AdminOptions.delete_promocode)
+    await state.set_state(AdminStates.delete_promocode)
 
 
-@router.message(StateFilter(AdminOptions.delete_promocode))
+@router.message(StateFilter(AdminStates.delete_promocode))
 async def delete_promocode(message: Message, state: FSMContext):
     if message.text == 'Отмена':
         await message.answer(
             'Отмена удаления промокода.', reply_markup=kb.links
         )
-        await state.set_state(Level.promocodes)
+        await state.set_state(AdminStates.promocodes)
     else:
         try:
             promocode_id = int(message.text)
@@ -92,7 +92,7 @@ async def delete_promocode(message: Message, state: FSMContext):
                 'Введены некорректные данные. Пожалуйста, повторите попытку.',
                 reply_markup=kb.promocodes
             )
-            await state.set_state(Level.promocodes)
+            await state.set_state(AdminStates.promocodes)
         else:
             try:
                 async with async_session() as session:
@@ -108,4 +108,4 @@ async def delete_promocode(message: Message, state: FSMContext):
                     'Промокод успешно удален.', reply_markup=kb.promocodes
                 )
         finally:
-            await state.set_state(Level.promocodes)
+            await state.set_state(AdminStates.promocodes)

@@ -1,3 +1,5 @@
+import logging
+
 from config import api, labeler, state_dispenser
 from handlers import (add_link, add_promocode, admin_handler,
                       admin_links_handler, admin_promocodes_handler,
@@ -8,6 +10,8 @@ from handlers import (add_link, add_promocode, admin_handler,
                       speech_therapist_handler, start_handler)
 from vkbottle import BaseStateGroup
 from vkbottle.bot import Bot, Message
+
+logging.basicConfig(level=logging.INFO)
 
 bot = Bot(api=api, labeler=labeler, state_dispenser=state_dispenser)
 bot.labeler.vbml_ignore_case = True
@@ -129,7 +133,4 @@ async def speech_therapist_options(message: Message):
 
 
 if __name__ == '__main__':
-    try:
-        bot.run_forever()
-    except KeyboardInterrupt:
-        print('Бот выключен.')
+    bot.run_forever()

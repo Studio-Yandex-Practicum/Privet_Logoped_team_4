@@ -29,10 +29,10 @@ async def chose_role(user_id, role_type):
 
 
 async def get_promocode(promo):
-    """Получение промокода и его пути."""
+    """Получение пути файла промокода."""
     async with async_session() as session:
         result = await session.execute(
             select(PromoCode.file_path).where(PromoCode.promocode == promo)
         )
-        promocode_user = result.scalars().first()
-        return promocode_user
+        promocode_file_path = result.scalars().first()
+        return promocode_file_path

@@ -1,6 +1,9 @@
 import os
 import sys
 
+from keyboards.keyboards import (admin_keyboard, admin_links_keyboard,
+                                 admin_links_to_role_keyboard,
+                                 admin_links_types_keyboard, cancel_keyboard)
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from vkbottle import CtxStorage
@@ -9,10 +12,6 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from keyboards.keyboards import (admin_keyboard, admin_links_keyboard,  # noqa
-                                 admin_links_to_role_keyboard,
-                                 admin_links_types_keyboard, cancel_keyboard)
-
 from db.models import Link, async_session  # noqa
 
 ctx_storage = CtxStorage()

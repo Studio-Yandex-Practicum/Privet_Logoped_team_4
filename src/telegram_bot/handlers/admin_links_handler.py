@@ -9,7 +9,7 @@ from aiogram.types import Message
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 
-from .state import AdminOptions, Level
+from .state import AdminStates
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
@@ -24,31 +24,31 @@ router = Router()
 @router.message(F.text == 'Добавить ссылку')
 async def admin_add_link(message: Message, state: FSMContext):
     await message.answer('Введите название ссылки:', reply_markup=kb.cancel)
-    await state.set_state(AdminOptions.waiting_link_name)
+    await state.set_state(AdminStates.waiting_link_name)
 
 
-@router.message(StateFilter(AdminOptions.waiting_link_name))
+@router.message(StateFilter(AdminStates.waiting_link_name))
 async def get_link_name(message: Message, state: FSMContext):
     if message.text == 'Отмена':
         await message.answer(
             'Отмена добавления ссылки.', reply_markup=kb.links
         )
-        await state.set_state(Level.links)
+        await state.set_state(AdminStates.links)
     else:
         await state.update_data(waiting_link_name=message.text)
         await message.answer(
             'Выберите тип ссылки:', reply_markup=kb.links_types
         )
-        await state.set_state(AdminOptions.waiting_link_type)
+        await state.set_state(AdminStates.waiting_link_type)
 
 
-@router.message(StateFilter(AdminOptions.waiting_link_type))
+@router.message(StateFilter(AdminStates.waiting_link_type))
 async def get_link_type(message: Message, state: FSMContext):
     if message.text == 'Отмена':
         await message.answer(
             'Отмена добавления ссылки.', reply_markup=kb.links
         )
-        await state.set_state(Level.links)
+        await state.set_state(AdminStates.links)
     else:
         if message.text.lower() == 'ссылка':
             link_type = 'URL'
@@ -56,31 +56,31 @@ async def get_link_type(message: Message, state: FSMContext):
             link_type = 'FILEPATH'
         await state.update_data(waiting_link_type=link_type)
         await message.answer('Введите ссылку:', reply_markup=kb.cancel)
-        await state.set_state(AdminOptions.waiting_link)
+        await state.set_state(AdminStates.waiting_link)
 
 
-@router.message(StateFilter(AdminOptions.waiting_link))
+@router.message(StateFilter(AdminStates.waiting_link))
 async def get_link(message: Message, state: FSMContext):
     if message.text == 'Отмена':
         await message.answer(
             'Отмена добавления ссылки.', reply_markup=kb.links
         )
-        await state.set_state(Level.links)
+        await state.set_state(AdminStates.links)
     else:
         await state.update_data(waiting_link=message.text)
         await message.answer(
             'Выберите роль пользователя:', reply_markup=kb.links_to_role
         )
-        await state.set_state(AdminOptions.waiting_link_to_role)
+        await state.set_state(AdminStates.waiting_link_to_role)
 
 
-@router.message(StateFilter(AdminOptions.waiting_link_to_role))
+@router.message(StateFilter(AdminStates.waiting_link_to_role))
 async def add_link(message: Message, state: FSMContext):
     if message.text == 'Отмена':
         await message.answer(
             'Отмена добавления ссылки.', reply_markup=kb.links
         )
-        await state.set_state(Level.links)
+        await state.set_state(AdminStates.links)
     else:
         if message.text.lower() == 'родитель':
             to_role = 'PARENT'
@@ -111,22 +111,22 @@ async def add_link(message: Message, state: FSMContext):
                 reply_markup=kb.links
             )
         finally:
-            await state.set_state(Level.links)
+            await state.set_state(AdminStates.links)
 
 
 @router.message(F.text == 'Удалить ссылку')
 async def admin_delete_link(message: Message, state: FSMContext):
     await message.answer('Введите id ссылки:', reply_markup=kb.cancel)
-    await state.set_state(AdminOptions.delete_link)
+    await state.set_state(AdminStates.delete_link)
 
 
-@router.message(StateFilter(AdminOptions.delete_link))
+@router.message(StateFilter(AdminStates.delete_link))
 async def delete_link(message: Message, state: FSMContext):
     if message.text == 'Отмена':
         await message.answer(
             'Отмена удаления ссылки.', reply_markup=kb.links
         )
-        await state.set_state(Level.links)
+        await state.set_state(AdminStates.links)
     else:
         try:
             link_id = int(message.text)
@@ -135,7 +135,7 @@ async def delete_link(message: Message, state: FSMContext):
                 'Введены некорректные данные. Пожалуйста, повторите попытку.',
                 reply_markup=kb.links
             )
-            await state.set_state(Level.links)
+            await state.set_state(AdminStates.links)
         else:
             try:
                 async with async_session() as session:
@@ -151,4 +151,4 @@ async def delete_link(message: Message, state: FSMContext):
                     'Ссылка успешно удалена.', reply_markup=kb.links
                 )
         finally:
-            await state.set_state(Level.links)
+            await state.set_state(AdminStates.links)
