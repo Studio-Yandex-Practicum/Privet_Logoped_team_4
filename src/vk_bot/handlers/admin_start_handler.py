@@ -27,8 +27,8 @@ async def admin_start_handler(bot, message, AdminStates):
     if user:
         await message.answer(
                 message=(
-                    f'Здравствуйте, {user_info.first_name}! '
-                    'Выберите одну из предложенных опций администратора:'
+                    'Здравствуйте! Выберите одну из '
+                    'предложенных опций администратора:'
                 ),
                 keyboard=admin_keyboard
             )

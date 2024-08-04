@@ -5,9 +5,6 @@ from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from vkbottle import CtxStorage
 
-grand_parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../../..')
-)
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
@@ -19,8 +16,6 @@ from keyboards.keyboards import (admin_keyboard, admin_links_keyboard,  # noqa
 from db.models import Link, async_session  # noqa
 
 ctx_storage = CtxStorage()
-UPLOAD_DIRECTORY = grand_parent_folder_path + '\\files'
-os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 
 async def get_link_name(bot, message, AdminStates):

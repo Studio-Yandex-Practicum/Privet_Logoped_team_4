@@ -22,8 +22,7 @@ async def start_handler(bot, message, UserStates):
         if not user:
             await message.answer(
                 message=(
-                    f'Здравствуйте, {user_info.first_name}! '
-                    'Выберите одну из предложенных ролей:'
+                    'Здравствуйте! Выберите одну из предложенных ролей:'
                 ),
                 keyboard=role_keyboard
             )

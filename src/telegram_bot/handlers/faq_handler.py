@@ -7,6 +7,7 @@ from .state import Level
 
 router = Router()
 
+
 @router.message(F.text == 'Частые вопросы')
 async def faq_message(message: Message, state: FSMContext):
     await state.set_state(Level.faq)
@@ -19,17 +20,18 @@ async def how_message(message: Message):
     await message.answer('Здравствуйте! Вы нажали меню "Как заниматься?"')
 
 
-
 @router.message(F.text == 'Не получается заниматься')
 async def couldnt_message(message: Message):
-    await message.answer('Здравствуйте! Вы нажали меню "Не получается заниматься"')
-
+    await message.answer(
+        'Здравствуйте! Вы нажали меню "Не получается заниматься"'
+    )
 
 
 @router.message(F.text == 'Причины нарушения речи')
 async def reasons_message(message: Message):
-    await message.answer('Здравствуйте! Вы нажали меню "Причины нарушения речи"')
-
+    await message.answer(
+        'Здравствуйте! Вы нажали меню "Причины нарушения речи"'
+    )
 
 
 @router.message(F.text == 'Купить для iOS')

@@ -129,4 +129,7 @@ async def speech_therapist_options(message: Message):
 
 
 if __name__ == '__main__':
-    bot.run_forever()
+    try:
+        bot.run_forever()
+    except KeyboardInterrupt:
+        print('Бот выключен.')

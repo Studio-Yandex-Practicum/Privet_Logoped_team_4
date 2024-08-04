@@ -8,8 +8,6 @@ sys.path.append(parent_folder_path)
 from keyboards.keyboards import (admin_keyboard, admin_links_keyboard,  # noqa
                                  admin_promocodes_keyboard)
 
-from db.models import VKUser, async_session  # noqa
-
 
 async def admin_handler(bot, message, AdminStates):
     if message.text.lower() == 'материалы':

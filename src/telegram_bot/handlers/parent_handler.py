@@ -8,9 +8,11 @@ from aiogram.fsm.context import FSMContext
 import keyboard.keyboard as kb
 from .state import Level
 
-parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+parent_folder_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..')
+)
 sys.path.append(parent_folder_path)
-from db_user_add import chose_role
+from db_user_add import chose_role # noqa
 
 router = Router()
 
@@ -27,7 +29,9 @@ async def parent_message(message: Message, state: FSMContext):
 
 @router.message(F.text == 'Отметить результат занятий')
 async def result_message(message: Message):
-    await message.answer('Здравствуйте! Вы нажали меню "Отметить результат занятий"')
+    await message.answer(
+        'Здравствуйте! Вы нажали меню "Отметить результат занятий"'
+    )
 
 
 @router.message(F.text == 'Пройти диагностику')
@@ -47,4 +51,6 @@ async def notification_message(message: Message):
 
 @router.message(F.text == 'Связаться с логопедом')
 async def connection_message(message: Message):
-    await message.answer('Здравствуйте! Вы нажали меню "Связаться с логопедом"')
+    await message.answer(
+        'Здравствуйте! Вы нажали меню "Связаться с логопедом"'
+    )
