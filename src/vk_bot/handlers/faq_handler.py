@@ -2,6 +2,7 @@ from keyboards.keyboards import parent_keyboard, faq_keyboard
 
 
 async def faq_handler(bot, message, UserStates):
+    """Обработка выбора кнопки в меню 'Частые вопросы'."""
     if message.text.lower() == 'как заниматься':
         await message.answer('Вы выбрали Как заниматься.')
     elif message.text.lower() == 'не получается заниматься':

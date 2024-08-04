@@ -1,6 +1,8 @@
 import os
 import sys
 
+from keyboards.keyboards import (admin_keyboard, admin_promocodes_keyboard,
+                                 cancel_keyboard)
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from vkbottle import CtxStorage
@@ -9,15 +11,13 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from keyboards.keyboards import (admin_keyboard,  # noqa
-                                 admin_promocodes_keyboard, cancel_keyboard)
-
 from db.models import PromoCode, async_session  # noqa
 
 ctx_storage = CtxStorage()
 
 
 async def get_promocode(bot, message, AdminStates):
+    """Обработка ввода промокода."""
     if message.text.lower() == 'отмена':
         await message.answer(
             'Отмена добавления промокода.', keyboard=admin_promocodes_keyboard
@@ -34,6 +34,7 @@ async def get_promocode(bot, message, AdminStates):
 
 
 async def add_promocode(bot, message, AdminStates):
+    """Обработка ввода пути к файлу промокода и добавление записи в бд."""
     if message.text.lower() == 'отмена':
         await message.answer(
             'Отмена добавления промокода.', keyboard=admin_promocodes_keyboard
@@ -63,6 +64,9 @@ async def add_promocode(bot, message, AdminStates):
 
 
 async def delete_promocode_handler(bot, message, AdminStates):
+    """
+    Обработка ввода id промокода и удаление записи из бд.
+    """
     if message.text.lower() == 'отмена':
         await message.answer(
             'Отмена удаления промокода.', keyboard=admin_promocodes_keyboard
@@ -100,7 +104,11 @@ async def delete_promocode_handler(bot, message, AdminStates):
 
 
 async def admin_promocodes_handler(bot, message, AdminStates):
-    if message.text.lower() == 'добавить новый промокод':
+    """
+    Обработка выбора кнопки 'Добавить промокод',
+    'Удалить промокод' или 'Назад'.
+    """
+    if message.text.lower() == 'добавить промокод':
         await message.answer('Введите промокод:', keyboard=cancel_keyboard)
         await bot.state_dispenser.set(
                 message.peer_id, AdminStates.WAITING_PROMOCODE)

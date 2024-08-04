@@ -1,3 +1,5 @@
+import logging
+
 from config import api, labeler, state_dispenser
 from handlers import (add_link, add_promocode, admin_handler,
                       admin_links_handler, admin_promocodes_handler,
@@ -9,11 +11,14 @@ from handlers import (add_link, add_promocode, admin_handler,
 from vkbottle import BaseStateGroup
 from vkbottle.bot import Bot, Message
 
+logging.basicConfig(level=logging.INFO)
+
 bot = Bot(api=api, labeler=labeler, state_dispenser=state_dispenser)
 bot.labeler.vbml_ignore_case = True
 
 
 class UserStates(BaseStateGroup):
+    """Стейты пользователя."""
     ROLE_STATE = 'choose_role'
     PARENT_STATE = 'parent_options'
     FAQ_STATE = 'faq_options'
@@ -21,6 +26,7 @@ class UserStates(BaseStateGroup):
 
 
 class AdminStates(BaseStateGroup):
+    """Стейты администратора."""
     ADMIN_STATE = 'admin_options'
     LINKS_STATE = 'links_options'
     PROMOCODES_STATE = 'promocodes_options'

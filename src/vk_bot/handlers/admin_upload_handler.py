@@ -1,28 +1,21 @@
 import os
-import sys
 
 import aiofiles
 from aiohttp import ClientSession
-from vkbottle import CtxStorage
+from keyboards.keyboards import (admin_links_keyboard,
+                                 admin_promocodes_keyboard, cancel_keyboard)
 from vkbottle_types.objects import MessagesMessageAttachmentType
 
 grand_parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../../..')
 )
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../..')
-)
-sys.path.append(parent_folder_path)
-from keyboards.keyboards import cancel_keyboard  # noqa
-from keyboards.keyboards import (admin_links_keyboard,  # noqa
-                                 admin_promocodes_keyboard)
 
-ctx_storage = CtxStorage()
 UPLOAD_DIRECTORY = grand_parent_folder_path + '\\files'
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 
 async def admin_upload_file_handler(bot, message, AdminStates):
+    """Обработка выбора кнопки 'Загрузить файл' и дальнейшая загрузка файла."""
     state = await bot.state_dispenser.get(message.peer_id)
     if message.text.lower() == 'отмена':
         if state.state == 'AdminStates:upload_link_file':

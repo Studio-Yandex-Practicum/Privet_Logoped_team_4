@@ -1,18 +1,18 @@
 import os
 import sys
 
+from keyboards.keyboards import admin_keyboard
 from sqlalchemy import and_, select
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from keyboards.keyboards import admin_keyboard  # noqa
-
 from db.models import VKUser, async_session  # noqa
 
 
 async def admin_start_handler(bot, message, AdminStates):
+    """Обработка ввода команды '/admin'."""
     user_info = await message.get_user()
     async with async_session() as session:
         result = await session.execute(
@@ -27,8 +27,8 @@ async def admin_start_handler(bot, message, AdminStates):
     if user:
         await message.answer(
                 message=(
-                    f'Здравствуйте, {user_info.first_name}! '
-                    'Выберите одну из предложенных опций администратора:'
+                    'Здравствуйте! Выберите одну из '
+                    'предложенных опций администратора:'
                 ),
                 keyboard=admin_keyboard
             )

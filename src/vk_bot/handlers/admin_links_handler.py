@@ -1,29 +1,24 @@
 import os
 import sys
 
+from keyboards.keyboards import (admin_keyboard, admin_links_keyboard,
+                                 admin_links_to_role_keyboard,
+                                 admin_links_types_keyboard, cancel_keyboard)
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from vkbottle import CtxStorage
 
-grand_parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../../..')
-)
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from keyboards.keyboards import (admin_keyboard, admin_links_keyboard,  # noqa
-                                 admin_links_to_role_keyboard,
-                                 admin_links_types_keyboard, cancel_keyboard)
-
 from db.models import Link, async_session  # noqa
 
 ctx_storage = CtxStorage()
-UPLOAD_DIRECTORY = grand_parent_folder_path + '\\files'
-os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 
 async def get_link_name(bot, message, AdminStates):
+    """Обработка ввода названия ссылки на материал."""
     if message.text.lower() == 'отмена':
         await message.answer(
             'Отмена добавления ссылки.', keyboard=admin_links_keyboard
@@ -41,6 +36,7 @@ async def get_link_name(bot, message, AdminStates):
 
 
 async def get_link_type(bot, message, AdminStates):
+    """Обработка ввода типа ссылки на материал."""
     if message.text.lower() == 'отмена':
         await message.answer(
             'Отмена добавления ссылки.', keyboard=admin_links_keyboard
@@ -70,6 +66,7 @@ async def get_link_type(bot, message, AdminStates):
 
 
 async def get_link(bot, message, AdminStates):
+    """Обработка ввода ссылки на материал."""
     if message.text.lower() == 'отмена':
         await message.answer(
             'Отмена добавления ссылки.', keyboard=admin_links_keyboard
@@ -87,6 +84,10 @@ async def get_link(bot, message, AdminStates):
 
 
 async def add_link(bot, message, AdminStates):
+    """
+    Обработка ввода роли пользователя, которому
+    предназначена ссылка на материал и добавление записи в бд.
+    """
     if message.text.lower() == 'отмена':
         await message.answer(
             'Отмена добавления ссылки.', keyboard=admin_links_keyboard
@@ -133,6 +134,9 @@ async def add_link(bot, message, AdminStates):
 
 
 async def delete_link_handler(bot, message, AdminStates):
+    """
+    Обработка ввода id ссылки на материал и удаление записи из бд.
+    """
     if message.text.lower() == 'отмена':
         await message.answer(
             'Отмена удаления ссылки.', keyboard=admin_links_keyboard
@@ -169,7 +173,10 @@ async def delete_link_handler(bot, message, AdminStates):
 
 
 async def admin_links_handler(bot, message, AdminStates):
-    if message.text.lower() == 'добавить новую ссылку':
+    """
+    Обработка выбора кнопки 'Добавить ссылку', 'Удалить ссылку' или 'Назад'.
+    """
+    if message.text.lower() == 'добавить ссылку':
         await message.answer(
             'Введите название ссылки:', keyboard=cancel_keyboard
         )
