@@ -1,7 +1,7 @@
 import os
 import sys
 
-from aiogram import F, Router
+from aiogram import F, Router, Bot
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
@@ -12,20 +12,27 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')
 )
 sys.path.append(parent_folder_path)
-from telegram_bot.crud import chose_role # noqa
+from telegram_bot.crud import chose_role, get_user, send_notification # noqa
+
 
 router = Router()
 
 
 @router.message(F.text == 'Родитель')
-async def parent_message(message: Message, state: FSMContext):
+async def parent_message(message: Message, bot: Bot, state: FSMContext):
     """Обработка выбора кнопки 'Родитель'."""
     await state.set_state(Level.parent)
     await message.answer('Здравствуйте! Вы нажали меню "Родитель"',
                          reply_markup=kb.parent)
     user_id = message.from_user.id
     role_type = 'parent'
+    first_name = message.from_user.first_name
+    user = await get_user(user_id)
+    if not user:
+        await chose_role(user_id, role_type)
+        await send_notification(bot, user_id, first_name, role_type)
     await chose_role(user_id, role_type)
+
 
 
 @router.message(F.text == 'Отметить результат занятий')

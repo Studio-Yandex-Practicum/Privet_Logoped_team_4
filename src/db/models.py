@@ -1,13 +1,13 @@
 import enum
 
-from sqlalchemy import Column, DateTime, Enum, Integer, Numeric, String, func
+from sqlalchemy import Column, DateTime, Enum, Integer, Numeric, String, func, BigInteger
 from sqlalchemy.ext.asyncio import (AsyncAttrs, AsyncSession,
                                     create_async_engine)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from db.config import database_url
-from db.constants import LinkResourseType, RoleName
+from .config import database_url
+from .constants import LinkResourseType, RoleName
 
 Base = declarative_base()
 
@@ -27,7 +27,7 @@ class LinkType(enum.Enum):
 class TGUser(AsyncAttrs, Base):
     """Модель пользователя телеграм."""
     __tablename__ = 'tg_users'
-    user_id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger, primary_key=True)
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
@@ -36,7 +36,7 @@ class TGUser(AsyncAttrs, Base):
 class VKUser(AsyncAttrs, Base):
     """Модель пользователя вконтакте."""
     __tablename__ = 'vk_users'
-    user_id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger, primary_key=True)
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
