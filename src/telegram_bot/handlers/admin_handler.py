@@ -42,7 +42,7 @@ async def cmd_admin(message: Message, state: FSMContext):
         )
     else:
         await message.answer(
-                message=(
+                text=(
                     'Отказано в доступе.'
                 )
             )

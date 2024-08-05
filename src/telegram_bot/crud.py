@@ -59,11 +59,6 @@ async def get_user(user_id):
 async def send_notification(bot, user_id, first_name, role_type):
     user = await get_user(user_id)
     admin_ids = await get_admin_users()
-    print(f'{user = }')
     for admin in admin_ids:
-        text = f'Зарегестрирован:{first_name} с ролью {role_type}'
+        text = f'Зарегистрирован:{first_name} с ролью {role_type}'
         return await bot.send_message(chat_id=admin, text=text)
-    # if user:
-    #     for admin in admin_ids:
-    #         text = f'Зарегестрирован:{first_name} с ролью {role_type}'
-    #         return await bot.send_message(chat_id=admin, text=text)
