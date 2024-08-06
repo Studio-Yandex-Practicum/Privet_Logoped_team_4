@@ -1,5 +1,4 @@
 import logging
-
 from config import api, labeler, state_dispenser
 from handlers import (add_link, add_promocode, admin_handler,
                       admin_links_handler, admin_promocodes_handler,

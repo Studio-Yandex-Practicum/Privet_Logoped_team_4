@@ -12,7 +12,7 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')
 )
 sys.path.append(parent_folder_path)
-from telegram_bot.crud import chose_role, get_user, send_notification # noqa
+from crud import chose_role, get_user, send_notification # noqa
 
 router = Router()
 

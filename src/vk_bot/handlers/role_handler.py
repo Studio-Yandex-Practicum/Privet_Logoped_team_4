@@ -1,9 +1,12 @@
 import os
 import sys
 
+import aiohttp
 from keyboards.keyboards import (parent_keyboard, role_keyboard,
                                  speech_therapist_keyboard)
 from sqlalchemy.dialects.postgresql import insert
+
+from ..config import db_url
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
@@ -20,15 +23,24 @@ async def role_handler(bot, message, UserStates):
         else:
             role = RoleType.SPEECH_THERAPIST
         user_info = await message.get_user()
-        async with async_session() as session:
-            new_user = insert(VKUser).values(
-                user_id=user_info.id, role=role
-                ).on_conflict_do_update(
-                constraint=VKUser.__table__.primary_key,
-                set_={VKUser.role: role}
-            )
-            await session.execute(new_user)
-            await session.commit()
+        # async with async_session() as session:
+        #     new_user = insert(VKUser).values(
+        #         user_id=user_info.id, role=role
+        #         ).on_conflict_do_update(
+        #         constraint=VKUser.__table__.primary_key,
+        #         set_={VKUser.role: role}
+        #     )
+        #     await session.execute(new_user)
+        #     await session.commit()
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f'{db_url}/tg_users/',
+                json={"user_id": user_info.id, "role": role}
+                    ) as response:
+                if response.status == 200:
+                    await message.reply('Пользователь успешно добавлен.')
+                else:
+                    await message.reply('Ошибка добавления пользователя.')
         if message.text.lower() == 'родитель':
             await message.answer('Вы выбрали роль Родитель. Вот ваши опции:',
                                  keyboard=parent_keyboard)

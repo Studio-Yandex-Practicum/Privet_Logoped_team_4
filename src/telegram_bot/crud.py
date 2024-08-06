@@ -1,6 +1,8 @@
 import os
 import sys
 
+import aiohttp
+from config import db_url
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
@@ -9,17 +11,19 @@ parent_folder_path = os.path.abspath(
 )
 sys.path.append(parent_folder_path)
 
-from db.models import PromoCode, RoleType, TGUser, async_session # noqa
+
+# from db.models import PromoCode, RoleType, TGUser, async_session  # noqa
 
 
 async def chose_role(user_id, role_type):
     """Добавление пользователя и смена роли."""
     if role_type == 'parent':
-        role=RoleType.PARENT
+        role = RoleType.PARENT
     else:
-        role=RoleType.SPEECH_THERAPIST
+        role = RoleType.SPEECH_THERAPIST
     async with async_session() as session:
-        new_user = insert(TGUser).values(user_id=user_id, role=role).on_conflict_do_update(
+        new_user = insert(TGUser).values(
+            user_id=user_id, role=role).on_conflict_do_update(
             constraint=TGUser.__table__.primary_key,
             set_={TGUser.role: role}
         )
@@ -29,12 +33,25 @@ async def chose_role(user_id, role_type):
 
 async def get_promocode(promo):
     """Получение пути файла промокода."""
-    async with async_session() as session:
-        result = await session.execute(
-            select(PromoCode.file_path).where(PromoCode.promocode == promo)
-        )
-        promocode_file_path = result.scalars().first()
-        return promocode_file_path
+    # async with async_session() as session:
+    #     result = await session.execute(
+    #         select(PromoCode.file_path).where(PromoCode.promocode == promo)
+    #     )
+    #     promocode_file_path = result.scalars().first()
+    #     return promocode_file_path
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f'{db_url}/promocodes/',
+            json={"promocode": promo}
+                ) as response:
+            data = await response.text()
+            json = await response.json()
+            print('')
+            print(f'response text {data}')
+            print('')
+            print(f'response json {json}')
+            print('')
+            return response
 
 
 async def get_admin_users():

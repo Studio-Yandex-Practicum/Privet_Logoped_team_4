@@ -1,10 +1,10 @@
-from typing import Any, Callable, Dict, Awaitable
-from aiogram import BaseMiddleware
-from aiogram.types import TelegramObject, Message, Update
-
 import os
 import sys
+from typing import Any, Awaitable, Callable, Dict
 
+from aiogram import BaseMiddleware
+from aiogram.types import Message, TelegramObject, Update
+from crud import get_promocode
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
@@ -13,9 +13,8 @@ parent_folder_path = os.path.abspath(
 )
 sys.path.append(parent_folder_path)
 
-from db.models import PromoCode, RoleType, TGUser, async_session # noqa
+# from db.models import PromoCode, RoleType, TGUser, async_session  # noqa
 
-from crud import get_promocode
 
 class PromocodeMiddleware(BaseMiddleware):
 

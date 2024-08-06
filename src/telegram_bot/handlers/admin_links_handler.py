@@ -16,7 +16,7 @@ parent_folder_path = os.path.abspath(
 )
 sys.path.append(parent_folder_path)
 
-from db.models import Link, async_session  # noqa
+# from db.models import Link, async_session  # noqa
 
 router = Router()
 

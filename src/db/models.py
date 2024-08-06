@@ -1,13 +1,13 @@
 import enum
 
-from sqlalchemy import Column, DateTime, Enum, Integer, Numeric, String, func, BigInteger
+from config import database_url
+from constants import LinkResourseType, RoleName
+from sqlalchemy import (BigInteger, Column, DateTime, Enum, Integer, Numeric,
+                        String, func)
 from sqlalchemy.ext.asyncio import (AsyncAttrs, AsyncSession,
                                     create_async_engine)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
-from .config import database_url
-from .constants import LinkResourseType, RoleName
 
 Base = declarative_base()
 

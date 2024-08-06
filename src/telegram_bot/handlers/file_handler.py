@@ -11,7 +11,7 @@ grand_parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(grand_parent_folder_path)
-from db.models import Link, LinkType, async_session # noqa
+# from db.models import Link, LinkType, async_session # noqa
 
 router = Router()
 
