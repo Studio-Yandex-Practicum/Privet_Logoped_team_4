@@ -6,7 +6,7 @@ from keyboards.keyboards import (parent_keyboard, role_keyboard,
                                  speech_therapist_keyboard)
 from sqlalchemy.dialects.postgresql import insert
 
-from ..config import db_url
+from ..config import api_url
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
@@ -34,7 +34,7 @@ async def role_handler(bot, message, UserStates):
         #     await session.commit()
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                f'{db_url}/tg_users/',
+                f'{api_url}/tg_users/',
                 json={"user_id": user_info.id, "role": role}
                     ) as response:
                 if response.status == 200:

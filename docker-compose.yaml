@@ -25,6 +25,7 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:root@db:5432/hello_speech_therapist
+      PYTHONUNBUFFERED: 1
 
   telegram_bot:
     env_file: .env

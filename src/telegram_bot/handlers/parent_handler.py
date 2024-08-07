@@ -13,7 +13,7 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')
 )
 sys.path.append(parent_folder_path)
-from config import db_url  # noqa
+from config import api_url  # noqa
 
 from crud import chose_role, get_user, send_notification  # noqa
 
@@ -31,11 +31,13 @@ async def parent_message(message: Message, bot: Bot, state: FSMContext):
     first_name = message.from_user.first_name
     async with aiohttp.ClientSession() as session:
         async with session.get(
-            f'{db_url}/tg_users/',
+            f'{api_url}/tg_users/',
             json={"user_id": user_id}
                 ) as response:
-            user = response
-            print(f'user {user}')
+            tg_user_get_data = await response.json()
+            print('')
+            print(f'tg_user_get_data {tg_user_get_data}')
+            print('')
     # user = await get_user(user_id)
     # if not user:
     #     await chose_role(user_id, role_type)
@@ -43,11 +45,14 @@ async def parent_message(message: Message, bot: Bot, state: FSMContext):
     # await chose_role(user_id, role_type)
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            f'{db_url}/tg_users/',
-            json={"user_id": user_id, "role": role_type}
+            f'{api_url}/tg_users/',
+            json={"user_id": user_id, "role": role_type, "is_admin": 0}
                 ) as response:
             if response.status == 200:
-                await message.reply('Пользователь успешно добавлен.')
+                tg_user_post_data = await response.json()
+                await message.reply(
+                    f'Пользователь успешно добавлен: {tg_user_post_data}'
+                )
             else:
                 await message.reply('Ошибка добавления пользователя.')
 

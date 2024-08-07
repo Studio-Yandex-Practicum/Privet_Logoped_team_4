@@ -1,13 +1,12 @@
 import os
 import sys
 
+import aiohttp
 import keyboard.keyboard as kb
 from aiogram import F, Router
 from aiogram.filters.state import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from sqlalchemy import delete
-from sqlalchemy.dialects.postgresql import insert
 
 from .state import AdminStates
 
@@ -15,6 +14,7 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
+from config import api_url  # noqa
 
 # from db.models import PromoCode, async_session  # noqa
 
@@ -56,22 +56,22 @@ async def add_promocode(message: Message, state: FSMContext):
         promocode = data['waiting_promocode']
         file_path = data['waiting_promocode_filepath']
 
-        try:
-            async with async_session() as session:
-                new_promocode = insert(PromoCode).values(
-                    promocode=promocode, file_path=file_path
-                )
-                await session.execute(new_promocode)
-                await session.commit()
-        except Exception:
-            await message.answer('Попробуйте еще раз.')
-        else:
-            await message.answer(
-                f'Промокод {promocode} успешно добавлен.',
-                reply_markup=kb.promocodes
-            )
-        finally:
-            await state.set_state(AdminStates.promocodes)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f'{api_url}/promocodes/',
+                json={
+                    "promocode": promocode, "file_path": file_path
+                }
+                    ) as response:
+                if response.status == 200:
+                    promocode_post_data = await response.json()
+                    await message.answer(
+                        f'Промокод "{promocode}" успешно добавлен.',
+                        reply_markup=kb.promocodes
+                    )
+                else:
+                    await message.answer('Попробуйте еще раз.')
+        await state.set_state(AdminStates.promocodes)
 
 
 @router.message(F.text == 'Удалить промокод')
@@ -101,18 +101,21 @@ async def delete_promocode(message: Message, state: FSMContext):
             )
             await state.set_state(AdminStates.promocodes)
         else:
-            try:
-                async with async_session() as session:
-                    delete_promocode = delete(PromoCode).where(
-                        PromoCode.promocode_id == promocode_id
-                    )
-                    await session.execute(delete_promocode)
-                    await session.commit()
-            except Exception:
-                await message.answer('Попробуйте еще раз.')
-            else:
-                await message.answer(
-                    'Промокод успешно удален.', reply_markup=kb.promocodes
-                )
+            async with aiohttp.ClientSession() as session:
+                async with session.delete(
+                    f'{api_url}/promocodes/',
+                    json={"promocode_id": promocode_id}
+                        ) as response:
+                    if response.status == 204:
+                        await message.answer(
+                            'Промокод успешно удален.',
+                            reply_markup=kb.promocodes
+                        )
+                    else:
+                        error_detail = await response.text()
+                        await message.answer(
+                            f'Ошибка: {response.status} - {error_detail}. '
+                            'Попробуйте еще раз.'
+                            )
         finally:
             await state.set_state(AdminStates.promocodes)

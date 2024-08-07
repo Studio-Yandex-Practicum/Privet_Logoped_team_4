@@ -2,7 +2,7 @@ import os
 import sys
 
 import aiohttp
-from config import db_url
+from config import api_url
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
@@ -41,17 +41,14 @@ async def get_promocode(promo):
     #     return promocode_file_path
     async with aiohttp.ClientSession() as session:
         async with session.get(
-            f'{db_url}/promocodes/',
+            f'{api_url}/promocodes/',
             json={"promocode": promo}
                 ) as response:
-            data = await response.text()
-            json = await response.json()
+            promocode_data = await response.json()
             print('')
-            print(f'response text {data}')
+            print(f'promocode_data {promocode_data}')
             print('')
-            print(f'response json {json}')
-            print('')
-            return response
+            return promocode_data
 
 
 async def get_admin_users():

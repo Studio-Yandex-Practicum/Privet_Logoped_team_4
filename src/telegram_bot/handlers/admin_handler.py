@@ -1,19 +1,24 @@
 import os
 import sys
 
+import aiohttp
 import keyboard.keyboard as kb
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from sqlalchemy import and_, select
 
 from .state import AdminStates
+
+# from sqlalchemy import and_, select
+
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
+from config import api_url  # noqa
+
 # from db.models import TGUser, async_session  # noqa
 
 router = Router()
@@ -23,17 +28,26 @@ router = Router()
 async def cmd_admin(message: Message, state: FSMContext):
     """Точка входа администратора."""
     user_id = message.from_user.id
-    async with async_session() as session:
-        result = await session.execute(
-            select(TGUser).where(
-                and_(
-                    TGUser.user_id == user_id,
-                    TGUser.is_admin == 1
-                    )
-                )
-        )
-        user = result.scalars().first()
-    if user:
+    # async with async_session() as session:
+    #     result = await session.execute(
+    #         select(TGUser).where(
+    #             and_(
+    #                 TGUser.user_id == user_id,
+    #                 TGUser.is_admin == 1
+    #                 )
+    #             )
+    #     )
+    #     user = result.scalars().first()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f'{api_url}/tg_users/',
+            json={"user_id": user_id, "is_admin": 1}
+                ) as response:
+            admin_user = await response.json()
+            print('')
+            print(f'admin_user {admin_user}')
+            print('')
+    if admin_user:
         await state.set_state(AdminStates.admin)
         await message.answer(
             'Здравствуйте! Вас приветствует бот "Привет, Логопед". '

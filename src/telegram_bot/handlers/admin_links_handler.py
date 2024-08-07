@@ -1,6 +1,7 @@
 import os
 import sys
 
+import aiohttp
 import keyboard.keyboard as kb
 from aiogram import F, Router
 from aiogram.filters.state import StateFilter
@@ -15,6 +16,7 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
+from config import api_url  # noqa
 
 # from db.models import Link, async_session  # noqa
 
@@ -103,23 +105,23 @@ async def add_link(message: Message, state: FSMContext):
         link = data['waiting_link']
         link_to_role = data['waiting_link_to_role']
 
-        try:
-            async with async_session() as session:
-                new_link = insert(Link).values(
-                    link=link, link_name=link_name,
-                    link_type=link_type, to_role=link_to_role
-                )
-                await session.execute(new_link)
-                await session.commit()
-        except Exception:
-            await message.answer('Попробуйте еще раз.')
-        else:
-            await message.answer(
-                f'Ссылка "{link_name}" успешно добавлена.',
-                reply_markup=kb.links
-            )
-        finally:
-            await state.set_state(AdminStates.links)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f'{api_url}/links/',
+                json={
+                    "link": link, "link_name": link_name,
+                    "link_type": link_type, "to_role": link_to_role
+                }
+                    ) as response:
+                if response.status == 200:
+                    link_post_data = await response.json()
+                    await message.answer(
+                        f'Ссылка "{link_name}" успешно добавлена.',
+                        reply_markup=kb.links
+                    )
+                else:
+                    await message.answer('Попробуйте еще раз.')
+        await state.set_state(AdminStates.links)
 
 
 @router.message(F.text == 'Удалить ссылку')
@@ -149,18 +151,19 @@ async def delete_link(message: Message, state: FSMContext):
             )
             await state.set_state(AdminStates.links)
         else:
-            try:
-                async with async_session() as session:
-                    delete_link = delete(Link).where(
-                        Link.link_id == link_id
-                    )
-                    await session.execute(delete_link)
-                    await session.commit()
-            except Exception:
-                await message.answer('Попробуйте еще раз.')
-            else:
-                await message.answer(
-                    'Ссылка успешно удалена.', reply_markup=kb.links
-                )
-        finally:
+            async with aiohttp.ClientSession() as session:
+                async with session.delete(
+                    f'{api_url}/links/',
+                    json={"link_id": link_id}
+                        ) as response:
+                    if response.status == 204:
+                        await message.answer(
+                            'Ссылка успешно удалена.', reply_markup=kb.links
+                        )
+                    else:
+                        error_detail = await response.text()
+                        await message.answer(
+                            f'Ошибка: {response.status} - {error_detail}. '
+                            'Попробуйте еще раз.'
+                            )
             await state.set_state(AdminStates.links)
