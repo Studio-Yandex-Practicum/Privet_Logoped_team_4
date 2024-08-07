@@ -26,9 +26,9 @@ def upgrade() -> None:
     sa.Column('button_name', sa.String(length=100), nullable=False),
     sa.Column('button_type', sa.Enum('TEXT', 'GROUP', 'FILE', 'MAILING', 'ADMIN_MESSAGE', 'NOTIFICATION', name='buttontype'), nullable=False),
     sa.Column('text', sa.Text(), nullable=False),
-    sa.Column('file_path', sa.String(length=100), nullable=False),
+    sa.Column('file_path', sa.Text(), nullable=False),
     sa.Column('to_role', ENUM(create_type=False, name='roletype'), nullable=True),
-    sa.PrimaryKeyConstraint('button_id'),
+    sa.PrimaryKeyConstraint('button_id', name='pk_buttons'),
     sa.UniqueConstraint('button_name')
     )
     # ### end Alembic commands ###

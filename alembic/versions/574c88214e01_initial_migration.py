@@ -32,7 +32,7 @@ def upgrade() -> None:
     op.create_table('promocodes',
     sa.Column('promocode_id', sa.Integer(), nullable=False),
     sa.Column('promocode', sa.String(length=100), nullable=False),
-    sa.Column('file_path', sa.String(length=100), nullable=False),
+    sa.Column('file_path', sa.Text(), nullable=False),
     sa.PrimaryKeyConstraint('promocode_id'),
     sa.UniqueConstraint('promocode')
     )

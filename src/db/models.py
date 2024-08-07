@@ -101,9 +101,9 @@ class Button(AsyncAttrs, Base):
     text = Column(Text(), nullable=False)
     file_path = Column(String(100), nullable=False)
 
-    to_role = Column(Enum(RoleType))
-    parent_button_id = ForeignKey("parent_table.id")
-    children = relationship("Button", cascade="all, delete-orphan")
+    to_role = Column(Enum(RoleType), nullable=True)
+    parent_button_id = Column(Integer, ForeignKey("buttons.button_id"))
+    parent_button = relationship("Button", remote_side=[button_id])
 
 
 engine = create_async_engine(database_url, echo=False)
