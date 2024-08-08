@@ -12,3 +12,4 @@ class Level(StatesGroup):
     therapist = State()
     role_chose = State()
     waiting_for_message = State()
+    awaiting_admin_reply = State()

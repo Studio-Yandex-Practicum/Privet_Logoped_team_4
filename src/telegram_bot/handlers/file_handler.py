@@ -75,9 +75,12 @@ async def forward_to_admins(message: Message, state: FSMContext):
 
     for admin in admins:
         try:
+            reply_button = InlineKeyboardButton(text="Ответить в ЛС", callback_data=f"reply_to_{user_id}")
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[reply_button]])
             sent_message = await message.bot.send_message(
                 admin.user_id,
-                f"Новое сообщение от {user_name} (ID: {user_id}):\n{user_message}",
+                f"Новое сообщение от {user_name}:\n{user_message}",
+                reply_markup=keyboard
             )
             await sent_message.pin()
             await sent_message.bot.set_chat_administrator_custom_title(sent_message.chat.id, f"user_{user_id}")
@@ -87,11 +90,21 @@ async def forward_to_admins(message: Message, state: FSMContext):
     await message.answer("Ваше сообщение отправлено логопедам.")
     await state.clear()
 
+@router.callback_query(lambda c: c.data.startswith("reply_to_"))
+async def handle_reply_callback(callback_query: CallbackQuery, state: FSMContext):
+    user_id = callback_query.data.split('_')[-1]
 
-@router.message(F.reply_to_message)
-async def handle_admin_reply(message: Message):
-    if(message.reply_to_message):
-        user_id = int(message.reply_to_message.text.split('(ID: ')[1].split('):')[0])
+    await state.update_data(reply_to_user_id=user_id)
+
+    await callback_query.message.answer("Введите текст ответа пользователю:")
+    await state.set_state(Level.awaiting_admin_reply)
+
+@router.message(Level.awaiting_admin_reply)
+async def send_reply_to_user(message: Message, state: FSMContext):
+    data = await state.get_data()
+    user_id = data.get('reply_to_user_id')
+
+    if user_id:
         try:
             await message.bot.send_message(chat_id=user_id, text=f"Ответ от администратора:\n{message.text}")
             await message.answer("Ответ отправлен пользователю.")
@@ -100,3 +113,4 @@ async def handle_admin_reply(message: Message):
     else:
         await message.answer("Не удалось определить пользователя для ответа.")
 
+    await state.clear()
