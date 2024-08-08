@@ -61,3 +61,7 @@ class ButtonAddTypeCallback(CallbackData, prefix="button_add2"):
 
 class ButtonAddFileCallback(CallbackData, prefix="button_file"):
     button_id: int
+
+
+class VisitButtonCallback(CallbackData, prefix="visit_button"):
+    button_id: int
