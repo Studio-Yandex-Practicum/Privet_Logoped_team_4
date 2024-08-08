@@ -1,4 +1,7 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
 
 
 main = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Родитель')],
