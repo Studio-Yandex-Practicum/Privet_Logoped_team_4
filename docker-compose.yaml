@@ -2,22 +2,6 @@ version: '3'
 
 services:
 
-  # telegram_bot:
-  #   env_file: .env
-  #   build:
-  #     context: src/telegram_bot
-  #     dockerfile: Dockerfile
-  #   depends_on:
-  #     - db
-
-  # vk_bot:
-  #   env_file: .env
-  #   build:
-  #     context: src/vk_bot
-  #     dockerfile: Dockerfile
-  #   depends_on:
-  #     - db
-
   db:
     image: postgres
     restart: always

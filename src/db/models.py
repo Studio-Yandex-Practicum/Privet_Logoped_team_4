@@ -98,8 +98,8 @@ class Button(AsyncAttrs, Base):
     button_id = Column(Integer, primary_key=True)
     button_name = Column(String(100), unique=True, nullable=False)
     button_type = Column(Enum(ButtonType), nullable=False)
-    text = Column(Text(), nullable=False)
-    file_path = Column(String(100), nullable=False)
+    text = Column(Text(), nullable=True)
+    file_path = Column(String(100), nullable=True)
 
     to_role = Column(Enum(RoleType), nullable=True)
     parent_button_id = Column(Integer, ForeignKey("buttons.button_id"))

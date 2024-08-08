@@ -1,11 +1,13 @@
 from aiogram.types import (
-    KeyboardButton,
-    ReplyKeyboardMarkup,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
 )
-
-from callbacks import PromocodeDeleteCallback
+from callbacks import (
+    ButtonGroupCallback,
+    PromocodeDeleteCallback,
+)
 
 main = ReplyKeyboardMarkup(
     keyboard=[
@@ -76,7 +78,10 @@ admin = InlineKeyboardMarkup(
     inline_keyboard=[
         [
             InlineKeyboardButton(text="Промокоды", callback_data="promocodes"),
-            InlineKeyboardButton(text="Кнопки", callback_data="buttons"),
+            InlineKeyboardButton(
+                text="Кнопки",
+                callback_data=ButtonGroupCallback(button_id=None).pack(),
+            ),
         ],
     ],
 )

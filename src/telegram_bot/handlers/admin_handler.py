@@ -1,15 +1,13 @@
 import os
 import sys
+from typing import Union
 
 import keyboard.keyboard as kb
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy import and_, select
-
-from .state import AdminStates
-from typing import Union
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../..")

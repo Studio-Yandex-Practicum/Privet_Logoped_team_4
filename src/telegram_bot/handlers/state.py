@@ -3,6 +3,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 class Level(StatesGroup):
     """Стейты пользователя."""
+
     main = State()
     parent = State()
     faq = State()
@@ -12,6 +13,7 @@ class Level(StatesGroup):
 
 class AdminStates(StatesGroup):
     """Стейты администратора."""
+
     admin = State()
     links = State()
     promocodes = State()
@@ -25,3 +27,9 @@ class AdminStates(StatesGroup):
     delete_promocode = State()
     upload_link_file = State()
     upload_promocode_file = State()
+    waiting_button_file = State()
+    waiting_on_button_text = State()
+    waiting_button_text = State()
+    waiting_on_button_text_create = State()
+    waiting_button_text_create = State()
+    waiting_button_file_create = State()
