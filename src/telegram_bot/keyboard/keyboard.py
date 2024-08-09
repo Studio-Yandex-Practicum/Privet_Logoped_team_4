@@ -134,7 +134,7 @@ async def get_start_keyboard(
             select(Button).where(
                 and_(
                     Button.parent_button_id == parent_button_id,
-                    or_(Button.to_role == role, Button.to_role == None),
+                    or_(Button.to_role == role, Button.to_role.is_not(None)),
                 )
             )
         )
