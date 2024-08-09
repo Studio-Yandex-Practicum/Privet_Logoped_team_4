@@ -16,8 +16,6 @@ parent_folder_path = os.path.abspath(
 sys.path.append(parent_folder_path)
 from config import api_url  # noqa
 
-# from db.models import PromoCode, async_session  # noqa
-
 router = Router()
 
 
@@ -63,14 +61,17 @@ async def add_promocode(message: Message, state: FSMContext):
                     "promocode": promocode, "file_path": file_path
                 }
                     ) as response:
+                data = await response.json()
+                print('')
+                print(f'data {data}')
+                print('')
                 if response.status == 200:
-                    promocode_post_data = await response.json()
                     await message.answer(
                         f'Промокод "{promocode}" успешно добавлен.',
                         reply_markup=kb.promocodes
                     )
                 else:
-                    await message.answer('Попробуйте еще раз.')
+                    await message.answer('Ошибка. Попробуйте еще раз.')
         await state.set_state(AdminStates.promocodes)
 
 
@@ -103,8 +104,7 @@ async def delete_promocode(message: Message, state: FSMContext):
         else:
             async with aiohttp.ClientSession() as session:
                 async with session.delete(
-                    f'{api_url}/promocodes/',
-                    json={"promocode_id": promocode_id}
+                    f'{api_url}/promocodes/{promocode_id}'
                         ) as response:
                     if response.status == 204:
                         await message.answer(
@@ -112,10 +112,6 @@ async def delete_promocode(message: Message, state: FSMContext):
                             reply_markup=kb.promocodes
                         )
                     else:
-                        error_detail = await response.text()
-                        await message.answer(
-                            f'Ошибка: {response.status} - {error_detail}. '
-                            'Попробуйте еще раз.'
-                            )
+                        await message.answer('Ошибка. Попробуйте еще раз.')
         finally:
             await state.set_state(AdminStates.promocodes)

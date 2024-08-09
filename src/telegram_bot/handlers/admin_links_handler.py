@@ -7,8 +7,6 @@ from aiogram import F, Router
 from aiogram.filters.state import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from sqlalchemy import delete
-from sqlalchemy.dialects.postgresql import insert
 
 from .state import AdminStates
 
@@ -17,8 +15,6 @@ parent_folder_path = os.path.abspath(
 )
 sys.path.append(parent_folder_path)
 from config import api_url  # noqa
-
-# from db.models import Link, async_session  # noqa
 
 router = Router()
 
@@ -114,13 +110,12 @@ async def add_link(message: Message, state: FSMContext):
                 }
                     ) as response:
                 if response.status == 200:
-                    link_post_data = await response.json()
                     await message.answer(
                         f'Ссылка "{link_name}" успешно добавлена.',
                         reply_markup=kb.links
                     )
                 else:
-                    await message.answer('Попробуйте еще раз.')
+                    await message.answer('Ошибка. Попробуйте еще раз.')
         await state.set_state(AdminStates.links)
 
 
@@ -153,17 +148,12 @@ async def delete_link(message: Message, state: FSMContext):
         else:
             async with aiohttp.ClientSession() as session:
                 async with session.delete(
-                    f'{api_url}/links/',
-                    json={"link_id": link_id}
+                    f'{api_url}/links/{link_id}'
                         ) as response:
                     if response.status == 204:
                         await message.answer(
                             'Ссылка успешно удалена.', reply_markup=kb.links
                         )
                     else:
-                        error_detail = await response.text()
-                        await message.answer(
-                            f'Ошибка: {response.status} - {error_detail}. '
-                            'Попробуйте еще раз.'
-                            )
+                        await message.answer('Ошибка. Попробуйте еще раз.')
             await state.set_state(AdminStates.links)

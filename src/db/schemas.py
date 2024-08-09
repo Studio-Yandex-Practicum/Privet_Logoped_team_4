@@ -14,8 +14,12 @@ class UserGet(BaseModel):
     is_admin: Optional[int] = 0
 
 
+class AdminRequest(BaseModel):
+    user_id: int
+    is_admin: int = 1
+
+
 class LinkCreate(BaseModel):
-    link_id: Optional[int]
     link: str
     link_name: str
     link_type: str
@@ -23,12 +27,10 @@ class LinkCreate(BaseModel):
 
 
 class PromocodeCreate(BaseModel):
-    promocode_id: Optional[int]
     promocode: str
     file_path: str
 
 
 class PromocodeGetFilepath(BaseModel):
-    promocode_id: Optional[int]
     promocode: str
     file_path: Optional[str]

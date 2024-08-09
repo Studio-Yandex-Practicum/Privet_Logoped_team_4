@@ -1,9 +1,9 @@
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, status
 from models import (Base, Link, PromoCode, RoleType, TGUser, VKUser,
                     async_session, engine)
-from schemas import (LinkCreate, PromocodeCreate, PromocodeGetFilepath,
-                     UserCreate, UserGet)
+from schemas import (AdminRequest, LinkCreate, PromocodeCreate,
+                     PromocodeGetFilepath, UserCreate, UserGet)
 from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import NoResultFound
@@ -90,10 +90,17 @@ async def create_link(
     stmt = insert(Link).values(
         link=link.link, link_name=link.link_name,
         link_type=link.link_type, to_role=link.to_role
+        ).returning(
+            Link.link,
+            Link.link_name,
+            Link.link_type,
+            Link.to_role
         )
     result = await db.execute(stmt)
     await db.commit()
     new_link = result.fetchone()
+    if new_link is None:
+        raise HTTPException(status_code=500, detail='Ошибка создания ссылки')
     response_link = LinkCreate(
         link=new_link.link,
         link_name=new_link.link_name,
@@ -110,18 +117,32 @@ async def create_promocode(
         ):
     stmt = insert(PromoCode).values(
         promocode=promocode.promocode, file_path=promocode.file_path
+        ).returning(
+            PromoCode.promocode,
+            PromoCode.file_path
         )
     result = await db.execute(stmt)
     await db.commit()
     new_promocode = result.fetchone()
+    if new_promocode is None:
+        raise HTTPException(
+            status_code=500,
+            detail='Ошибка создания промокода'
+        )
     response_promocode = PromocodeCreate(
         promocode=new_promocode.promocode,
         file_path=new_promocode.file_path
     )
+    print('')
+    print(f'response_promocode {response_promocode}')
+    print('')
     return response_promocode
 
 
-@app.delete('/links/{link_id}')
+@app.delete(
+    '/links/{link_id}',
+    status_code=status.HTTP_204_NO_CONTENT
+)
 async def delete_link(
     link_id: int,
     db: AsyncSession = Depends(get_db)
@@ -139,7 +160,10 @@ async def delete_link(
     return
 
 
-@app.delete('/promocodes/{promocode_id}')
+@app.delete(
+    '/promocodes/{promocode_id}',
+    status_code=status.HTTP_204_NO_CONTENT
+)
 async def delete_promocode(
     promocode_id: int,
     db: AsyncSession = Depends(get_db)
@@ -157,88 +181,118 @@ async def delete_promocode(
     return
 
 
-@app.get('/tg_users/')
-async def get_tg_users(
-    skip: int = 0, limit: int = 10,
+@app.post('/tg_users/admin/', response_model=UserGet)
+async def get_tg_admin(
+    request: AdminRequest,
     db: AsyncSession = Depends(get_db)
         ):
-    result = await db.execute(select(TGUser).offset(skip).limit(limit))
-    tg_users = result.scalars().all()
-    return tg_users
+    stmt = select(TGUser).where(
+        TGUser.user_id == request.user_id,
+        TGUser.is_admin == request.is_admin
+    )
+    result = await db.execute(stmt)
+    admin = result.scalar_one_or_none()
+    if admin is None:
+        raise HTTPException(status_code=404, detail='Администратор не найден')
+    response_user = UserCreate(
+        user_id=admin.user_id,
+        role=admin.role,
+        is_admin=admin.is_admin
+    )
+    return response_user
 
 
-@app.get('/vk_users/')
-async def get_vk_users(
-    skip: int = 0, limit: int = 10,
+@app.get('/tg_users/admins/{is_admin}', response_model=list[UserGet])
+async def get_tg_admins(
+    is_admin: int,
     db: AsyncSession = Depends(get_db)
         ):
-    result = await db.execute(select(VKUser).offset(skip).limit(limit))
-    vk_users = result.scalars().all()
-    return vk_users
+    stmt = select(TGUser).where(
+        TGUser.is_admin == is_admin
+    )
+    result = await db.execute(stmt)
+    admins = result.scalars().all()
+    return admins
 
 
-@app.get('/links/')
-async def get_links(
-    skip: int = 0, limit: int = 10,
+# @app.get('/tg_users/')
+# async def get_tg_users(
+#     skip: int = 0, limit: int = 10,
+#     db: AsyncSession = Depends(get_db)
+#         ):
+#     result = await db.execute(select(TGUser).offset(skip).limit(limit))
+#     tg_users = result.scalars().all()
+#     return tg_users
+
+
+# @app.get('/vk_users/')
+# async def get_vk_users(
+#     skip: int = 0, limit: int = 10,
+#     db: AsyncSession = Depends(get_db)
+#         ):
+#     result = await db.execute(select(VKUser).offset(skip).limit(limit))
+#     vk_users = result.scalars().all()
+#     return vk_users
+
+
+# @app.get('/links/')
+# async def get_links(
+#     skip: int = 0, limit: int = 10,
+#     db: AsyncSession = Depends(get_db)
+#         ):
+#     result = await db.execute(select(Link).offset(skip).limit(limit))
+#     links = result.scalars().all()
+#     return links
+
+
+@app.get('/links/{file_path}')
+async def get_links_from_file_path(
+    file_path: str,
     db: AsyncSession = Depends(get_db)
         ):
-    result = await db.execute(select(Link).offset(skip).limit(limit))
+    result = await db.execute(select(Link).where(Link.file_path == file_path))
     links = result.scalars().all()
     return links
 
 
-@app.get('/promocodes/')
-async def get_promocodes(
-    skip: int = 0, limit: int = 10,
-    db: AsyncSession = Depends(get_db)
-        ):
-    result = await db.execute(select(PromoCode).offset(skip).limit(limit))
-    promocodes = result.scalars().all()
-    return promocodes
+# @app.get('/promocodes/')
+# async def get_promocodes(
+#     skip: int = 0, limit: int = 10,
+#     db: AsyncSession = Depends(get_db)
+#         ):
+#     result = await db.execute(select(PromoCode).offset(skip).limit(limit))
+#     promocodes = result.scalars().all()
+#     return promocodes
 
 
 @app.get('/tg_users/{user_id}', response_model=UserGet)
-async def get_tg_user(tg_user: UserGet, db: AsyncSession = Depends(get_db)):
+async def get_tg_user(user_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(TGUser).where(
-            TGUser.user_id == tg_user.user_id,
-            TGUser.is_admin == tg_user.is_admin
-        ).returning(
-            TGUser.user_id,
-            TGUser.role,
-            TGUser.ia_admin
-        )
+        select(TGUser).where(TGUser.user_id == user_id)
     )
-    tg_user_data = result.fetchone()
+    tg_user_data = result.scalar_one_or_none()
     if tg_user_data is None:
         raise HTTPException(status_code=404, detail='Пользователь не найден')
     response_tg_user = UserGet(
         user_id=tg_user_data.user_id,
         role=tg_user_data.role,
-        ia_admin=tg_user_data.ia_admin
+        is_admin=tg_user_data.is_admin
     )
     return response_tg_user
 
 
 @app.get('/vk_users/{user_id}', response_model=UserGet)
-async def get_vk_user(vk_user: UserGet, db: AsyncSession = Depends(get_db)):
+async def get_vk_user(user_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(VKUser).where(
-            VKUser.user_id == vk_user.user_id,
-            VKUser.is_admin == vk_user.is_admin
-        ).returning(
-            VKUser.user_id,
-            VKUser.role,
-            VKUser.ia_admin
-        )
+        select(VKUser).where(VKUser.user_id == user_id)
     )
-    vk_user_data = result.fetchone()
+    vk_user_data = result.scalar_one_or_none()
     if vk_user_data is None:
         raise HTTPException(status_code=404, detail='Пользователь не найден')
     response_vk_user = UserGet(
         user_id=vk_user_data.user_id,
         role=vk_user_data.role,
-        ia_admin=vk_user_data.ia_admin
+        is_admin=vk_user_data.is_admin
     )
     return response_vk_user
 
@@ -248,7 +302,7 @@ async def get_link(link_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Link).where(Link.link_id == link_id))
     link = result.scalar_one_or_none()
     if link is None:
-        raise HTTPException(status_code=404, detail='Ссылка не найден')
+        raise HTTPException(status_code=404, detail='Ссылка не найдена')
     return link
 
 
@@ -257,14 +311,10 @@ async def get_promocode_filepath(
     promocode: str, db: AsyncSession = Depends(get_db)
         ):
     result = await db.execute(select(PromoCode.file_path).where(
-        PromoCode.promocode == promocode.promocode
-        ).returning(
-            PromoCode.promocode_id,
-            PromoCode.promocode,
-            PromoCode.file_path
+        PromoCode.promocode == promocode
         )
     )
-    promocode_data = result.fetchone()
+    promocode_data = result.scalar_one_or_none()
     if promocode_data is None:
         raise HTTPException(status_code=404, detail='Промокод не найден')
     response_promocode = PromocodeGetFilepath(

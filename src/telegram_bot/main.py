@@ -16,13 +16,11 @@ async def main():
     bot = Bot(token=tg_token)
     dp = Dispatcher()
     # dp.update.outer_middleware(PromocodeMiddleware())
-    # dp.include_routers(
-    #     admin_links_router, admin_promocodes_router, admin_router,
-    #     admin_upload_router, faq_router, file_router, parent_router,
-    #     start_router, therapist_router
-    # )
     dp.include_routers(
-        faq_router, parent_router, start_router, therapist_router
+        start_router, admin_router, admin_links_router,
+        admin_promocodes_router, admin_upload_router,
+        faq_router, file_router,
+        parent_router, therapist_router
     )
     await dp.start_polling(bot)
 
