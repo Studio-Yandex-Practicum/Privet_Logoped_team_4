@@ -9,26 +9,21 @@ async def chose_role(user_id, role_type):
             f'{api_url}/tg_users/',
             json={"user_id": user_id, "role": role_type, "is_admin": 0}
                 ) as response:
-            return response
+            if response.status == 200:
+                user_data = await response.json()
+                return user_data
+            else:
+                return
 
 
 async def get_promocode(promo):
     """Получение пути файла промокода."""
-    # async with async_session() as session:
-    #     result = await session.execute(
-    #         select(PromoCode.file_path).where(PromoCode.promocode == promo)
-    #     )
-    #     promocode_file_path = result.scalars().first()
-    #     return promocode_file_path
     async with aiohttp.ClientSession() as session:
         async with session.get(
             f'{api_url}/promocodes/{promo}'
                 ) as response:
             if response.status == 200:
                 promocode_data = await response.json()
-                print('')
-                print(f'promocode_data {promocode_data}')
-                print('')
                 return promocode_data
             else:
                 return
@@ -37,11 +32,8 @@ async def get_promocode(promo):
 async def get_admin_users():
     """Получение id всех админов."""
     async with aiohttp.ClientSession() as session:
-        async with session.get(f'{api_url}/tg_users/admins/{1}') as response:
+        async with session.get(f'{api_url}/tg_users/admins/') as response:
             admins_ids = await response.json()
-            print('')
-            print(f'admins_ids {admins_ids}')
-            print('')
         return admins_ids
 
 

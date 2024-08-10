@@ -47,7 +47,6 @@ async def add_promocode(message: Message, state: FSMContext):
         await message.answer(
             'Отмена добавления промокода.', reply_markup=kb.promocodes
         )
-        await state.set_state(AdminStates.promocodes)
     else:
         await state.update_data(waiting_promocode_filepath=message.text)
         data = await state.get_data()
@@ -61,18 +60,17 @@ async def add_promocode(message: Message, state: FSMContext):
                     "promocode": promocode, "file_path": file_path
                 }
                     ) as response:
-                data = await response.json()
-                print('')
-                print(f'data {data}')
-                print('')
                 if response.status == 200:
                     await message.answer(
                         f'Промокод "{promocode}" успешно добавлен.',
                         reply_markup=kb.promocodes
                     )
                 else:
-                    await message.answer('Ошибка. Попробуйте еще раз.')
-        await state.set_state(AdminStates.promocodes)
+                    await message.answer(
+                        'Ошибка. Попробуйте еще раз.',
+                        reply_markup=kb.links
+                    )
+    await state.set_state(AdminStates.promocodes)
 
 
 @router.message(F.text == 'Удалить промокод')
@@ -91,7 +89,6 @@ async def delete_promocode(message: Message, state: FSMContext):
         await message.answer(
             'Отмена удаления промокода.', reply_markup=kb.links
         )
-        await state.set_state(AdminStates.promocodes)
     else:
         try:
             promocode_id = int(message.text)
@@ -100,7 +97,6 @@ async def delete_promocode(message: Message, state: FSMContext):
                 'Введены некорректные данные. Пожалуйста, повторите попытку.',
                 reply_markup=kb.promocodes
             )
-            await state.set_state(AdminStates.promocodes)
         else:
             async with aiohttp.ClientSession() as session:
                 async with session.delete(
@@ -112,6 +108,8 @@ async def delete_promocode(message: Message, state: FSMContext):
                             reply_markup=kb.promocodes
                         )
                     else:
-                        await message.answer('Ошибка. Попробуйте еще раз.')
-        finally:
-            await state.set_state(AdminStates.promocodes)
+                        await message.answer(
+                            'Ошибка. Попробуйте еще раз.',
+                            reply_markup=kb.promocodes
+                        )
+    await state.set_state(AdminStates.promocodes)

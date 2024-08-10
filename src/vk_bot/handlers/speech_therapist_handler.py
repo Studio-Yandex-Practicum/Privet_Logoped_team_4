@@ -1,25 +1,28 @@
 import os
 import sys
 
+import aiohttp
 from keyboards.keyboards import (cancel_keyboard, role_keyboard,
                                  speech_therapist_keyboard)
-from sqlalchemy import select
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from db.models import PromoCode, async_session  # noqa
+from config import api_url  # noqa
 
 
 async def get_promocode(promo):
     """Получение пути файла промокода."""
-    async with async_session() as session:
-        result = await session.execute(
-            select(PromoCode.file_path).where(PromoCode.promocode == promo)
-        )
-        promocode_file_path = result.scalars().first()
-        return promocode_file_path
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f'{api_url}/promocodes/{promo}'
+                ) as response:
+            if response.status == 200:
+                promocode_data = await response.json()
+                return promocode_data
+            else:
+                return
 
 
 async def speech_therapist_handler(bot, message, UserStates):

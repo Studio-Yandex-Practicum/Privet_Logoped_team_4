@@ -1,66 +1,53 @@
 import argparse
 import asyncio
 
-from sqlalchemy import update
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+import aiohttp
+from environs import Env
 
-from db.config import database_url
-from db.models import RoleType, TGUser, VKUser
+env = Env()
+env.read_env()
 
-engine = create_async_engine(database_url, echo=False)
+api_url = env("API_EXT_URL")
 
 
 async def promote_to_admin(user_id, platform):
     """Добавляет пользователя, как администратора для указанной платформы."""
-    async_session = sessionmaker(
-        bind=engine,
-        class_=AsyncSession,
-        expire_on_commit=False
-    )
-    if platform == 'telegram':
-        model = TGUser
-    else:
-        model = VKUser
-    async with async_session() as session:
-        async with session.begin():
-            new_admin = insert(model).values(
-                user_id=user_id, role=RoleType.SPEECH_THERAPIST, is_admin=1
-                ).on_conflict_do_update(
-                constraint=model.__table__.primary_key,
-                set_={model.is_admin: 1}
-            )
-            await session.execute(new_admin)
-            await session.commit()
-        print(
-            f'Пользователь с ID {user_id} на платформе '
-            f'{platform} назначен администратором.'
-        )
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            f'{api_url}/admins/',
+            json={"user_id": user_id, "platform": platform}
+                ) as response:
+            if response.status == 200:
+                print(
+                    f'Пользователь с ID {user_id} на платформе '
+                    f'{platform} назначен администратором.'
+                )
+            else:
+                error_detail = await response.text()
+                print(
+                    'Ошибка добавления администратора: '
+                    f'{response.status} - {error_detail}'
+                )
 
 
 async def demote_admin(user_id, platform):
     """Снимает у пользователя статус администратора для указанной платформы."""
-    async_session = sessionmaker(
-        bind=engine,
-        class_=AsyncSession,
-        expire_on_commit=False
-    )
-    if platform == 'telegram':
-        model = TGUser
-    else:
-        model = VKUser
-    async with async_session() as session:
-        async with session.begin():
-            delete_admin = update(model).where(
-                model.user_id == user_id
-                ).values(is_admin=0)
-            await session.execute(delete_admin)
-            await session.commit()
-        print(
-            f'У пользователя с ID {user_id} на платформе '
-            f'{platform} снят статус администратора.'
-        )
+    async with aiohttp.ClientSession() as session:
+        async with session.patch(
+            f'{api_url}/admins/',
+            json={"user_id": user_id, "platform": platform}
+                ) as response:
+            if response.status == 200:
+                print(
+                    f'У пользователя с ID {user_id} на платформе '
+                    f'{platform} снят статус администратора.'
+                )
+            else:
+                error_detail = await response.text()
+                print(
+                    'Ошибка удаления администратора: '
+                    f'{response.status} - {error_detail}'
+                )
 
 
 async def main():

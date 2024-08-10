@@ -2,9 +2,8 @@ import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, status
 from models import (Base, Link, PromoCode, RoleType, TGUser, VKUser,
                     async_session, engine)
-from schemas import (AdminRequest, LinkCreate, PromocodeCreate,
-                     PromocodeGetFilepath, UserCreate, UserGet)
-from sqlalchemy import delete, select
+from schemas import Admin, LinkCreate, PromocodeCreate, UserCreate, UserGet
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -133,62 +132,69 @@ async def create_promocode(
         promocode=new_promocode.promocode,
         file_path=new_promocode.file_path
     )
-    print('')
-    print(f'response_promocode {response_promocode}')
-    print('')
     return response_promocode
 
 
-@app.delete(
-    '/links/{link_id}',
-    status_code=status.HTTP_204_NO_CONTENT
-)
-async def delete_link(
-    link_id: int,
+@app.post('/admins/', response_model=UserCreate)
+async def promote_user_to_admin(
+    user: Admin,
     db: AsyncSession = Depends(get_db)
         ):
-    stmt = delete(Link).where(
-        Link.link_id == link_id
+    if user.platform == 'telegram':
+        model = TGUser
+    else:
+        model = VKUser
+    stmt = insert(model).values(
+        user_id=user.user_id, role=RoleType.SPEECH_THERAPIST, is_admin=1
+        ).on_conflict_do_update(
+        constraint=model.__table__.primary_key,
+        set_={model.is_admin: 1}
+    ).returning(model.user_id, model.role, model.is_admin)
+    result = await db.execute(stmt)
+    await db.commit()
+    new_admin = result.fetchone()
+    if new_admin is None:
+        raise HTTPException(status_code=404, detail='Пользователь не найден')
+    response_admin = UserCreate(
+        user_id=new_admin.user_id,
+        role=new_admin.role,
+        is_admin=new_admin.is_admin
     )
-    try:
-        result = await db.execute(stmt)
-        await db.commit()
-        if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail='Ссылка не найдена')
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail='Ссылка не найдена')
-    return
+    return response_admin
 
 
-@app.delete(
-    '/promocodes/{promocode_id}',
-    status_code=status.HTTP_204_NO_CONTENT
-)
-async def delete_promocode(
-    promocode_id: int,
+@app.patch('/admins/', response_model=UserCreate)
+async def demote_admin_to_user(
+    user: Admin,
     db: AsyncSession = Depends(get_db)
         ):
-    stmt = delete(PromoCode).where(
-        PromoCode.link_id == promocode_id
+    if user.platform == 'telegram':
+        model = TGUser
+    else:
+        model = VKUser
+    stmt = update(model).where(model.user_id == user.user_id).values(
+        is_admin=0).returning(model.user_id, model.role, model.is_admin)
+    result = await db.execute(stmt)
+    await db.commit()
+    updated_user = result.fetchone()
+    if updated_user is None:
+        raise HTTPException(status_code=404, detail='Администратор не найден')
+    response_user = UserCreate(
+        user_id=updated_user.user_id,
+        role=updated_user.role,
+        is_admin=updated_user.is_admin
     )
-    try:
-        result = await db.execute(stmt)
-        await db.commit()
-        if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail='Промокод не найдена')
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail='Промокод не найдена')
-    return
+    return response_user
 
 
-@app.post('/tg_users/admin/', response_model=UserGet)
+@app.get('/tg_users/admins/{user_id}', response_model=UserGet)
 async def get_tg_admin(
-    request: AdminRequest,
+    user_id: int,
     db: AsyncSession = Depends(get_db)
         ):
     stmt = select(TGUser).where(
-        TGUser.user_id == request.user_id,
-        TGUser.is_admin == request.is_admin
+        TGUser.user_id == user_id,
+        TGUser.is_admin == 1
     )
     result = await db.execute(stmt)
     admin = result.scalar_one_or_none()
@@ -202,7 +208,7 @@ async def get_tg_admin(
     return response_user
 
 
-@app.get('/tg_users/admins/{is_admin}', response_model=list[UserGet])
+@app.get('/tg_users/admins/', response_model=list[UserGet])
 async def get_tg_admins(
     is_admin: int,
     db: AsyncSession = Depends(get_db)
@@ -215,34 +221,25 @@ async def get_tg_admins(
     return admins
 
 
-# @app.get('/tg_users/')
-# async def get_tg_users(
-#     skip: int = 0, limit: int = 10,
-#     db: AsyncSession = Depends(get_db)
-#         ):
-#     result = await db.execute(select(TGUser).offset(skip).limit(limit))
-#     tg_users = result.scalars().all()
-#     return tg_users
-
-
-# @app.get('/vk_users/')
-# async def get_vk_users(
-#     skip: int = 0, limit: int = 10,
-#     db: AsyncSession = Depends(get_db)
-#         ):
-#     result = await db.execute(select(VKUser).offset(skip).limit(limit))
-#     vk_users = result.scalars().all()
-#     return vk_users
-
-
-# @app.get('/links/')
-# async def get_links(
-#     skip: int = 0, limit: int = 10,
-#     db: AsyncSession = Depends(get_db)
-#         ):
-#     result = await db.execute(select(Link).offset(skip).limit(limit))
-#     links = result.scalars().all()
-#     return links
+@app.get('/vk_users/admins/{user_id}', response_model=UserGet)
+async def get_vk_admin(
+    user_id: int,
+    db: AsyncSession = Depends(get_db)
+        ):
+    stmt = select(VKUser).where(
+        VKUser.user_id == user_id,
+        VKUser.is_admin == 1
+    )
+    result = await db.execute(stmt)
+    admin = result.scalar_one_or_none()
+    if admin is None:
+        raise HTTPException(status_code=404, detail='Администратор не найден')
+    response_user = UserCreate(
+        user_id=admin.user_id,
+        role=admin.role,
+        is_admin=admin.is_admin
+    )
+    return response_user
 
 
 @app.get('/links/{file_path}')
@@ -253,16 +250,6 @@ async def get_links_from_file_path(
     result = await db.execute(select(Link).where(Link.file_path == file_path))
     links = result.scalars().all()
     return links
-
-
-# @app.get('/promocodes/')
-# async def get_promocodes(
-#     skip: int = 0, limit: int = 10,
-#     db: AsyncSession = Depends(get_db)
-#         ):
-#     result = await db.execute(select(PromoCode).offset(skip).limit(limit))
-#     promocodes = result.scalars().all()
-#     return promocodes
 
 
 @app.get('/tg_users/{user_id}', response_model=UserGet)
@@ -306,7 +293,7 @@ async def get_link(link_id: int, db: AsyncSession = Depends(get_db)):
     return link
 
 
-@app.get('/promocodes/{promocode}', response_model=PromocodeGetFilepath)
+@app.get('/promocodes/{promocode}')
 async def get_promocode_filepath(
     promocode: str, db: AsyncSession = Depends(get_db)
         ):
@@ -317,12 +304,49 @@ async def get_promocode_filepath(
     promocode_data = result.scalar_one_or_none()
     if promocode_data is None:
         raise HTTPException(status_code=404, detail='Промокод не найден')
-    response_promocode = PromocodeGetFilepath(
-        promocode_id=promocode_data.promocode_id,
-        promocode=promocode_data.promocode,
-        file_path=promocode_data.file_path
+    return promocode_data
+
+
+@app.delete(
+    '/links/{link_id}',
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_link(
+    link_id: int,
+    db: AsyncSession = Depends(get_db)
+        ):
+    stmt = delete(Link).where(
+        Link.link_id == link_id
     )
-    return response_promocode
+    try:
+        result = await db.execute(stmt)
+        await db.commit()
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail='Ссылка не найдена')
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail='Ссылка не найдена')
+    return
+
+
+@app.delete(
+    '/promocodes/{promocode_id}',
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_promocode(
+    promocode_id: int,
+    db: AsyncSession = Depends(get_db)
+        ):
+    stmt = delete(PromoCode).where(
+        PromoCode.link_id == promocode_id
+    )
+    try:
+        result = await db.execute(stmt)
+        await db.commit()
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail='Промокод не найдена')
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail='Промокод не найдена')
+    return
 
 
 if __name__ == '__main__':

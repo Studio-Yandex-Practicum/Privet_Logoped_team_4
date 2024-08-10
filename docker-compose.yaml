@@ -17,7 +17,7 @@ services:
   fastapi:
     env_file: .env
     build:
-      context: ./src/db/
+      context: ./src/db_api/
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
@@ -44,6 +44,8 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - fastapi
+    environment:
+      PYTHONUNBUFFERED: 1
 
 volumes:
   db_data:

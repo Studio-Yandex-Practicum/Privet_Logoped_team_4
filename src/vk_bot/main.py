@@ -10,7 +10,7 @@ from handlers import (add_link, add_promocode, admin_handler,
 from vkbottle import BaseStateGroup
 from vkbottle.bot import Bot, Message
 
-logging.basicConfig(level=logging.INFO)
+logging.getLogger('vkbottle').setLevel(logging.INFO)
 
 bot = Bot(api=api, labeler=labeler, state_dispenser=state_dispenser)
 bot.labeler.vbml_ignore_case = True

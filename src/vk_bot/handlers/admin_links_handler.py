@@ -1,18 +1,17 @@
 import os
 import sys
 
+import aiohttp
 from keyboards.keyboards import (admin_keyboard, admin_links_keyboard,
                                  admin_links_to_role_keyboard,
                                  admin_links_types_keyboard, cancel_keyboard)
-from sqlalchemy import delete
-from sqlalchemy.dialects.postgresql import insert
 from vkbottle import CtxStorage
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from db.models import Link, async_session  # noqa
+from config import api_url  # noqa
 
 ctx_storage = CtxStorage()
 
@@ -92,8 +91,6 @@ async def add_link(bot, message, AdminStates):
         await message.answer(
             'Отмена добавления ссылки.', keyboard=admin_links_keyboard
         )
-        await bot.state_dispenser.set(
-                    message.peer_id, AdminStates.LINKS_STATE)
     elif message.text.lower() == 'родитель' or (
         message.text.lower() == 'логопед') or (
             message.text.lower() == 'общее'):
@@ -106,31 +103,31 @@ async def add_link(bot, message, AdminStates):
             to_role = 'SPEECH_THERAPIST'
         else:
             to_role = None
-        try:
-            async with async_session() as session:
-                new_link = insert(Link).values(
-                    link=link, link_name=link_name,
-                    link_type=link_type, to_role=to_role
-                )
-                await session.execute(new_link)
-                await session.commit()
-        except Exception:
-            await message.answer('Попробуйте еще раз.')
-        else:
-            await message.answer(
-                f'Ссылка "{link_name}" успешно добавлена.',
-                keyboard=admin_links_keyboard
-            )
-        finally:
-            await bot.state_dispenser.set(
-                        message.peer_id, AdminStates.LINKS_STATE)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f'{api_url}/links/',
+                json={
+                    "link": link, "link_name": link_name,
+                    "link_type": link_type, "to_role": to_role
+                }
+                    ) as response:
+                if response.status == 200:
+                    await message.answer(
+                        f'Ссылка "{link_name}" успешно добавлена.',
+                        keyboard=admin_links_keyboard
+                    )
+                else:
+                    await message.answer(
+                        'Ошибка. Попробуйте еще раз.',
+                        keyboard=admin_links_keyboard
+                    )
     else:
         await message.answer(
             'Введены некорректные данные. Пожалуйста, повторите попытку.',
             keyboard=admin_links_keyboard
         )
-        await bot.state_dispenser.set(
-                    message.peer_id, AdminStates.LINKS_STATE)
+    await bot.state_dispenser.set(
+        message.peer_id, AdminStates.LINKS_STATE)
 
 
 async def delete_link_handler(bot, message, AdminStates):
@@ -141,8 +138,6 @@ async def delete_link_handler(bot, message, AdminStates):
         await message.answer(
             'Отмена удаления ссылки.', keyboard=admin_links_keyboard
         )
-        await bot.state_dispenser.set(
-                    message.peer_id, AdminStates.LINKS_STATE)
     else:
         try:
             link_id = int(message.text)
@@ -151,25 +146,23 @@ async def delete_link_handler(bot, message, AdminStates):
                 'Введены некорректные данные. Пожалуйста, повторите попытку.',
                 keyboard=admin_links_keyboard
             )
-            await bot.state_dispenser.set(
-                        message.peer_id, AdminStates.LINKS_STATE)
         else:
-            try:
-                async with async_session() as session:
-                    delete_link = delete(Link).where(
-                        Link.link_id == link_id
-                    )
-                    await session.execute(delete_link)
-                    await session.commit()
-            except Exception:
-                await message.answer('Попробуйте еще раз.')
-            else:
-                await message.answer(
-                    'Ссылка успешно удалена.', keyboard=admin_links_keyboard
-                )
-        finally:
-            await bot.state_dispenser.set(
-                        message.peer_id, AdminStates.LINKS_STATE)
+            async with aiohttp.ClientSession() as session:
+                async with session.delete(
+                    f'{api_url}/links/{link_id}'
+                        ) as response:
+                    if response.status == 204:
+                        await message.answer(
+                            'Ссылка успешно удалена.',
+                            keyboard=admin_links_keyboard
+                        )
+                    else:
+                        await message.answer(
+                            'Ошибка. Попробуйте еще раз.',
+                            keyboard=admin_links_keyboard
+                        )
+        await bot.state_dispenser.set(
+            message.peer_id, AdminStates.LINKS_STATE)
 
 
 async def admin_links_handler(bot, message, AdminStates):

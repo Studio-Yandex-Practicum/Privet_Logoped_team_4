@@ -24,9 +24,8 @@ async def cmd_admin(message: Message, state: FSMContext):
     """Точка входа администратора."""
     user_id = message.from_user.id
     async with aiohttp.ClientSession() as session:
-        async with session.post(
-            f'{api_url}/tg_users/admin/',
-            json={"user_id": user_id, "is_admin": 1}
+        async with session.get(
+            f'{api_url}/tg_users/admins/{user_id}'
                 ) as response:
             if response.status == 200:
                 await state.set_state(AdminStates.admin)
@@ -57,12 +56,3 @@ async def admin_promocodes_handler(message: Message, state: FSMContext):
     await state.set_state(AdminStates.promocodes)
     await message.answer('Вы нажали "Промокоды"',
                          reply_markup=kb.promocodes)
-
-
-# @router.message(F.text == 'Назад')
-# async def back_message(message: Message, state: FSMContext):
-#     """Обработка выбора кнопки 'Назад'."""
-#     await state.set_state(AdminStates.admin)
-#     await message.answer(
-#         'Вы нажали "Назад"', reply_markup=kb.admin
-#     )

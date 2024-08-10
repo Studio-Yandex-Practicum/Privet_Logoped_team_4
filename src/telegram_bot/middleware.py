@@ -16,10 +16,10 @@ class PromocodeMiddleware(BaseMiddleware):
             event: Update,
             data: Dict[str, Any],
     ) -> Any:
-        if event.message is None:
+        if event.message is None or event.message.text.startswith('/'):
             return await handler(event, data)
         promo = await get_promocode(event.message.text)
-        if promo is not None:
+        if promo:
             await event.message.reply(promo)
             return
         return await handler(event, data)

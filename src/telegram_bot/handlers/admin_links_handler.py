@@ -86,7 +86,6 @@ async def add_link(message: Message, state: FSMContext):
         await message.answer(
             'Отмена добавления ссылки.', reply_markup=kb.links
         )
-        await state.set_state(AdminStates.links)
     else:
         if message.text.lower() == 'родитель':
             to_role = 'PARENT'
@@ -115,8 +114,11 @@ async def add_link(message: Message, state: FSMContext):
                         reply_markup=kb.links
                     )
                 else:
-                    await message.answer('Ошибка. Попробуйте еще раз.')
-        await state.set_state(AdminStates.links)
+                    await message.answer(
+                        'Ошибка. Попробуйте еще раз.',
+                        reply_markup=kb.links
+                    )
+    await state.set_state(AdminStates.links)
 
 
 @router.message(F.text == 'Удалить ссылку')
@@ -135,7 +137,6 @@ async def delete_link(message: Message, state: FSMContext):
         await message.answer(
             'Отмена удаления ссылки.', reply_markup=kb.links
         )
-        await state.set_state(AdminStates.links)
     else:
         try:
             link_id = int(message.text)
@@ -144,7 +145,6 @@ async def delete_link(message: Message, state: FSMContext):
                 'Введены некорректные данные. Пожалуйста, повторите попытку.',
                 reply_markup=kb.links
             )
-            await state.set_state(AdminStates.links)
         else:
             async with aiohttp.ClientSession() as session:
                 async with session.delete(
@@ -155,5 +155,8 @@ async def delete_link(message: Message, state: FSMContext):
                             'Ссылка успешно удалена.', reply_markup=kb.links
                         )
                     else:
-                        await message.answer('Ошибка. Попробуйте еще раз.')
-            await state.set_state(AdminStates.links)
+                        await message.answer(
+                            'Ошибка. Попробуйте еще раз.',
+                            reply_markup=kb.links
+                        )
+    await state.set_state(AdminStates.links)

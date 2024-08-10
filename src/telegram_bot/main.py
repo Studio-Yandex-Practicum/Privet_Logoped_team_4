@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 async def main():
     bot = Bot(token=tg_token)
     dp = Dispatcher()
-    # dp.update.outer_middleware(PromocodeMiddleware())
+    dp.update.outer_middleware(PromocodeMiddleware())
     dp.include_routers(
         start_router, admin_router, admin_links_router,
         admin_promocodes_router, admin_upload_router,

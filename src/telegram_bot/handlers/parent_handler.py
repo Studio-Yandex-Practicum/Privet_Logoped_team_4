@@ -27,16 +27,11 @@ async def parent_message(message: Message, bot: Bot, state: FSMContext):
     role_type = 'parent'
     first_name = message.from_user.first_name
     user = await get_user(user_id)
-    if not user:
-        response = await chose_role(user_id, role_type)
+    if 'detail' in user and user['detail'] == 'Пользователь не найден':
+        user_data = await chose_role(user_id, role_type)
         await send_notification(bot, user_id, first_name, role_type)
-    response = await chose_role(user_id, role_type)
-    if response.status == 200:
-        tg_user_post_data = await response.json()
-        await message.reply(
-            f'Пользователь успешно добавлен: {tg_user_post_data}'
-        )
-    else:
+    user_data = await chose_role(user_id, role_type)
+    if not user_data:
         await message.reply('Ошибка добавления пользователя.')
 
 

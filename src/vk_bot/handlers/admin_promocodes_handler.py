@@ -1,17 +1,16 @@
 import os
 import sys
 
+import aiohttp
 from keyboards.keyboards import (admin_keyboard, admin_promocodes_keyboard,
                                  cancel_keyboard)
-from sqlalchemy import delete
-from sqlalchemy.dialects.postgresql import insert
 from vkbottle import CtxStorage
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from db.models import PromoCode, async_session  # noqa
+from config import api_url  # noqa
 
 ctx_storage = CtxStorage()
 
@@ -39,28 +38,28 @@ async def add_promocode(bot, message, AdminStates):
         await message.answer(
             'Отмена добавления промокода.', keyboard=admin_promocodes_keyboard
         )
-        await bot.state_dispenser.set(
-                    message.peer_id, AdminStates.PROMOCODES_STATE)
     else:
         promocode = ctx_storage.get('promocode')
         file_path = message.text
-        try:
-            async with async_session() as session:
-                new_promocode = insert(PromoCode).values(
-                    promocode=promocode, file_path=file_path
-                )
-                await session.execute(new_promocode)
-                await session.commit()
-        except Exception:
-            await message.answer('Попробуйте еще раз.')
-        else:
-            await message.answer(
-                f'Промокод {promocode} успешно добавлен.',
-                keyboard=admin_promocodes_keyboard
-            )
-        finally:
-            await bot.state_dispenser.set(
-                        message.peer_id, AdminStates.PROMOCODES_STATE)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f'{api_url}/promocodes/',
+                json={
+                    "promocode": promocode, "file_path": file_path
+                }
+                    ) as response:
+                if response.status == 200:
+                    await message.answer(
+                        f'Промокод {promocode} успешно добавлен.',
+                        keyboard=admin_promocodes_keyboard
+                    )
+                else:
+                    await message.answer(
+                        'Ошибка. Попробуйте еще раз.',
+                        keyboard=admin_promocodes_keyboard
+                    )
+    await bot.state_dispenser.set(
+        message.peer_id, AdminStates.PROMOCODES_STATE)
 
 
 async def delete_promocode_handler(bot, message, AdminStates):
@@ -71,8 +70,6 @@ async def delete_promocode_handler(bot, message, AdminStates):
         await message.answer(
             'Отмена удаления промокода.', keyboard=admin_promocodes_keyboard
         )
-        await bot.state_dispenser.set(
-                    message.peer_id, AdminStates.PROMOCODES_STATE)
     else:
         try:
             promocode_id = int(message.text)
@@ -81,26 +78,23 @@ async def delete_promocode_handler(bot, message, AdminStates):
                 'Введены некорректные данные. Пожалуйста, повторите попытку.',
                 keyboard=admin_promocodes_keyboard
             )
-            await bot.state_dispenser.set(
-                        message.peer_id, AdminStates.PROMOCODES_STATE)
         else:
-            try:
-                async with async_session() as session:
-                    delete_promocode = delete(PromoCode).where(
-                        PromoCode.promocode_id == promocode_id
-                    )
-                    await session.execute(delete_promocode)
-                    await session.commit()
-            except Exception:
-                await message.answer('Попробуйте еще раз.')
-            else:
-                await message.answer(
-                    'Промокод успешно удален.',
-                    keyboard=admin_promocodes_keyboard
-                )
-        finally:
-            await bot.state_dispenser.set(
-                        message.peer_id, AdminStates.PROMOCODES_STATE)
+            async with aiohttp.ClientSession() as session:
+                async with session.delete(
+                    f'{api_url}/promocodes/{promocode_id}'
+                        ) as response:
+                    if response.status == 204:
+                        await message.answer(
+                            'Промокод успешно удален.',
+                            keyboard=admin_promocodes_keyboard
+                        )
+                    else:
+                        await message.answer(
+                            'Ошибка. Попробуйте еще раз.',
+                            keyboard=admin_promocodes_keyboard
+                        )
+    await bot.state_dispenser.set(
+        message.peer_id, AdminStates.PROMOCODES_STATE)
 
 
 async def admin_promocodes_handler(bot, message, AdminStates):

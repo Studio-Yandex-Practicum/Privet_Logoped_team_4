@@ -10,7 +10,7 @@ grand_parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../../..')
 )
 
-UPLOAD_DIRECTORY = grand_parent_folder_path + '\\files'
+UPLOAD_DIRECTORY = grand_parent_folder_path + 'files'
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 

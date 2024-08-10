@@ -2,8 +2,8 @@ import asyncio
 
 from sqlalchemy import select
 
-from db.models import (Link, LinkType, PromoCode, RoleType, TGUser, VKUser,
-                       async_session)
+from db_api.models import (Link, LinkType, PromoCode, RoleType, TGUser, VKUser,
+                           async_session)
 
 
 async def add_data(session):
