@@ -15,6 +15,7 @@ class AdminStates(StatesGroup):
     admin = State()
     links = State()
     promocodes = State()
+    users = State()
     waiting_link_name = State()
     waiting_link_type = State()
     waiting_link = State()
@@ -25,3 +26,5 @@ class AdminStates(StatesGroup):
     delete_promocode = State()
     upload_link_file = State()
     upload_promocode_file = State()
+    waiting_user_id_to_ban = State()
+    waiting_user_id_to_unban = State()

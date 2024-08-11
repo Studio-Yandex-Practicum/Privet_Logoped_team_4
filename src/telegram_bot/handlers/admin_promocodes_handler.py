@@ -64,7 +64,10 @@ async def add_promocode(message: Message, state: FSMContext):
                 await session.execute(new_promocode)
                 await session.commit()
         except Exception:
-            await message.answer('Попробуйте еще раз.')
+            await message.answer(
+                'Попробуйте еще раз.',
+                reply_markup=kb.promocodes
+            )
         else:
             await message.answer(
                 f'Промокод {promocode} успешно добавлен.',
@@ -88,9 +91,8 @@ async def delete_promocode(message: Message, state: FSMContext):
     """
     if message.text == 'Отмена':
         await message.answer(
-            'Отмена удаления промокода.', reply_markup=kb.links
+            'Отмена удаления промокода.', reply_markup=kb.promocodes
         )
-        await state.set_state(AdminStates.promocodes)
     else:
         try:
             promocode_id = int(message.text)
@@ -99,7 +101,6 @@ async def delete_promocode(message: Message, state: FSMContext):
                 'Введены некорректные данные. Пожалуйста, повторите попытку.',
                 reply_markup=kb.promocodes
             )
-            await state.set_state(AdminStates.promocodes)
         else:
             try:
                 async with async_session() as session:
@@ -109,10 +110,12 @@ async def delete_promocode(message: Message, state: FSMContext):
                     await session.execute(delete_promocode)
                     await session.commit()
             except Exception:
-                await message.answer('Попробуйте еще раз.')
+                await message.answer(
+                    'Попробуйте еще раз.',
+                    reply_markup=kb.promocodes
+                )
             else:
                 await message.answer(
                     'Промокод успешно удален.', reply_markup=kb.promocodes
                 )
-        finally:
-            await state.set_state(AdminStates.promocodes)
+    await state.set_state(AdminStates.promocodes)

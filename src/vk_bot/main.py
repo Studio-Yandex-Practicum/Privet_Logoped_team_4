@@ -4,17 +4,21 @@ from config import api, labeler, state_dispenser
 from handlers import (add_link, add_promocode, admin_handler,
                       admin_links_handler, admin_promocodes_handler,
                       admin_start_handler, admin_upload_file_handler,
-                      delete_link_handler, delete_promocode_handler,
-                      faq_handler, get_link, get_link_name, get_link_type,
-                      get_promocode, parent_handler, role_handler,
-                      speech_therapist_handler, start_handler)
+                      admin_users_handler, ban_user, delete_link_handler,
+                      delete_promocode_handler, faq_handler, get_link,
+                      get_link_name, get_link_type, get_promocode,
+                      parent_handler, role_handler, speech_therapist_handler,
+                      start_handler, unban_user)
 from vkbottle import BaseStateGroup
 from vkbottle.bot import Bot, Message
+from middleware import BanMiddleware
 
-logging.basicConfig(level=logging.INFO)
+logging.getLogger('vkbottle').setLevel(logging.INFO)
 
 bot = Bot(api=api, labeler=labeler, state_dispenser=state_dispenser)
 bot.labeler.vbml_ignore_case = True
+
+bot.labeler.message_view.register_middleware(BanMiddleware)
 
 
 class UserStates(BaseStateGroup):
@@ -29,6 +33,7 @@ class AdminStates(BaseStateGroup):
     """Стейты администратора."""
     ADMIN_STATE = 'admin_options'
     LINKS_STATE = 'links_options'
+    USERS_STATE = 'users_options'
     PROMOCODES_STATE = 'promocodes_options'
     WAITING_LINK_NAME = 'waiting_link_name'
     WAITING_LINK_TYPE = 'waiting_link_type'
@@ -40,6 +45,8 @@ class AdminStates(BaseStateGroup):
     DELETE_PROMOCODE = 'delete_promocode'
     UPLOAD_LINK_FILE = 'upload_link_file'
     UPLOAD_PROMOCODE_FILE = 'upload_promocode_file'
+    WAITING_USER_ID_TO_BAN = 'waiting_user_id_to_ban'
+    WAITING_USER_ID_TO_UNBAN = 'waiting_user_id_to_unban'
 
 
 @bot.on.private_message(lev='/admin')
@@ -107,6 +114,21 @@ async def delete_promocode(message: Message):
 )
 async def upload_file(message: Message):
     await admin_upload_file_handler(bot, message, AdminStates)
+
+
+@bot.on.private_message(state=AdminStates.USERS_STATE)
+async def users_options(message: Message):
+    await admin_users_handler(bot, message, AdminStates)
+
+
+@bot.on.private_message(state=AdminStates.WAITING_USER_ID_TO_BAN)
+async def waiting_user_id_to_ban(message: Message):
+    await ban_user(bot, message, AdminStates)
+
+
+@bot.on.private_message(state=AdminStates.WAITING_USER_ID_TO_UNBAN)
+async def waiting_user_id_to_unban(message: Message):
+    await unban_user(bot, message, AdminStates)
 
 
 @bot.on.private_message(lev=['/start', 'Начать'])

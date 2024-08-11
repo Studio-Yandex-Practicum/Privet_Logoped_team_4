@@ -1,6 +1,7 @@
 import enum
 
-from sqlalchemy import Column, DateTime, Enum, Integer, Numeric, String, func, BigInteger
+from sqlalchemy import (BigInteger, Column, DateTime, Enum, Integer, Numeric,
+                        String, func)
 from sqlalchemy.ext.asyncio import (AsyncAttrs, AsyncSession,
                                     create_async_engine)
 from sqlalchemy.ext.declarative import declarative_base
@@ -31,6 +32,7 @@ class TGUser(AsyncAttrs, Base):
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
+    is_banned = Column(Numeric, default=0)
 
 
 class VKUser(AsyncAttrs, Base):
@@ -40,6 +42,7 @@ class VKUser(AsyncAttrs, Base):
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
+    is_banned = Column(Numeric, default=0)
 
 
 class Link(AsyncAttrs, Base):

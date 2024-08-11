@@ -106,7 +106,7 @@ async def delete_promocode_handler(bot, message, AdminStates):
 async def admin_promocodes_handler(bot, message, AdminStates):
     """
     Обработка выбора кнопки 'Добавить промокод',
-    'Удалить промокод' или 'Назад'.
+    'Удалить промокод', 'Загрузить файл' или 'Назад'.
     """
     if message.text.lower() == 'добавить промокод':
         await message.answer('Введите промокод:', keyboard=cancel_keyboard)

@@ -8,9 +8,11 @@ from .admin_promocodes_handler import delete_promocode_handler  # noqa
 from .admin_promocodes_handler import get_promocode  # noqa
 from .admin_start_handler import admin_start_handler  # noqa
 from .admin_upload_handler import admin_upload_file_handler  # noqa
+from .admin_users_handler import admin_users_handler  # noqa
+from .admin_users_handler import ban_user  # noqa
+from .admin_users_handler import unban_user  # noqa
 from .faq_handler import faq_handler  # noqa
 from .parent_handler import parent_handler  # noqa
-from .promocode_handler import promocode_handler  # noqa
 from .role_handler import role_handler  # noqa
 from .speech_therapist_handler import speech_therapist_handler  # noqa
 from .start_handler import start_handler  # noqa

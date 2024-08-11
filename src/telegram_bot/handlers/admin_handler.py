@@ -64,17 +64,9 @@ async def admin_promocodes_handler(message: Message, state: FSMContext):
                          reply_markup=kb.promocodes)
 
 
-@router.message(F.text == 'Назад')
-async def back_message(message: Message, state: FSMContext):
-    """Обработка выбора кнопки 'Назад'."""
-    current_state = await state.get_state()
-    if current_state == AdminStates.links:
-        key_reply = kb.admin
-        await state.set_state(AdminStates.admin)
-    if current_state == AdminStates.promocodes:
-        key_reply = kb.admin
-        await state.set_state(AdminStates.admin)
-
-    await message.answer(
-        'Вы нажали "Назад"', reply_markup=key_reply
-    )
+@router.message(F.text == 'Пользователи')
+async def admin_users_handler(message: Message, state: FSMContext):
+    """Обработка выбора кнопки 'Пользователи'."""
+    await state.set_state(AdminStates.users)
+    await message.answer('Вы нажали "Пользователи"',
+                         reply_markup=kb.users)

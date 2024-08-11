@@ -9,17 +9,18 @@ parent_folder_path = os.path.abspath(
 )
 sys.path.append(parent_folder_path)
 
-from db.models import PromoCode, RoleType, TGUser, async_session # noqa
+from db.models import PromoCode, RoleType, TGUser, async_session  # noqa
 
 
 async def chose_role(user_id, role_type):
     """Добавление пользователя и смена роли."""
     if role_type == 'parent':
-        role=RoleType.PARENT
+        role = RoleType.PARENT
     else:
-        role=RoleType.SPEECH_THERAPIST
+        role = RoleType.SPEECH_THERAPIST
     async with async_session() as session:
-        new_user = insert(TGUser).values(user_id=user_id, role=role).on_conflict_do_update(
+        new_user = insert(TGUser).values(
+            user_id=user_id, role=role).on_conflict_do_update(
             constraint=TGUser.__table__.primary_key,
             set_={TGUser.role: role}
         )
@@ -57,7 +58,7 @@ async def get_user(user_id):
 
 
 async def send_notification(bot, user_id, first_name, role_type):
-    user = await get_user(user_id)
+    # user = await get_user(user_id)
     admin_ids = await get_admin_users()
     for admin in admin_ids:
         text = f'Зарегистрирован:{first_name} с ролью {role_type}'
