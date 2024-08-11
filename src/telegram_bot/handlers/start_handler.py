@@ -4,7 +4,7 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from .state import Level
+from .state import AdminStates, Level
 
 router = Router()
 
@@ -42,6 +42,15 @@ async def back_message(message: Message, state: FSMContext):
     if current_state == Level.role_chose:
         key_reply = kb.main
         await state.set_state(Level.main)
+    if current_state == AdminStates.links:
+        key_reply = kb.admin
+        await state.set_state(AdminStates.admin)
+    if current_state == AdminStates.promocodes:
+        key_reply = kb.admin
+        await state.set_state(AdminStates.admin)
+    if current_state == AdminStates.users:
+        key_reply = kb.admin
+        await state.set_state(AdminStates.admin)
 
     await message.answer(
         'Вы нажали меню "Назад"', reply_markup=key_reply

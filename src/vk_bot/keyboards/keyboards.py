@@ -63,6 +63,9 @@ admin_keyboard = (
     .row()
     .add(Text('Промокоды'),
          color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Пользователи'),
+         color=KeyboardButtonColor.PRIMARY)
 )
 
 cancel_keyboard = (
@@ -122,6 +125,18 @@ admin_promocodes_keyboard = (
          color=KeyboardButtonColor.PRIMARY)
     .row()
     .add(Text('Загрузить файл'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Назад'),
+         color=KeyboardButtonColor.NEGATIVE)
+)
+
+admin_users_keyboard = (
+    Keyboard(one_time=False)
+    .add(Text('Заблокировать пользователя'),
+         color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(Text('Разблокировать пользователя'),
          color=KeyboardButtonColor.PRIMARY)
     .row()
     .add(Text('Назад'),

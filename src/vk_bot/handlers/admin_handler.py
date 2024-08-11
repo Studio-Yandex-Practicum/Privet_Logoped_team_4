@@ -6,7 +6,8 @@ parent_folder_path = os.path.abspath(
 )
 sys.path.append(parent_folder_path)
 from keyboards.keyboards import (admin_keyboard, admin_links_keyboard,  # noqa
-                                 admin_promocodes_keyboard)
+                                 admin_promocodes_keyboard,
+                                 admin_users_keyboard)
 
 
 async def admin_handler(bot, message, AdminStates):
@@ -21,6 +22,11 @@ async def admin_handler(bot, message, AdminStates):
                              keyboard=admin_promocodes_keyboard)
         await bot.state_dispenser.set(
                 message.peer_id, AdminStates.PROMOCODES_STATE)
+    elif message.text.lower() == 'пользователи':
+        await message.answer('Вы выбрали Пользователи.',
+                             keyboard=admin_users_keyboard)
+        await bot.state_dispenser.set(
+                message.peer_id, AdminStates.USERS_STATE)
     else:
         await message.answer(
             'Пожалуйста, выберите одну из предложенных опций:',

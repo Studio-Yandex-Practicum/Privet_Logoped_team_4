@@ -174,7 +174,8 @@ async def delete_link_handler(bot, message, AdminStates):
 
 async def admin_links_handler(bot, message, AdminStates):
     """
-    Обработка выбора кнопки 'Добавить ссылку', 'Удалить ссылку' или 'Назад'.
+    Обработка выбора кнопки 'Добавить ссылку', 'Удалить ссылку',
+    'Загрузить файл' или 'Назад'.
     """
     if message.text.lower() == 'добавить ссылку':
         await message.answer(
