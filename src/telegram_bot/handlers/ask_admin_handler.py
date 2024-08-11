@@ -60,28 +60,3 @@ async def forward_to_admins(message: Message, state: FSMContext):
 
     await message.answer("Ваше сообщение отправлено логопедам.")
     await state.clear()
-
-
-@router.callback_query(ReplyCallbackFactory.filter())
-async def handle_reply_callback(callback_query: CallbackQuery, callback_data: ReplyCallbackFactory, state: FSMContext):
-    user_id = callback_data.user_id
-    await state.update_data(reply_to_user_id=user_id)
-    await callback_query.message.answer("Введите текст ответа пользователю:")
-    await state.set_state(Level.awaiting_admin_reply)
-
-
-@router.message(Level.awaiting_admin_reply)
-async def send_reply_to_user(message: Message, state: FSMContext):
-    data = await state.get_data()
-    user_id = data.get('reply_to_user_id')
-
-    if user_id:
-        try:
-            await message.bot.send_message(chat_id=user_id, text=f"Ответ от администратора:\n{message.text}")
-            await message.answer("Ответ отправлен пользователю.")
-        except Exception as e:
-            await message.answer(f"Не удалось отправить сообщение пользователю. Ошибка: {e}")
-    else:
-        await message.answer("Не удалось определить пользователя для ответа.")
-
-    await state.clear()
