@@ -64,6 +64,14 @@ async def admin_promocodes_handler(message: Message, state: FSMContext):
                          reply_markup=kb.promocodes)
 
 
+@router.message(F.text == 'Пользователи')
+async def admin_users_handler(message: Message, state: FSMContext):
+    """Обработка выбора кнопки 'Пользователи'."""
+    await state.set_state(AdminStates.users)
+    await message.answer('Вы нажали "Пользователи"',
+                         reply_markup=kb.users)
+
+
 @router.message(F.text == 'Назад')
 async def back_message(message: Message, state: FSMContext):
     """Обработка выбора кнопки 'Назад'."""

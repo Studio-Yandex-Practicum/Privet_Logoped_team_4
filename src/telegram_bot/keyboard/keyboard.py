@@ -45,7 +45,8 @@ therapist = ReplyKeyboardMarkup(
 admin = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text='Материалы')],
-        [KeyboardButton(text='Промокоды')]],
+        [KeyboardButton(text='Промокоды')],
+        [KeyboardButton(text='Пользователи')]],
     resize_keyboard=True,
     input_field_placeholder='Выберите пункт меню...'
 )
@@ -84,6 +85,15 @@ promocodes = ReplyKeyboardMarkup(
         [KeyboardButton(text='Добавить промокод')],
         [KeyboardButton(text='Удалить промокод')],
         [KeyboardButton(text='Загрузить файл')],
+        [KeyboardButton(text='Назад')]],
+    resize_keyboard=True,
+    input_field_placeholder='Выберите пункт меню...'
+)
+
+users = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='Заблокировать пользователя')],
+        [KeyboardButton(text='Разблокировать пользователя')],
         [KeyboardButton(text='Назад')]],
     resize_keyboard=True,
     input_field_placeholder='Выберите пункт меню...'
