@@ -1,4 +1,5 @@
 from keyboards.keyboards import role_keyboard, parent_keyboard, faq_keyboard
+from .ask_admin_handler import ask_admin_handler
 
 
 async def parent_handler(bot, message, UserStates):
@@ -19,7 +20,7 @@ async def parent_handler(bot, message, UserStates):
     elif message.text.lower() == 'получать напоминания':
         await message.answer('Вы выбрали Получать напоминания.')
     elif message.text.lower() == 'связаться с логопедом':
-        await message.answer('Вы выбрали Связаться с логопедом.')
+        await ask_admin_handler(bot, message, UserStates)
     elif message.text.lower() == 'изменить роль':
         await message.answer('Возвращаемся к выбору роли.',
                              keyboard=role_keyboard)

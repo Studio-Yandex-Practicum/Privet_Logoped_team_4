@@ -3,3 +3,4 @@ from .parent_handler import parent_handler # noqa
 from .role_handler import role_handler # noqa
 from .speech_therapist_handler import speech_therapist_handler # noqa
 from .start_handler import start_handler # noqa
+from .ask_admin_handler import ask_admin_handler # noqa
