@@ -1,19 +1,19 @@
 import os
 import sys
 
+from keyboards.keyboards import (parent_keyboard, role_keyboard,
+                                 speech_therapist_keyboard)
 from sqlalchemy.dialects.postgresql import insert
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')
 )
 sys.path.append(parent_folder_path)
-from keyboards.keyboards import (parent_keyboard, role_keyboard, # noqa
-                                 speech_therapist_keyboard)
-
 from db.models import RoleType, VKUser, async_session  # noqa
 
 
 async def role_handler(bot, message, UserStates):
+    """Обработка выбора кнопки в меню 'Роль'."""
     if message.text.lower() == 'родитель' or message.text.lower() == 'логопед':
         if message.text.lower() == 'родитель':
             role = RoleType.PARENT

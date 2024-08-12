@@ -1,11 +1,8 @@
 from aiogram.fsm.state import State, StatesGroup
-from config import database_url
-
-
-DATABSE_URL = database_url
 
 
 class Level(StatesGroup):
+    """Стейты пользователя."""
     main = State()
     parent = State()
     faq = State()
@@ -13,3 +10,23 @@ class Level(StatesGroup):
     role_chose = State()
     waiting_for_message = State()
     awaiting_admin_reply = State()
+
+
+class AdminStates(StatesGroup):
+    """Стейты администратора."""
+    admin = State()
+    links = State()
+    promocodes = State()
+    users = State()
+    waiting_link_name = State()
+    waiting_link_type = State()
+    waiting_link = State()
+    waiting_link_to_role = State()
+    delete_link = State()
+    waiting_promocode = State()
+    waiting_promocode_filepath = State()
+    delete_promocode = State()
+    upload_link_file = State()
+    upload_promocode_file = State()
+    waiting_user_id_to_ban = State()
+    waiting_user_id_to_unban = State()
