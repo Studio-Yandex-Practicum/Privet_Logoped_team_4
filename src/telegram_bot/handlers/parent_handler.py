@@ -7,13 +7,13 @@ from aiogram.fsm.context import FSMContext
 
 import keyboard.keyboard as kb
 from .state import Level
+from db_user_add import chose_role
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')
 )
 sys.path.append(parent_folder_path)
 from telegram_bot.crud import chose_role, get_user, send_notification # noqa
-
 
 router = Router()
 
@@ -62,8 +62,6 @@ async def notification_message(message: Message):
 
 
 @router.message(F.text == 'Связаться с логопедом')
-async def connection_message(message: Message):
-    """Обработка выбора кнопки 'Связаться с логопедом'."""
-    await message.answer(
-        'Здравствуйте! Вы нажали меню "Связаться с логопедом"'
-    )
+async def connection_message(message: Message, state: FSMContext):
+    await message.answer("Пожалуйста, напишите ваше сообщение, и оно будет отправлено логопедам.")
+    await state.set_state(Level.waiting_for_message)

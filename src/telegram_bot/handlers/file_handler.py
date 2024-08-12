@@ -13,6 +13,7 @@ grand_parent_folder_path = os.path.abspath(
 sys.path.append(grand_parent_folder_path)
 from db.models import Link, LinkType, async_session # noqa
 
+
 router = Router()
 
 
@@ -68,3 +69,4 @@ async def handle_file_download(callback_query: CallbackQuery):
         caption="Ваш файл:"
     )
     await callback_query.answer("Файл отправлен.")
+

@@ -6,9 +6,8 @@ from config import tg_token
 from handlers import (admin_links_router, admin_promocodes_router,
                       admin_router, admin_upload_router, admin_users_router,
                       faq_router, file_router, parent_router, start_router,
-                      therapist_router)
+                      therapist_router, promocode_router, ask_admin_router)
 from middleware import BanCheckMiddleware, PromocodeMiddleware
-
 logging.basicConfig(level=logging.INFO)
 
 
@@ -21,7 +20,7 @@ async def main():
     dp.include_routers(
         admin_links_router, admin_promocodes_router, admin_users_router,
         admin_router, admin_upload_router, faq_router, file_router,
-        parent_router, start_router, therapist_router
+        parent_router, start_router, therapist_router, promocode_router, ask_admin_router
     )
     await dp.start_polling(bot)
 
