@@ -22,8 +22,9 @@ from callbacks import (
     ButtonRoleCallback,
     ButtonTextCallback,
     ButtonTypeCallback,
+    ButtonInMainMenuCallback
 )
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from db.models import Button, ButtonType, RoleType, async_session
 
@@ -47,144 +48,11 @@ async def button_info_handler(
                     Button.button_id == callback_data.button_id
                 )
             )
-            button = result.scalars().first()
+            button: Button = result.scalars().first()
 
-    message = f"Текст на кнопке: {button.button_name}\n"
-    if button.button_type in [
-        ButtonType.FILE,
-        ButtonType.GROUP,
-        ButtonType.TEXT,
-    ]:
-        message += f"Текст при нажатии: {button.text}\n"
+    message = await kb.get_button_text_info(button)
 
-    if button.button_type == ButtonType.FILE:
-        message += "Кнопка отправит файл\n"
-
-    if button.button_type == ButtonType.GROUP:
-        message += "Кнопка отправит вложенное меню\n"
-
-    if button.button_type == ButtonType.MAILING:
-        message += "Кнопка для управления рассылкой\n"
-
-    if button.button_type == ButtonType.ADMIN_MESSAGE:
-        message += "Кнопка для связи с админом\n"
-
-    if button.to_role is not None:
-        message += f'Кнопка для {"родителей" if button.to_role == RoleType.PARENT else "логопедов"}\n'
-    else:
-        message += "Кнопка для всех пользователей\n"
-
-    buttons = []
-    # buttons.append(
-    #     [
-    #         InlineKeyboardButton(
-    #             text="Изменить тип кнопки",
-    #             callback_data=ButtonTypeCallback(
-    #                 button_id=button.button_id,
-    #             ).pack(),
-    #         ),
-    #     ],
-    # )
-    buttons.append(
-        [
-            InlineKeyboardButton(
-                text="Изменить текст на кнопке",
-                callback_data=ButtonOnButtonTextCallback(
-                    button_id=button.button_id
-                ).pack(),
-            ),
-        ],
-    )
-    if button.button_type in [
-        ButtonType.FILE,
-        ButtonType.GROUP,
-        ButtonType.TEXT,
-    ]:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text="Изменить текст при нажатии",
-                    callback_data=ButtonTextCallback(
-                        button_id=button.button_id
-                    ).pack(),
-                ),
-            ]
-        )
-
-    if button.button_type == ButtonType.FILE:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text="Изменить файл",
-                    callback_data=ButtonAddFileCallback(
-                        button_id=button.button_id
-                    ).pack(),
-                ),
-            ]
-        )
-    if button.button_type == ButtonType.GROUP:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text="Изменить вложенное меню",
-                    callback_data=ButtonGroupCallback(
-                        button_id=button.button_id
-                    ).pack(),
-                )
-            ]
-        )
-    buttons.append(
-        [
-            InlineKeyboardButton(
-                text="Показывать ролям",
-                callback_data=ButtonChooseRoleCallback(
-                    button_id=button.button_id
-                ).pack(),
-            ),
-        ]
-    )
-    buttons.append(
-        [
-            InlineKeyboardButton(
-                text="Удалить кнопку",
-                callback_data=ButtonDeleteCallback(
-                    button_id=button.button_id
-                ).pack(),
-            ),
-        ],
-    )
-    if button.parent_button_id is not None:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text="Родительская кнопка",
-                    callback_data=ButtonInfoCallback(
-                        button_id=button.parent_button_id
-                    ).pack(),
-                )
-            ]
-        )
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text="Назад",
-                    callback_data=ButtonGroupCallback(
-                        button_id=button.parent_button_id
-                    ).pack(),
-                )
-            ]
-        )
-    else:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text="Назад",
-                    callback_data=ButtonGroupCallback(button_id=None).pack(),
-                ),
-            ]
-        )
-
-    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    keyboard = await kb.get_button_settings_keyboard(button)
     await callback.message.answer(message, reply_markup=keyboard)
 
 
@@ -792,3 +660,27 @@ async def cancel_button_file_edit_handler(message: Message, state: FSMContext):
 async def get_on_button_file_edit(message: Message):
     """Обработка ввода некорректного файла при нажатии на кнопку."""
     await message.answer("Отправлен некорректный файл")
+
+
+@router.callback_query(ButtonInMainMenuCallback.filter())
+async def button_in_main_menu_handler(
+    callback: CallbackQuery, callback_data: ButtonInMainMenuCallback
+):
+    """Обработка выбора кнопки 'В главном меню'."""
+    await callback.answer()
+
+    async with async_session() as session:
+        async with session.begin():
+            result = await session.execute(
+                update(Button).returning(Button).where(
+                    Button.button_id == callback_data.button_id
+                ).values(
+                    is_in_main_menu=not callback_data.is_enabled
+                )
+            )
+            button: Button = result.scalars().first()
+
+    message = await kb.get_button_text_info(button)
+
+    keyboard = await kb.get_button_settings_keyboard(button)
+    await callback.message.edit_text(message, reply_markup=keyboard)

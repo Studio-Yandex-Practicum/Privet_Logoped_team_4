@@ -4,11 +4,7 @@ from aiogram.types import (
     KeyboardButton,
     ReplyKeyboardMarkup,
 )
-from callbacks import (
-    ButtonGroupCallback,
-    PromocodeDeleteCallback,
-    VisitButtonCallback,
-)
+import callbacks as cb
 from typing import Optional
 import sys
 import os
@@ -89,7 +85,7 @@ admin = InlineKeyboardMarkup(
             InlineKeyboardButton(text="Промокоды", callback_data="promocodes"),
             InlineKeyboardButton(
                 text="Кнопки",
-                callback_data=ButtonGroupCallback(button_id=None).pack(),
+                callback_data=cb.ButtonGroupCallback(button_id=None).pack(),
             ),
         ],
     ],
@@ -105,7 +101,7 @@ promocodes = InlineKeyboardMarkup(
         [
             InlineKeyboardButton(
                 text="Удалить промокод",
-                callback_data=PromocodeDeleteCallback().pack(),
+                callback_data=cb.PromocodeDeleteCallback().pack(),
             )
         ],
         [InlineKeyboardButton(text="Назад", callback_data="admin")],
@@ -153,12 +149,169 @@ async def get_start_keyboard(
         [
             InlineKeyboardButton(
                 text=button.button_name,
-                callback_data=VisitButtonCallback(
-                    button_id=button.button_id,
-                    authorized=role is not None
+                callback_data=cb.VisitButtonCallback(
+                    button_id=button.button_id, authorized=role is not None
                 ).pack(),
             )
         ]
         for button in buttons
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+async def get_button_text_info(button: Button):
+    message = f"Текст на кнопке: {button.button_name}\n"
+    if button.button_type in [
+        ButtonType.FILE,
+        ButtonType.GROUP,
+        ButtonType.TEXT,
+    ]:
+        message += f"Текст при нажатии: {button.text}\n"
+
+    if button.button_type == ButtonType.FILE:
+        message += "Кнопка отправит файл\n"
+
+    if button.button_type == ButtonType.GROUP:
+        message += "Кнопка отправит вложенное меню\n"
+
+    if button.button_type == ButtonType.MAILING:
+        message += "Кнопка для управления рассылкой\n"
+
+    if button.button_type == ButtonType.ADMIN_MESSAGE:
+        message += "Кнопка для связи с админом\n"
+
+    if button.to_role is not None:
+        message += f'Кнопка для {"родителей" if button.to_role == RoleType.PARENT else "логопедов"}\n'
+    else:
+        message += "Кнопка для всех пользователей\n"
+
+    return message
+
+
+async def get_button_settings_keyboard(button: Button):
+    buttons = []
+    # buttons.append(
+    #     [
+    #         InlineKeyboardButton(
+    #             text="Изменить тип кнопки",
+    #             callback_data=ButtonTypeCallback(
+    #                 button_id=button.button_id,
+    #             ).pack(),
+    #         ),
+    #     ],
+    # )
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text="Изменить текст на кнопке",
+                callback_data=cb.ButtonOnButtonTextCallback(
+                    button_id=button.button_id
+                ).pack(),
+            ),
+        ],
+    )
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text=f'Показывать при входе: {"✅" if button.is_in_main_menu else "❌"}',
+                callback_data=cb.ButtonInMainMenuCallback(
+                    button_id=button.button_id,
+                    is_enabled=button.is_in_main_menu,
+                ).pack(),
+            ),
+        ],
+    )
+    if button.button_type in [
+        ButtonType.FILE,
+        ButtonType.GROUP,
+        ButtonType.TEXT,
+    ]:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="Изменить текст при нажатии",
+                    callback_data=cb.ButtonTextCallback(
+                        button_id=button.button_id
+                    ).pack(),
+                ),
+            ]
+        )
+
+    if button.button_type == ButtonType.FILE:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="Изменить файл",
+                    callback_data=cb.ButtonAddFileCallback(
+                        button_id=button.button_id
+                    ).pack(),
+                ),
+            ]
+        )
+    if button.button_type == ButtonType.GROUP:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="Изменить вложенное меню",
+                    callback_data=cb.ButtonGroupCallback(
+                        button_id=button.button_id
+                    ).pack(),
+                )
+            ]
+        )
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text="Показывать ролям",
+                callback_data=cb.ButtonChooseRoleCallback(
+                    button_id=button.button_id
+                ).pack(),
+            ),
+        ]
+    )
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text="Удалить кнопку",
+                callback_data=cb.ButtonDeleteCallback(
+                    button_id=button.button_id
+                ).pack(),
+            ),
+        ],
+    )
+    if button.parent_button_id is not None:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="Родительская кнопка",
+                    callback_data=cb.ButtonInfoCallback(
+                        button_id=button.parent_button_id
+                    ).pack(),
+                )
+            ]
+        )
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="Назад",
+                    callback_data=cb.ButtonGroupCallback(
+                        button_id=button.parent_button_id
+                    ).pack(),
+                )
+            ]
+        )
+    else:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="Назад",
+                    callback_data=cb.ButtonGroupCallback(
+                        button_id=None
+                    ).pack(),
+                ),
+            ]
+        )
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+
+    return keyboard

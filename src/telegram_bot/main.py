@@ -7,12 +7,7 @@ from handlers import (
     admin_links_router,
     admin_promocodes_router,
     admin_router,
-    admin_upload_router,
-    faq_router,
-    file_router,
-    parent_router,
     start_router,
-    therapist_router,
     admin_buttons_router,
 )
 from middleware import PromocodeMiddleware
@@ -29,12 +24,12 @@ async def main():
         admin_links_router,
         admin_promocodes_router,
         admin_router,
-        admin_upload_router,
-        faq_router,
-        file_router,
-        parent_router,
+        # admin_upload_router,
+        # faq_router,
+        # file_router,
+        # parent_router,
         start_router,
-        therapist_router,
+        # therapist_router,
         admin_buttons_router,
     )
     await dp.start_polling(bot)

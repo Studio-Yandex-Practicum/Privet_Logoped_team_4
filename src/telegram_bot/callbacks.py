@@ -32,6 +32,11 @@ class ButtonOnButtonTextCallback(CallbackData, prefix="on_button_text"):
     button_id: int
 
 
+class ButtonInMainMenuCallback(CallbackData, prefix="in_main_menu"):
+    button_id: int
+    is_enabled: bool
+
+
 class ButtonTypeCallback(CallbackData, prefix="button_type"):
     button_id: int
     button_type: Optional[ButtonType] = None
