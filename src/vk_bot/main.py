@@ -6,6 +6,7 @@ from handlers import (
     add_promocode,
     # admin_links_handler,
     admin_promocodes_handler,
+    
     admin_start_handler,
     # admin_upload_file_handler,
     # delete_link_handler,
@@ -20,6 +21,7 @@ from handlers import (
     speech_therapist_handler,
     start_handler,
     admin_buttons_handler,
+    
 )
 from vkbottle import BaseStateGroup, GroupEventType, DocMessagesUploader
 from vkbottle.bot import Bot, Message, MessageEvent
@@ -233,35 +235,18 @@ async def admin_options_on_button_text_create(message: Message):
 # async def links_options(message: Message):
 #     await admin_links_handler(bot, message, AdminStates)
 
-
-@bot.on.private_message(state=AdminStates.WAITING_LINK)
-async def waiting_link(message: Message):
-    await get_link(bot, message, AdminStates)
-
-
-@bot.on.private_message(state=AdminStates.WAITING_LINK_NAME)
-async def waiting_link_name(message: Message):
-    await get_link_name(bot, message, AdminStates)
-
-
-@bot.on.private_message(state=AdminStates.WAITING_LINK_TYPE)
-async def waiting_link_type(message: Message):
-    await get_link_type(bot, message, AdminStates)
-
-
-@bot.on.private_message(state=AdminStates.WAITING_LINK_TO_ROLE)
-async def waiting_to_role(message: Message):
-    await add_link(bot, message, AdminStates)
-
-
-@bot.on.private_message(state=AdminStates.DELETE_LINK)
-async def delete_link(message: Message):
-    await delete_link_handler(bot, message, AdminStates)
-
-
 @bot.on.private_message(state=AdminStates.PROMOCODES_STATE)
 async def promocodes_options(message: Message):
-    await admin_promocodes_handler(bot, message, AdminStates)
+    await admin_promocodes_handler.admin_promocodes_handler(bot, message, AdminStates)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "promocodes"}),
+)
+async def promocodes_admin(event: MessageEvent):
+    await admin_promocodes_handler.promocodes_menu(bot, event)
 
 
 @bot.on.private_message(state=AdminStates.WAITING_PROMOCODE)
@@ -277,13 +262,6 @@ async def waiting_promocode_filepath(message: Message):
 @bot.on.private_message(state=AdminStates.DELETE_PROMOCODE)
 async def delete_promocode(message: Message):
     await delete_promocode_handler(bot, message, AdminStates)
-
-
-@bot.on.private_message(
-    state=[AdminStates.UPLOAD_LINK_FILE, AdminStates.UPLOAD_PROMOCODE_FILE]
-)
-async def upload_file(message: Message):
-    await admin_upload_file_handler(bot, message, AdminStates)
 
 
 @bot.on.private_message(lev=["/start", "Начать"])

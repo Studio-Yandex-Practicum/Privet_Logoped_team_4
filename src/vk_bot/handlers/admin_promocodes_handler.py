@@ -8,7 +8,7 @@ from keyboards.keyboards import (
 )
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
-from vkbottle import CtxStorage, Bot
+from vkbottle import CtxStorage, Bot, GroupTypes
 from vkbottle.bot import Message
 from vkbottle_types.objects import MessagesMessageAttachmentType
 import uuid
@@ -176,3 +176,21 @@ async def admin_promocodes_handler(bot, message, AdminStates):
             "Пожалуйста, выберите одну из предложенных опций:",
             keyboard=admin_promocodes_keyboard,
         )
+
+
+async def promocodes_menu(bot: Bot, event: GroupTypes.MessageEvent):
+    """
+    Вызов меню промокодов.
+    """
+
+    await bot.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=event.object.user_id,
+        peer_id=event.object.peer_id,
+    )
+    await bot.api.messages.edit(
+        peer_id=event.peer_id,
+        conversation_message_id=event.conversation_message_id,
+        keyboard=admin_promocodes_keyboard,
+        message="Выберите действие с промокодами:",
+    )

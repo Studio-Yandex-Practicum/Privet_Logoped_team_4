@@ -10,7 +10,8 @@ from sqlalchemy import (
     func,
     BigInteger,
     ForeignKey,
-    Text
+    Text,
+    Boolean
 )
 from sqlalchemy.ext.asyncio import (
     AsyncAttrs,
@@ -18,7 +19,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, backref
 
 from .config import database_url
 from .constants import LinkResourseType, RoleName, ButtonTypeEnum
@@ -88,7 +89,7 @@ class PromoCode(AsyncAttrs, Base):
     __tablename__ = "promocodes"
     promocode_id = Column(Integer, primary_key=True)
     promocode = Column(String(100), unique=True, nullable=False)
-    file_path = Column(String(100), nullable=False)
+    file_path = Column(Text(), nullable=False)
 
 
 class Button(AsyncAttrs, Base):
@@ -99,11 +100,18 @@ class Button(AsyncAttrs, Base):
     button_name = Column(String(100), unique=True, nullable=False)
     button_type = Column(Enum(ButtonType), nullable=False)
     text = Column(Text(), nullable=True)
-    file_path = Column(String(100), nullable=True)
+    file_path = Column(Text(), nullable=True)
+    is_in_main_menu = Column(Boolean(), default=False)
 
     to_role = Column(Enum(RoleType), nullable=True)
-    parent_button_id = Column(Integer, ForeignKey("buttons.button_id"))
-    parent_button = relationship("Button", remote_side=[button_id])
+    parent_button_id = Column(
+        Integer, ForeignKey("buttons.button_id", ondelete="CASCADE")
+    )
+    parent_button = relationship(
+        "Button",
+        remote_side=[button_id],
+        backref=backref("children", passive_deletes=True),
+    )
 
 
 engine = create_async_engine(database_url, echo=False)

@@ -850,7 +850,7 @@ async def get_button_file_edit(message: Message, AdminStates, bot: Bot):
     data = await bot.state_dispenser.get(peer_id=message.peer_id)
     async with async_session() as session:
         async with session.begin():
-            button = await session.execute(
+            await session.execute(
                 update(Button)
                 .where(Button.button_id == data.payload["button_id"])
                 .values(file_path=str(file_path))
@@ -864,6 +864,11 @@ async def button_click_handler(
     bot: Bot, event: GroupTypes.MessageEvent, doc_uploader: DocMessagesUploader
 ):
     """Обработка нажатия на кнопку."""
+    await bot.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=event.object.user_id,
+        peer_id=event.object.peer_id,
+    )
     data = event.object.payload
     async with async_session() as session:
         async with session.begin():

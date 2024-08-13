@@ -13,6 +13,7 @@ parent_folder_path = os.path.abspath(
 )
 sys.path.append(parent_folder_path)
 from telegram_bot.crud import chose_role, get_user, send_notification # noqa
+from db.models import RoleType
 
 router = Router()
 
@@ -21,16 +22,18 @@ router = Router()
 async def therapist_message(message: Message, bot: Bot, state: FSMContext):
     """Обработка выбора кнопки 'Логопед'."""
     await state.set_state(Level.therapist)
-    await message.answer('Здравствуйте! Вы нажали меню "Логопед"',
-                         reply_markup=kb.therapist)
     user_id = message.from_user.id
-    role_type = 'speech_therapist'
+    role_type = RoleType.SPEECH_THERAPIST
     first_name = message.from_user.first_name
     user = await get_user(user_id)
     if not user:
         await chose_role(user_id, role_type)
         await send_notification(bot, user_id, first_name, role_type)
     await chose_role(user_id, role_type)
+    await message.answer(
+        'Выберите опцию:',
+        reply_markup=await kb.get_start_keyboard(role=role_type),
+    )
 
 
 @router.message(F.text == 'Отметить результат занятий')

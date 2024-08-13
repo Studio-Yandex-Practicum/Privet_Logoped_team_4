@@ -45,7 +45,7 @@ async def parent_message(message: Message, bot: Bot, state: FSMContext):
         await send_notification(bot, user_id, first_name, role_type)
     await chose_role(user_id, role_type)
     await message.answer(
-        'Здравствуйте! Вы нажали меню "Родитель"',
+        'Выберите опцию:',
         reply_markup=await kb.get_start_keyboard(role=RoleType.PARENT),
     )
 

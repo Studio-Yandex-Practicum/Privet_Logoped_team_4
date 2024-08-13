@@ -639,7 +639,7 @@ async def get_on_button_text_create(message: Message, state: FSMContext):
         async with async_session() as session:
             async with session.begin():
                 button = Button(
-                    button_name=data["text"],
+                    button_name=message.text,
                     parent_button_id=data["parent_button_id"],
                     button_type=data["button_type"],
                     text="",
@@ -679,7 +679,7 @@ async def get_button_text_create(message: Message, state: FSMContext):
                     button_name=data["text"],
                     parent_button_id=data["parent_button_id"],
                     button_type=data["button_type"],
-                    text=data["click_text"],
+                    text=message.text,
                     file_path="",
                 )
                 session.add(button)

@@ -13,8 +13,7 @@ router = Router()
 async def cmd_start(message: Message, state: FSMContext):
     await state.set_state(Level.main)
     await message.answer(
-        'Здравствуйте! Вас приветствует бот "Привет, Логопед". '
-        'Пожалуйста, выберите свою роль:',
+        'Здравствуйте! Вас приветствует бот "Привет, Логопед".',
         reply_markup=kb.main
     )
 

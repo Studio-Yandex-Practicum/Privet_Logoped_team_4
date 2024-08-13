@@ -3,9 +3,7 @@ import sys
 from vkbottle import Keyboard, Callback
 
 from keyboards.keyboards import (
-    parent_keyboard,
     role_keyboard,
-    speech_therapist_keyboard,
 )
 from sqlalchemy import select, or_, and_
 
