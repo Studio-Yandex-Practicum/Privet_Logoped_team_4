@@ -7,7 +7,7 @@ from aiogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    FSInputFile
+    FSInputFile,
 )
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
@@ -21,7 +21,13 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..")
 )
 sys.path.append(parent_folder_path)
-from db.models import async_session, TGUser, Button, RoleType, ButtonType  # noqa
+from db.models import (  # noqa
+    async_session,
+    TGUser,
+    Button,
+    RoleType,
+    ButtonType,
+)
 
 router = Router()
 
@@ -224,7 +230,10 @@ async def visit_callback(
         )
     elif button.button_type == ButtonType.FILE:
         await callback.message.answer_document(
-            document=FSInputFile(button.file_path),
+            document=FSInputFile(
+                button.file_path,
+                filename=button.text + "." + button.file_path.split(".")[-1],
+            ),
             caption=button.text,
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[

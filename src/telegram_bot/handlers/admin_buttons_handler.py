@@ -613,7 +613,7 @@ async def button_add_file_callback(
 ):
     """Обработка выбора кнопки 'Добавить файл'."""
     await callback.answer()
-    await state.set_state(AdminStates.waiting_on_button_file)
+    await state.set_state(AdminStates.waiting_button_file)
     await state.update_data(button_id=callback_data.button_id)
 
     await callback.message.delete()
@@ -621,7 +621,7 @@ async def button_add_file_callback(
 
 
 @router.message(
-    StateFilter(AdminStates.waiting_button_file_create), F.document
+    StateFilter(AdminStates.waiting_button_file), F.document
 )
 async def get_button_file_edit(message: Message, state: FSMContext, bot: Bot):
     """Обработка выбора файла при нажатии на кнопку."""
@@ -639,12 +639,13 @@ async def get_button_file_edit(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
     async with async_session() as session:
         async with session.begin():
-            button = session.execute(
-                select(Button).where(Button.button_id == data["button_id"])
+            await session.execute(
+                update(Button).where(Button.button_id == data["button_id"]).values(
+                    file_path=str(dest)
+                )
             )
-            button.file_path = str(dest)
 
-    await message.answer("Кнопка добавлена", reply_markup=kb.admin)
+    await message.answer("Кнопка обновлена", reply_markup=kb.admin)
 
 
 @router.message(
