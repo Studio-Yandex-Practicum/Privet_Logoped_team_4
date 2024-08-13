@@ -353,6 +353,10 @@ async def button_on_text_handler(
 
 async def get_button_on_text(bot: Bot, message: Message):
     """Обработка ввода текста на кнопке."""
+    if message.text.lower() == "отмена":
+        await message.answer("Отменено", keyboard=admin_keyboard)
+        await bot.state_dispenser.delete(message.peer_id)
+        return
     async with async_session() as session:
         async with session.begin():
             data = await bot.state_dispenser.get(message.peer_id)
@@ -395,6 +399,10 @@ async def button_text_handler(
 
 async def get_button_text(message: Message, AdminStates, bot: Bot):
     """Обработка ввода текста при нажатии на кнопку."""
+    if message.text.lower() == "отмена":
+        await message.answer("Отменено", keyboard=admin_keyboard)
+        await bot.state_dispenser.delete(message.peer_id)
+        return
     async with async_session() as session:
         async with session.begin():
             data = await bot.state_dispenser.get(message.peer_id)
@@ -672,6 +680,10 @@ async def button_add_type_handler(
 
 async def get_on_button_text_create(message: Message, AdminStates, bot: Bot):
     """Обработка ввода текста при нажатии на кнопку."""
+    if message.text.lower() == "отмена":
+        await message.answer("Отменено", keyboard=admin_keyboard)
+        await bot.state_dispenser.delete(message.peer_id)
+        return
 
     data = await bot.state_dispenser.get(message.peer_id)
 
@@ -710,7 +722,10 @@ async def get_on_button_text_create(message: Message, AdminStates, bot: Bot):
 
 async def get_button_text_create(message: Message, AdminStates, bot: Bot):
     """Обработка ввода текста при нажатии на кнопку."""
-
+    if message.text.lower() == "отмена":
+        await message.answer("Отменено", keyboard=admin_keyboard)
+        await bot.state_dispenser.delete(message.peer_id)
+        return
     data = await bot.state_dispenser.get(message.peer_id)
     if data.payload["button_type"] == str(ButtonType.FILE):
         await message.answer("Выберите файл", keyboard=cancel_keyboard)
@@ -741,6 +756,10 @@ async def get_button_text_create(message: Message, AdminStates, bot: Bot):
 
 async def get_button_file_create(message: Message, AdminStates, bot: Bot):
     """Обработка выбора файла при нажатии на кнопку."""
+    if message.text.lower() == "отмена":
+        await message.answer("Отменено", keyboard=admin_keyboard)
+        await bot.state_dispenser.delete(message.peer_id)
+        return
     if not message.attachments:
         await message.answer(
             "Отправлен некорректный файл.", keyboard=cancel_keyboard
@@ -814,6 +833,10 @@ async def button_add_file_callback(
 
 async def get_button_file_edit(message: Message, AdminStates, bot: Bot):
     """Обработка выбора файла при нажатии на кнопку."""
+    if message.text.lower() == "отмена":
+        await message.answer("Отменено", keyboard=admin_keyboard)
+        await bot.state_dispenser.delete(message.peer_id)
+        return
     if not message.attachments:
         await message.answer(
             "Прикрепите файл для загрузки.", keyboard=cancel_keyboard

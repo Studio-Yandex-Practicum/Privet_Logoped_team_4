@@ -25,24 +25,6 @@ from db.models import PromoCode, async_session  # noqa
 ctx_storage = CtxStorage()
 
 
-async def get_promocode(bot: Bot, message: Message, AdminStates):
-    """Обработка ввода промокода."""
-    if message.text.lower() == "отмена":
-        await message.answer(
-            "Отмена добавления промокода.", keyboard=admin_promocodes_keyboard
-        )
-        await bot.state_dispenser.set(
-            message.peer_id, AdminStates.PROMOCODES_STATE
-        )
-    else:
-        await message.answer("Отправьте файл:", keyboard=cancel_keyboard)
-        await bot.state_dispenser.set(
-            message.peer_id,
-            AdminStates.WAITING_PROMOCODE_FILEPATH,
-            promocode=message.text,
-        )
-
-
 async def add_promocode(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
     """Обработка нажатия кнопки 'Добавить промокод'."""
     await bot.api.messages.send_message_event_answer(
@@ -64,6 +46,10 @@ async def add_promocode(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
 async def add_promocode_text(bot: Bot, message: Message, AdminStates):
     """Обработка добавления промокода из файлов."""
     if message.text.lower() == "отмена":
+        await message.answer("Отменено", keyboard=admin_promocodes_keyboard)
+        await bot.state_dispenser.delete(message.peer_id)
+        return
+    if message.text.lower() == "отмена":
         await message.answer(
             "Отмена добавления промокода.", keyboard=admin_promocodes_keyboard
         )
@@ -83,6 +69,10 @@ async def add_promocode_text(bot: Bot, message: Message, AdminStates):
 
 async def add_promocode_file(bot: Bot, message: Message, AdminStates):
     """Обработка добавления промокода из файлов."""
+    if message.text.lower() == "отмена":
+        await message.answer("Отменено", keyboard=admin_promocodes_keyboard)
+        await bot.state_dispenser.delete(message.peer_id)
+        return
     if message.text.lower() == "отмена":
         await message.answer(
             "Отмена добавления промокода.", keyboard=admin_promocodes_keyboard
@@ -165,6 +155,12 @@ async def delete_button_promocode_handler(
 
 async def delete_promocode_handler(bot: Bot, message: Message, AdminStates):
     """Обработка ввода промокода для удаления"""
+    if message.text.lower() == "отмена":
+        await message.answer(
+            "Отмена добавления промокода.", keyboard=admin_promocodes_keyboard
+        )
+        await bot.state_dispenser.delete(message.peer_id)
+        return
     promocode = message.text
     async with async_session() as session:
         promocode_result = await session.execute(
@@ -185,40 +181,6 @@ async def delete_promocode_handler(bot: Bot, message: Message, AdminStates):
         f"Промокод {promocode} удалён.",
         keyboard=admin_keyboard,
     )
-
-
-async def admin_promocodes_handler(bot, message, AdminStates):
-    """
-    Обработка выбора кнопки 'Добавить промокод',
-    'Удалить промокод' или 'Назад'.
-    """
-    if message.text.lower() == "добавить промокод":
-        await message.answer("Введите промокод:", keyboard=cancel_keyboard)
-        await bot.state_dispenser.set(
-            message.peer_id, AdminStates.WAITING_PROMOCODE
-        )
-    elif message.text.lower() == "удалить промокод":
-        await message.answer(
-            "Отправьте команду /delete <промокод>:", keyboard=cancel_keyboard
-        )
-        await bot.state_dispenser.set(
-            message.peer_id, AdminStates.DELETE_PROMOCODE
-        )
-    elif message.text.lower() == "загрузить файл":
-        await message.answer(
-            "Прикрепите файл для загрузки.", keyboard=cancel_keyboard
-        )
-        await bot.state_dispenser.set(
-            message.peer_id, AdminStates.UPLOAD_PROMOCODE_FILE
-        )
-    elif message.text.lower() == "назад":
-        await message.answer("Вы выбрали Назад.", keyboard=admin_keyboard)
-        await bot.state_dispenser.set(message.peer_id, AdminStates.ADMIN_STATE)
-    else:
-        await message.answer(
-            "Пожалуйста, выберите одну из предложенных опций:",
-            keyboard=admin_promocodes_keyboard,
-        )
 
 
 async def promocodes_menu(bot: Bot, event: GroupTypes.MessageEvent):

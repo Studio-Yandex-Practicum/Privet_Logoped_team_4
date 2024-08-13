@@ -67,6 +67,10 @@ async def promocode_handler(
     bot: Bot, message: Message, doc_uploader: DocMessagesUploader, is_command: bool = True
 ):
     """Обработка ввода промокода."""
+    if message.text.lower() == "отмена":
+        await message.answer("Отменено")
+        await bot.state_dispenser.delete(message.peer_id)
+        return
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(

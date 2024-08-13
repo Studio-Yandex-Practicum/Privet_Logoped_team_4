@@ -2,16 +2,9 @@ import logging
 
 from config import api, labeler, state_dispenser
 from handlers import (
-    # add_link,
-    # admin_links_handler,
     admin_promocodes_handler,
     admin_start_handler,
-    # admin_upload_file_handler,
-    # delete_link_handler,
     faq_handler,
-    # get_link,
-    # get_link_name,
-    # get_link_type,
     role_handler,
     start_handler,
     admin_buttons_handler,
@@ -217,23 +210,6 @@ async def admin_button_add(event: MessageEvent):
 async def admin_options_on_button_text_create(message: Message):
     await admin_buttons_handler.get_on_button_text_create(
         message, AdminStates, bot
-    )
-
-
-# @bot.on.private_message(state=AdminStates.ADMIN_STATE)
-# async def admin_options(message: Message):
-#     await admin_handler(bot, message, AdminStates)
-
-
-# @bot.on.private_message(state=AdminStates.LINKS_STATE)
-# async def links_options(message: Message):
-#     await admin_links_handler(bot, message, AdminStates)
-
-
-@bot.on.private_message(state=AdminStates.PROMOCODES_STATE)
-async def promocodes_options(message: Message):
-    await admin_promocodes_handler.admin_promocodes_handler(
-        bot, message, AdminStates
     )
 
 
