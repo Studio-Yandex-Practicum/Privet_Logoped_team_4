@@ -10,6 +10,15 @@ class Level(StatesGroup):
     role_chose = State()
 
 
+class NotificationStates(StatesGroup):
+    notification = State()
+    every_day = State()
+    other_day = State()
+    day_week_choice = State()
+    user_choice = State()
+    stop_notification = State()
+
+
 class AdminStates(StatesGroup):
     """Стейты администратора."""
     admin = State()

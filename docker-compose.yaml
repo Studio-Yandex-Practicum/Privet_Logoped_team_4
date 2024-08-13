@@ -2,22 +2,6 @@ version: '3'
 
 services:
 
-  telegram_bot:
-    env_file: .env
-    build:
-      context: src/telegram_bot
-      dockerfile: Dockerfile
-    depends_on:
-      - db
-
-  vk_bot:
-    env_file: .env
-    build:
-      context: src/vk_bot
-      dockerfile: Dockerfile
-    depends_on:
-      - db
-
   db:
     image: postgres
     restart: always
@@ -27,6 +11,13 @@ services:
     env_file: .env
     ports:
       - "5433:5432"
+    
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
 
 volumes:
   db-data:

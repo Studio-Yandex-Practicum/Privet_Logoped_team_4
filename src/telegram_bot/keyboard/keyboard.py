@@ -1,4 +1,4 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 
 main = ReplyKeyboardMarkup(
     keyboard=[
@@ -92,6 +92,31 @@ promocodes = ReplyKeyboardMarkup(
 cancel = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text='Отмена')]],
+    resize_keyboard=True,
+    input_field_placeholder='Выберите пункт меню...'
+)
+
+notifications = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='Каждый день'),
+        KeyboardButton(text='Через день')],
+        [KeyboardButton(text='Выбор пользователя'),
+        KeyboardButton(text='Выключить уведомления')],
+        [KeyboardButton(text='Назад')]],        
+    resize_keyboard=True,
+    input_field_placeholder='Выберите пункт меню...'
+)
+
+days_of_the_week = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='Понедельник'),
+        KeyboardButton(text='Вторник')],
+        [KeyboardButton(text='Среда'),
+        KeyboardButton(text='Четверг')],
+        [KeyboardButton(text='Пятница'),
+        KeyboardButton(text='Суббота')],
+        [KeyboardButton(text='Воскресенье'),
+        KeyboardButton(text='Назад')]],        
     resize_keyboard=True,
     input_field_placeholder='Выберите пункт меню...'
 )

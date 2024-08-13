@@ -7,3 +7,4 @@ from .file_handler import router as file_router  # noqa
 from .parent_handler import router as parent_router  # noqa
 from .start_handler import router as start_router  # noqa
 from .therapist_handler import router as therapist_router  # noqa
+from .notification_handler import router as notification_router # noqa

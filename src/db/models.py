@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Column, DateTime, Enum, Integer, Numeric, String, func, BigInteger
+from sqlalchemy import Column, DateTime, Enum, Integer, Numeric, String, func, BigInteger, Boolean
 from sqlalchemy.ext.asyncio import (AsyncAttrs, AsyncSession,
                                     create_async_engine)
 from sqlalchemy.ext.declarative import declarative_base
@@ -31,6 +31,10 @@ class TGUser(AsyncAttrs, Base):
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
+    notificate_at = Column(Integer)
+    notification_interval = Column(String(100))
+    notification_day = Column(String(100))
+    notification_access = Column(Boolean, default=False)
 
 
 class VKUser(AsyncAttrs, Base):
