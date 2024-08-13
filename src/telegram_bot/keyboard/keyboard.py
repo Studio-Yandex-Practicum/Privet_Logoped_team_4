@@ -122,30 +122,40 @@ role = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="Родитель", callback_data="parent")],
         [InlineKeyboardButton(text="Логопед", callback_data="therapist")],
+        [InlineKeyboardButton(text="Информация", callback_data="info")],
     ],
 )
 
 
 async def get_start_keyboard(
-    role: RoleType, parent_button_id: Optional[int] = None
+    role: Optional[RoleType], parent_button_id: Optional[int] = None
 ) -> InlineKeyboardMarkup:
     async with async_session() as session:
-        result = await session.execute(
-            select(Button).where(
-                and_(
-                    Button.parent_button_id == parent_button_id,
-                    or_(Button.to_role == role, Button.to_role.is_(None)),
+        if role is None:
+            result = await session.execute(
+                select(Button).where(
+                    Button.is_in_main_menu,
                 )
             )
-        )
-        buttons = result.scalars().all()
+            buttons = result.scalars().all()
+        else:
+            result = await session.execute(
+                select(Button).where(
+                    and_(
+                        Button.parent_button_id == parent_button_id,
+                        or_(Button.to_role == role, Button.to_role.is_(None)),
+                    )
+                )
+            )
+            buttons = result.scalars().all()
 
     buttons = [
         [
             InlineKeyboardButton(
                 text=button.button_name,
                 callback_data=VisitButtonCallback(
-                    button_id=button.button_id
+                    button_id=button.button_id,
+                    authorized=role is not None
                 ).pack(),
             )
         ]

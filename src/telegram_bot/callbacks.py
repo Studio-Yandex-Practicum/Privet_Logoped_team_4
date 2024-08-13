@@ -65,3 +65,4 @@ class ButtonAddFileCallback(CallbackData, prefix="button_file"):
 
 class VisitButtonCallback(CallbackData, prefix="visit_button"):
     button_id: int
+    authorized: bool = True
