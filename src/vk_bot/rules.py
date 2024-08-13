@@ -1,4 +1,3 @@
-from vkbottle.dispatch.dispenser.base import BaseStateGroup
 from vkbottle.dispatch.rules import ABCRule
 
 

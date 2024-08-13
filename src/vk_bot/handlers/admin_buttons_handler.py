@@ -864,11 +864,6 @@ async def button_click_handler(
     bot: Bot, event: GroupTypes.MessageEvent, doc_uploader: DocMessagesUploader
 ):
     """Обработка нажатия на кнопку."""
-    await bot.api.messages.send_message_event_answer(
-        event_id=event.object.event_id,
-        user_id=event.object.user_id,
-        peer_id=event.object.peer_id,
-    )
     data = event.object.payload
     async with async_session() as session:
         async with session.begin():
@@ -895,27 +890,42 @@ async def button_click_handler(
             event_id=event.object.event_id,
             user_id=event.object.user_id,
             peer_id=event.object.peer_id,
-            event_data=ShowSnackbarEvent(
-                text="Тут будут уведомления",
-            ),
+        )
+        back_keyboard = Keyboard()
+        back_keyboard.add(Callback(label="Назад", payload=back_callback))
+        await bot.api.messages.send(
+            event.object.user_id,
+            message="Тут будет настройка уведомлений",
+            keyboard=back_keyboard.get_json(),
+            random_id=0,
         )
     elif button.button_type == ButtonType.ADMIN_MESSAGE:
         await bot.api.messages.send_message_event_answer(
             event_id=event.object.event_id,
             user_id=event.object.user_id,
             peer_id=event.object.peer_id,
-            event_data=ShowSnackbarEvent(
-                text="Тут будет письмо админам",
-            ),
+        )
+        back_keyboard = Keyboard()
+        back_keyboard.add(Callback(label="Назад", payload=back_callback))
+        await bot.api.messages.send(
+            event.object.user_id,
+            message="Тут будет письмо админам",
+            keyboard=back_keyboard.get_json(),
+            random_id=0,
         )
     elif button.button_type == ButtonType.MAILING:
         await bot.api.messages.send_message_event_answer(
             event_id=event.object.event_id,
             user_id=event.object.user_id,
             peer_id=event.object.peer_id,
-            event_data=ShowSnackbarEvent(
-                text="Тут будут рассылка",
-            ),
+        )
+        back_keyboard = Keyboard()
+        back_keyboard.add(Callback(label="Назад", payload=back_callback))
+        await bot.api.messages.send(
+            event.object.user_id,
+            message="Тут будет рассылка",
+            keyboard=back_keyboard.get_json(),
+            random_id=0,
         )
     elif button.button_type == ButtonType.TEXT:
         await bot.api.messages.send_message_event_answer(

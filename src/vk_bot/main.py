@@ -3,25 +3,18 @@ import logging
 from config import api, labeler, state_dispenser
 from handlers import (
     # add_link,
-    add_promocode,
     # admin_links_handler,
     admin_promocodes_handler,
-    
     admin_start_handler,
     # admin_upload_file_handler,
     # delete_link_handler,
-    delete_promocode_handler,
     faq_handler,
     # get_link,
     # get_link_name,
     # get_link_type,
-    get_promocode,
-    parent_handler,
     role_handler,
-    speech_therapist_handler,
     start_handler,
     admin_buttons_handler,
-    
 )
 from vkbottle import BaseStateGroup, GroupEventType, DocMessagesUploader
 from vkbottle.bot import Bot, Message, MessageEvent
@@ -42,6 +35,7 @@ class UserStates(BaseStateGroup):
     PARENT_STATE = "parent_options"
     FAQ_STATE = "faq_options"
     SPEECH_THERAPIST_STATE = "speech_therapist_options"
+    PROMOCODE_STATE = "enter_promocode"
 
 
 class AdminStates(BaseStateGroup):
@@ -235,9 +229,12 @@ async def admin_options_on_button_text_create(message: Message):
 # async def links_options(message: Message):
 #     await admin_links_handler(bot, message, AdminStates)
 
+
 @bot.on.private_message(state=AdminStates.PROMOCODES_STATE)
 async def promocodes_options(message: Message):
-    await admin_promocodes_handler.admin_promocodes_handler(bot, message, AdminStates)
+    await admin_promocodes_handler.admin_promocodes_handler(
+        bot, message, AdminStates
+    )
 
 
 @bot.on.raw_event(
@@ -249,24 +246,32 @@ async def promocodes_admin(event: MessageEvent):
     await admin_promocodes_handler.promocodes_menu(bot, event)
 
 
-@bot.on.private_message(state=AdminStates.WAITING_PROMOCODE)
-async def waiting_promocode(message: Message):
-    await get_promocode(bot, message, AdminStates)
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "add_promocode"}),
+)
+async def add_promocodes_admin(event: MessageEvent):
+    await admin_promocodes_handler.add_promocode(bot, event, AdminStates)
 
 
-@bot.on.private_message(state=AdminStates.WAITING_PROMOCODE_FILEPATH)
-async def waiting_promocode_filepath(message: Message):
-    await add_promocode(bot, message, AdminStates)
+@bot.on.message(state=AdminStates.WAITING_PROMOCODE)
+async def add_promocodes_admin_text(message: Message):
+    await admin_promocodes_handler.add_promocode_text(
+        bot, message, AdminStates
+    )
 
 
-@bot.on.private_message(state=AdminStates.DELETE_PROMOCODE)
-async def delete_promocode(message: Message):
-    await delete_promocode_handler(bot, message, AdminStates)
+@bot.on.message(state=AdminStates.WAITING_PROMOCODE_FILEPATH)
+async def add_promocodes_admin_filepath(message: Message):
+    await admin_promocodes_handler.add_promocode_file(
+        bot, message, AdminStates
+    )
 
 
 @bot.on.private_message(lev=["/start", "Начать"])
 async def greeting(message: Message):
-    await start_handler(bot, message, UserStates)
+    await start_handler.start_handler(bot, message, UserStates)
 
 
 @bot.on.private_message(lev=["/promo", "Промокод"])
@@ -277,12 +282,7 @@ async def promo(message: Message):
 
 @bot.on.private_message(state=UserStates.ROLE_STATE)
 async def choose_role(message: Message):
-    await role_handler(bot, message, UserStates)
-
-
-@bot.on.private_message(state=UserStates.PARENT_STATE)
-async def parent_options(message: Message):
-    await parent_handler(bot, message, UserStates)
+    await role_handler(message)
 
 
 @bot.on.private_message(state=UserStates.FAQ_STATE)
@@ -290,9 +290,14 @@ async def faq_options(message: Message):
     await faq_handler(bot, message, UserStates)
 
 
-@bot.on.private_message(state=UserStates.SPEECH_THERAPIST_STATE)
-async def speech_therapist_options(message: Message):
-    await speech_therapist_handler(bot, message, UserStates)
+@bot.on.private_message(state=UserStates.PROMOCODE_STATE)
+async def enter_promocode(message: Message):
+    await start_handler.promocode_handler(bot, message, doc_uploader)
+
+
+@bot.on.private_message()
+async def default(message: Message):
+    await start_handler.promocode_handler(bot, message, doc_uploader, False)
 
 
 if __name__ == "__main__":

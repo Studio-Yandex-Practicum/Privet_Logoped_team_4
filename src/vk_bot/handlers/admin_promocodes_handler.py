@@ -37,13 +37,48 @@ async def get_promocode(bot: Bot, message: Message, AdminStates):
     else:
         await message.answer("Отправьте файл:", keyboard=cancel_keyboard)
         await bot.state_dispenser.set(
-            message.peer_id, AdminStates.WAITING_PROMOCODE_FILEPATH,
-            promocode=message.text
+            message.peer_id,
+            AdminStates.WAITING_PROMOCODE_FILEPATH,
+            promocode=message.text,
         )
 
 
-async def add_promocode(bot: Bot, message: Message, AdminStates):
-    """Обработка ввода пути к файлу промокода и добавление записи в бд."""
+async def add_promocode(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
+    """Обработка нажатия кнопки 'Добавить промокод'."""
+    await bot.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=event.object.user_id,
+        peer_id=event.object.peer_id,
+    )
+    await bot.api.messages.send(
+        peer_id=event.object.peer_id,
+        message="Отправьте промокод:",
+        random_id=0,
+        keyboard=cancel_keyboard,
+    )
+    await bot.state_dispenser.set(
+        event.object.peer_id, AdminStates.WAITING_PROMOCODE
+    )
+
+
+async def add_promocode_text(bot: Bot, message: Message, AdminStates):
+    """Обработка добавления промокода из файлов."""
+    if message.text.lower() == "отмена":
+        await message.answer(
+            "Отмена добавления промокода.", keyboard=admin_promocodes_keyboard
+        )
+        await bot.state_dispenser.clear(message.peer_id)
+        return
+
+    await bot.state_dispenser.set(
+        message.peer_id, AdminStates.WAITING_PROMOCODE_FILEPATH, promocode=message.text
+    )
+
+    await message.answer("Отправьте документ для промокода:", keyboard=cancel_keyboard)
+
+
+async def add_promocode_file(bot: Bot, message: Message, AdminStates):
+    """Обработка добавления промокода из файлов."""
     if message.text.lower() == "отмена":
         await message.answer(
             "Отмена добавления промокода.", keyboard=admin_promocodes_keyboard
@@ -52,7 +87,9 @@ async def add_promocode(bot: Bot, message: Message, AdminStates):
             message.peer_id, AdminStates.PROMOCODES_STATE
         )
     elif not message.attachments:
-        await message.answer("Отправлен некорректный файл.", keyboard=cancel_keyboard)
+        await message.answer(
+            "Отправлен некорректный файл.", keyboard=cancel_keyboard
+        )
     else:
         data = await bot.state_dispenser.get(message.peer_id)
         promocode = data.payload.get("promocode")
@@ -97,10 +134,7 @@ async def add_promocode(bot: Bot, message: Message, AdminStates):
                 f"Промокод {promocode} успешно добавлен.",
                 keyboard=admin_promocodes_keyboard,
             )
-        finally:
-            await bot.state_dispenser.set(
-                message.peer_id, AdminStates.PROMOCODES_STATE
-            )
+            await bot.state_dispenser.clear()
 
 
 async def delete_promocode_handler(bot, message, AdminStates):
@@ -157,7 +191,9 @@ async def admin_promocodes_handler(bot, message, AdminStates):
             message.peer_id, AdminStates.WAITING_PROMOCODE
         )
     elif message.text.lower() == "удалить промокод":
-        await message.answer("Отправьте команду /delete <промокод>:", keyboard=cancel_keyboard)
+        await message.answer(
+            "Отправьте команду /delete <промокод>:", keyboard=cancel_keyboard
+        )
         await bot.state_dispenser.set(
             message.peer_id, AdminStates.DELETE_PROMOCODE
         )
