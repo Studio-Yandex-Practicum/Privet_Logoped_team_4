@@ -255,6 +255,22 @@ async def add_promocodes_admin(event: MessageEvent):
     await admin_promocodes_handler.add_promocode(bot, event, AdminStates)
 
 
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "delete_promocode"}),
+)
+async def delete_promocodes_admin(event: MessageEvent):
+    await admin_promocodes_handler.delete_button_promocode_handler(bot, event, AdminStates)
+
+
+@bot.on.message(state=AdminStates.DELETE_PROMOCODE)
+async def delete_promocodes_admin_text(message: Message):
+    await admin_promocodes_handler.delete_promocode_handler(
+        bot, message, AdminStates
+    )
+
+
 @bot.on.message(state=AdminStates.WAITING_PROMOCODE)
 async def add_promocodes_admin_text(message: Message):
     await admin_promocodes_handler.add_promocode_text(

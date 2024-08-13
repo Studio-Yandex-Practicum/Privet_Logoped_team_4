@@ -90,9 +90,9 @@ async def promocode_handler(
     else:
         if is_command:
             await message.answer(
-                "Такого промокода не существует.", keyboard=cancel_keyboard
+                "Введён недействительный промокод.", keyboard=cancel_keyboard
             )
-        else:
-            await message.answer(
-                "Я вас не понимаю"
-            )
+        # else:
+        #     await message.answer(
+        #         "Я вас не понимаю"
+        #     )

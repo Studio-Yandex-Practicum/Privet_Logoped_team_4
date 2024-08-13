@@ -6,7 +6,7 @@ from keyboards.keyboards import (
     admin_promocodes_keyboard,
     cancel_keyboard,
 )
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 from vkbottle import CtxStorage, Bot, GroupTypes
 from vkbottle.bot import Message
@@ -71,10 +71,14 @@ async def add_promocode_text(bot: Bot, message: Message, AdminStates):
         return
 
     await bot.state_dispenser.set(
-        message.peer_id, AdminStates.WAITING_PROMOCODE_FILEPATH, promocode=message.text
+        message.peer_id,
+        AdminStates.WAITING_PROMOCODE_FILEPATH,
+        promocode=message.text,
     )
 
-    await message.answer("Отправьте документ для промокода:", keyboard=cancel_keyboard)
+    await message.answer(
+        "Отправьте документ для промокода:", keyboard=cancel_keyboard
+    )
 
 
 async def add_promocode_file(bot: Bot, message: Message, AdminStates):
@@ -137,47 +141,50 @@ async def add_promocode_file(bot: Bot, message: Message, AdminStates):
             await bot.state_dispenser.clear()
 
 
-async def delete_promocode_handler(bot, message, AdminStates):
+async def delete_button_promocode_handler(
+    bot: Bot, event: GroupTypes.MessageEvent, AdminStates
+):
     """
-    Обработка ввода id промокода и удаление записи из бд.
+    Обработка нажатия кнопки удалить промокод.
     """
-    if message.text.lower() == "отмена":
-        await message.answer(
-            "Отмена удаления промокода.", keyboard=admin_promocodes_keyboard
+    await bot.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=event.object.user_id,
+        peer_id=event.object.peer_id,
+    )
+    await bot.api.messages.send(
+        peer_id=event.object.peer_id,
+        message="Отправьте промокод:",
+        random_id=0,
+        keyboard=cancel_keyboard,
+    )
+    await bot.state_dispenser.set(
+        event.object.peer_id, AdminStates.DELETE_PROMOCODE
+    )
+
+
+async def delete_promocode_handler(bot: Bot, message: Message, AdminStates):
+    """Обработка ввода промокода для удаления"""
+    promocode = message.text
+    async with async_session() as session:
+        promocode_result = await session.execute(
+            select(PromoCode).where(PromoCode.promocode == promocode)
         )
-        await bot.state_dispenser.set(
-            message.peer_id, AdminStates.PROMOCODES_STATE
-        )
-    else:
-        try:
-            promocode_id = int(message.text)
-        except ValueError:
+        promocode_result = promocode_result.scalars().one()
+        if not promocode_result:
             await message.answer(
-                "Введены некорректные данные. Пожалуйста, повторите попытку.",
-                keyboard=admin_promocodes_keyboard,
+                "Промокод не найден.", keyboard=admin_promocodes_keyboard
             )
-            await bot.state_dispenser.set(
-                message.peer_id, AdminStates.PROMOCODES_STATE
-            )
-        else:
-            try:
-                async with async_session() as session:
-                    delete_promocode = delete(PromoCode).where(
-                        PromoCode.promocode_id == promocode_id
-                    )
-                    await session.execute(delete_promocode)
-                    await session.commit()
-            except Exception:
-                await message.answer("Попробуйте еще раз.")
-            else:
-                await message.answer(
-                    "Промокод успешно удален.",
-                    keyboard=admin_promocodes_keyboard,
-                )
-        finally:
-            await bot.state_dispenser.set(
-                message.peer_id, AdminStates.PROMOCODES_STATE
-            )
+            return
+        await session.execute(
+            delete(PromoCode).where(PromoCode.promocode_id == promocode_result.promocode_id)
+        )
+        await session.commit()
+    await bot.state_dispenser.delete(message.peer_id)
+    await message.answer(
+        f"Промокод {promocode} удалён.",
+        keyboard=admin_keyboard,
+    )
 
 
 async def admin_promocodes_handler(bot, message, AdminStates):
