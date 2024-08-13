@@ -5,23 +5,27 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
 parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..')
+    os.path.join(os.path.dirname(__file__), "..")
 )
 sys.path.append(parent_folder_path)
 
-from db.models import PromoCode, RoleType, TGUser, async_session # noqa
+from db.models import PromoCode, RoleType, TGUser, async_session  # noqa
 
 
 async def chose_role(user_id, role_type):
     """Добавление пользователя и смена роли."""
-    if role_type == 'parent':
-        role=RoleType.PARENT
+    if role_type == "parent":
+        role = RoleType.PARENT
     else:
-        role=RoleType.SPEECH_THERAPIST
+        role = RoleType.SPEECH_THERAPIST
     async with async_session() as session:
-        new_user = insert(TGUser).values(user_id=user_id, role=role).on_conflict_do_update(
-            constraint=TGUser.__table__.primary_key,
-            set_={TGUser.role: role}
+        new_user = (
+            insert(TGUser)
+            .values(user_id=user_id, role=role)
+            .on_conflict_do_update(
+                constraint=TGUser.__table__.primary_key,
+                set_={TGUser.role: role},
+            )
         )
         await session.execute(new_user)
         await session.commit()
@@ -60,5 +64,5 @@ async def send_notification(bot, user_id, first_name, role_type):
     user = await get_user(user_id)
     admin_ids = await get_admin_users()
     for admin in admin_ids:
-        text = f'Зарегистрирован:{first_name} с ролью {role_type}'
+        text = f'Зарегистрирован: {first_name} с ролью {"родитель" if role_type == RoleType.PARENT else "логопед"}'
         return await bot.send_message(chat_id=admin, text=text)

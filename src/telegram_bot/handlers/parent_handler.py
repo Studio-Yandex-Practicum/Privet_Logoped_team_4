@@ -37,7 +37,7 @@ async def parent_message(message: Message, bot: Bot, state: FSMContext):
     """Обработка выбора кнопки 'Родитель'."""
     await state.set_state(Level.parent)
     user_id = message.from_user.id
-    role_type = "parent"
+    role_type = RoleType.PARENT
     first_name = message.from_user.first_name
     user = await get_user(user_id)
     if not user:
