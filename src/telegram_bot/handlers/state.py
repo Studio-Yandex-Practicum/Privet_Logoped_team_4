@@ -16,7 +16,6 @@ class NotificationStates(StatesGroup):
     other_day = State()
     day_week_choice = State()
     user_choice = State()
-    stop_notification = State()
 
 
 class AdminStates(StatesGroup):

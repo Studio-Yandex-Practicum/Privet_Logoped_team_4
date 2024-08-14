@@ -96,6 +96,14 @@ cancel = ReplyKeyboardMarkup(
     input_field_placeholder='Выберите пункт меню...'
 )
 
+notifications_off = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='Включить уведомления')],
+        [KeyboardButton(text='Назад')]],        
+    resize_keyboard=True,
+    input_field_placeholder='Выберите пункт меню...'
+)
+
 notifications = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text='Каждый день'),

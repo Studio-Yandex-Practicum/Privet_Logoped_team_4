@@ -44,6 +44,10 @@ class VKUser(AsyncAttrs, Base):
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
+    notificate_at = Column(Integer)
+    notification_interval = Column(String(100))
+    notification_day = Column(String(100))
+    notification_access = Column(Boolean, default=False)
 
 
 class Link(AsyncAttrs, Base):
