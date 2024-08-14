@@ -39,7 +39,7 @@ async def button_info_handler(
 ):
     """Обработка выбора кнопки 'Информация о кнопке'."""
     await callback.answer()
-    await callback.message.delete()
+    # await callback.message.delete()
 
     async with async_session() as session:
         async with session.begin():
@@ -53,7 +53,7 @@ async def button_info_handler(
     message = await kb.get_button_text_info(button)
 
     keyboard = await kb.get_button_settings_keyboard(button)
-    await callback.message.answer(message, reply_markup=keyboard)
+    await callback.message.edit_text(message, reply_markup=keyboard)
 
 
 @router.callback_query(ButtonDeleteCallback.filter())
@@ -103,7 +103,6 @@ async def button_type_handler(
     """Обработка выбора кнопки 'Удалить кнопку'."""
     await callback.answer()
 
-    await callback.message.delete()
     if callback_data.button_type:
         async with async_session() as session:
             async with session.begin():
@@ -182,7 +181,7 @@ async def button_type_handler(
             ],
         ]
     )
-    await callback.message.answer("Выберите тип", reply_markup=type_kb)
+    await callback.message.edit_text("Выберите тип", reply_markup=type_kb)
 
 
 @router.message(
@@ -390,9 +389,9 @@ async def button_add_handler(
     """Обработка выбора кнопки 'Добавить кнопку'."""
     await callback.answer()
 
-    await callback.message.delete()
+    # await callback.message.delete()
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         "Выберите тип кнопки",
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
@@ -464,9 +463,9 @@ async def button_add_type_handler(
     """Обработка выбора кнопки 'Добавить кнопку'."""
     await callback.answer()
 
-    await callback.message.delete()
+    # await callback.message.delete()
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         "Введите текст на кнопке", reply_markup=kb.cancel
     )
     await state.set_state(AdminStates.waiting_on_button_text_create)

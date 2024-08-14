@@ -912,7 +912,7 @@ async def button_click_handler(
             )
             button = result.scalars().first()
 
-    if event.object.payload["authorized"] == False:
+    if event.object.payload.get("authorized") is False:
         back_callback = {"type": "main_info"}
     elif button.parent_button_id:
         back_callback = {
@@ -1069,19 +1069,19 @@ async def button_list(bot: Bot, event: GroupTypes.MessageEvent):
             for button in buttons:
                 keyboard.row().add(
                     Callback(
-                        button.text,
-                        {"type": "button_click", "button_id": button.id},
+                        button.button_name,
+                        {"type": "button_click", "button_id": button.button_id},
                     )
                 )
 
-            await bot.api.messages.edit(
-                event.object.peer_id,
-                conversation_message_id=event.object.conversation_message_id,
+            await bot.api.messages.send(
+                event.object.user_id,
                 message=(
                     f"Здравствуйте, {user_info.first_name}! "
                     "Выберите одну из предложенных опций:"
                 ),
                 keyboard=keyboard,
+                random_id=0
             )
         if user.role == RoleType.SPEECH_THERAPIST:
             async with async_session() as session:

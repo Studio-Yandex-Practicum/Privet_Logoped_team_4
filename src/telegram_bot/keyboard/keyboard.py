@@ -111,6 +111,7 @@ promocodes = InlineKeyboardMarkup(
 cancel = ReplyKeyboardMarkup(
     keyboard=[[KeyboardButton(text="Отмена")]],
     resize_keyboard=True,
+    one_time_keyboard=True,
     input_field_placeholder="Выберите пункт меню...",
 )
 
@@ -210,17 +211,21 @@ async def get_button_settings_keyboard(button: Button):
             ),
         ],
     )
-    buttons.append(
-        [
-            InlineKeyboardButton(
-                text=f'Показывать при входе: {"✅" if button.is_in_main_menu else "❌"}',
-                callback_data=cb.ButtonInMainMenuCallback(
-                    button_id=button.button_id,
-                    is_enabled=button.is_in_main_menu,
-                ).pack(),
-            ),
-        ],
-    )
+    if button.button_type in [
+        ButtonType.FILE,
+        ButtonType.TEXT,
+    ] and button.parent_button_id is None:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=f'Показывать при входе: {"✅" if button.is_in_main_menu else "❌"}',
+                    callback_data=cb.ButtonInMainMenuCallback(
+                        button_id=button.button_id,
+                        is_enabled=button.is_in_main_menu,
+                    ).pack(),
+                ),
+            ],
+        )
     if button.button_type in [
         ButtonType.FILE,
         ButtonType.GROUP,
