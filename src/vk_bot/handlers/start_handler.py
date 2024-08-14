@@ -1,20 +1,29 @@
 import os
 import sys
-from vkbottle import Keyboard, Callback, DocMessagesUploader, Bot
+from vkbottle import Keyboard, Callback, DocMessagesUploader, Bot, GroupTypes
 from vkbottle.bot import Message
+import keyboards.keyboards as kb
 
 from keyboards.keyboards import role_keyboard, cancel_keyboard
 from sqlalchemy import select, or_, and_
 from pathlib import Path
+from sqlalchemy.dialects.postgresql import insert
+from contextlib import suppress
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../..")
 )
 sys.path.append(parent_folder_path)
-from db.models import VKUser, async_session, Button, PromoCode  # noqa
+from db.models import (  # noqa
+    VKUser,
+    async_session,
+    Button,
+    PromoCode,
+    RoleType,
+)
 
 
-async def start_handler(bot, message, UserStates):
+async def start_handler(bot: Bot, message: Message, UserStates):
     """Обработка ввода команды '/start' или 'Начать'."""
     user_info = await message.get_user()
     async with async_session() as session:
@@ -24,11 +33,10 @@ async def start_handler(bot, message, UserStates):
         user = result.scalars().first()
         if not user:
             await message.answer(
-                message=("Здравствуйте! Выберите одну из предложенных ролей:"),
+                message=(
+                    "Здравствуйте! Выберите одну из предложенных ролей, или узнайте больше:"
+                ),
                 keyboard=role_keyboard,
-            )
-            await bot.state_dispenser.set(
-                message.peer_id, UserStates.ROLE_STATE
             )
         else:
             async with async_session() as session:
@@ -50,7 +58,11 @@ async def start_handler(bot, message, UserStates):
             for button in buttons:
                 keyboard.row().add(
                     Callback(
-                        button.button_name, {"type": "button_click", "button_id": button.button_id}
+                        button.button_name,
+                        {
+                            "type": "button_click",
+                            "button_id": button.button_id,
+                        },
                     )
                 )
 
@@ -63,8 +75,26 @@ async def start_handler(bot, message, UserStates):
             )
 
 
+async def choose_role_handler(bot: Bot, event: GroupTypes.MessageEvent, UserStates):
+    await bot.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        peer_id=event.object.peer_id,
+        user_id=event.object.user_id,
+    )
+    await bot.api.messages.edit(
+        peer_id=event.peer_id,
+        conversation_message_id=event.conversation_message_id,
+        message="Здравствуйте! Выберите одну из предложенных ролей, или узнайте больше:",
+        random_id=0,
+        keyboard=role_keyboard.get_json(),
+    )
+
+
 async def promocode_handler(
-    bot: Bot, message: Message, doc_uploader: DocMessagesUploader, is_command: bool = True
+    bot: Bot,
+    message: Message,
+    doc_uploader: DocMessagesUploader,
+    is_command: bool = True,
 ):
     """Обработка ввода промокода."""
     if message.text.lower() == "отмена":
@@ -100,3 +130,42 @@ async def promocode_handler(
         #     await message.answer(
         #         "Я вас не понимаю"
         #     )
+
+
+async def role_handler(bot: Bot, event: GroupTypes.MessageEvent):
+    """Обработка выбора роли."""
+    await bot.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=event.object.user_id,
+        peer_id=event.object.peer_id,
+    )
+
+    if event.object.payload["role"] == "parent":
+        role_type = RoleType.PARENT
+    elif event.object.payload["role"] == "speech_therapist":
+        role_type = RoleType.SPEECH_THERAPIST
+    else:
+        return
+    async with async_session() as session:
+        new_user = (
+            insert(VKUser)
+            .values(user_id=event.object.user_id, role=role_type)
+            .on_conflict_do_update(
+                constraint=VKUser.__table__.primary_key,
+                set_={VKUser.role: role_type},
+            )
+        )
+        await session.execute(new_user)
+        await session.commit()
+
+    keyboard = await kb.get_main_keyboard(role_type)
+
+    with suppress(KeyError):
+        await bot.state_dispenser.delete(event.object.peer_id)
+
+    await bot.api.messages.edit(
+        event.object.peer_id,
+        message="Роль изменена",
+        keyboard=keyboard.get_json(),
+        conversation_message_id=event.object.conversation_message_id,
+    )

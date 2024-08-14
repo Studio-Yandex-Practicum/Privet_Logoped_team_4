@@ -12,12 +12,8 @@ sys.path.append(parent_folder_path)
 from db.models import PromoCode, RoleType, TGUser, async_session  # noqa
 
 
-async def chose_role(user_id, role_type):
+async def chose_role(user_id: int, role: RoleType):
     """Добавление пользователя и смена роли."""
-    if role_type == "parent":
-        role = RoleType.PARENT
-    else:
-        role = RoleType.SPEECH_THERAPIST
     async with async_session() as session:
         new_user = (
             insert(TGUser)

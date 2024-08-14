@@ -1,9 +1,32 @@
-from vkbottle import Keyboard, KeyboardButtonColor, Text, Callback
+import os
+import sys
+
+from sqlalchemy import and_, or_, select
+from vkbottle import Callback, Keyboard, KeyboardButtonColor, Text
+from typing import Optional
+
+parent_folder_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../..")
+)
+sys.path.append(parent_folder_path)
+from db.models import Button, RoleType, async_session  # noqa
 
 role_keyboard = (
-    Keyboard(one_time=True)
-    .add(Text("Родитель"), color=KeyboardButtonColor.PRIMARY)
-    .add(Text("Логопед"), color=KeyboardButtonColor.PRIMARY)
+    Keyboard(inline=True)
+    .add(
+        Callback("Родитель", payload={"type": "role", "role": "parent"}),
+        color=KeyboardButtonColor.PRIMARY,
+    )
+    .add(
+        Callback(
+            "Логопед", payload={"type": "role", "role": "speech_therapist"}
+        ),
+        color=KeyboardButtonColor.PRIMARY,
+    )
+    .add(
+        Callback("Информация", payload={"type": "main_info"}),
+        color=KeyboardButtonColor.SECONDARY,
+    )
 )
 
 parent_keyboard = (
@@ -64,7 +87,9 @@ admin_keyboard = (
     )
     .row()
     .add(
-        Callback("Кнопки", payload={"type": "buttons", "parent_button_id": None}),
+        Callback(
+            "Кнопки", payload={"type": "buttons", "parent_button_id": None}
+        ),
         color=KeyboardButtonColor.PRIMARY,
     )
 )
@@ -90,3 +115,40 @@ admin_promocodes_keyboard = (
         color=KeyboardButtonColor.NEGATIVE,
     )
 )
+
+
+async def get_main_keyboard(role_type: Optional[RoleType]) -> Keyboard:
+    async with async_session() as session:
+        if role_type is None:
+            buttons = await session.execute(
+                select(Button).where(
+                    and_(
+                        Button.parent_button_id.is_(None),
+                        Button.is_in_main_menu.is_(True),
+                    )
+                )
+            )
+        else:
+            buttons = await session.execute(
+                select(Button).where(
+                    and_(
+                        Button.parent_button_id.is_(None),
+                        or_(
+                            Button.to_role == role_type,
+                            Button.to_role.is_(None),
+                        ),
+                    )
+                )
+            )
+        buttons: list[Button] = buttons.scalars().all()
+
+    keyboard = Keyboard(inline=role_type is None)
+    for button in buttons:
+        keyboard.row().add(
+            Callback(
+                button.button_name,
+                {"type": "button_click", "button_id": button.button_id, "authorized": role_type is not None},
+            )
+        )
+
+    return keyboard

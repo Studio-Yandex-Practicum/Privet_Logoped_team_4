@@ -345,16 +345,17 @@ async def admin_buttons_handler(
             ]
         )
 
-    btns.append(
-        [
-            InlineKeyboardButton(
-                text="Добавить кнопку",
-                callback_data=ButtonAddCallback(
-                    parent_button_id=callback_data.button_id
-                ).pack(),
-            )
-        ]
-    )
+    if len(buttons) < 5:
+        btns.append(
+            [
+                InlineKeyboardButton(
+                    text="Добавить кнопку",
+                    callback_data=ButtonAddCallback(
+                        parent_button_id=callback_data.button_id
+                    ).pack(),
+                )
+            ]
+        )
     if callback_data.button_id is not None:
         btns.append(
             [

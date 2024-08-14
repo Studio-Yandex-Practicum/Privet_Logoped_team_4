@@ -10,6 +10,7 @@ from vkbottle import (
     ShowSnackbarEvent,
     DocMessagesUploader,
 )
+from vkbottle import VKAPIError
 from vkbottle.bot import Message
 from vkbottle_types.objects import MessagesMessageAttachmentType
 from sqlalchemy import select, and_, or_, update
@@ -25,6 +26,7 @@ sys.path.append(parent_folder_path)
 from keyboards.keyboards import (  # noqa
     admin_keyboard,
     cancel_keyboard,
+    get_main_keyboard
 )
 
 from db.models import (  # noqa
@@ -52,9 +54,10 @@ async def button_info_handler(bot: Bot, event: GroupTypes.MessageEvent):
                     Button.button_id == event.object.payload["button_id"]
                 )
             )
-            button = result.scalars().first()
+            button: Button = result.scalars().first()
 
-    message = f"Текст на кнопке: {button.button_name}\n"
+    message = f'Показывается без авторизации: {"да" if button.is_in_main_menu else "нет"}\n'
+    message += f"Текст на кнопке: {button.button_name}\n"
     if button.button_type in [
         ButtonType.FILE,
         ButtonType.GROUP,
@@ -80,16 +83,6 @@ async def button_info_handler(bot: Bot, event: GroupTypes.MessageEvent):
         message += "Кнопка для всех пользователей\n"
 
     keyboard = Keyboard(inline=True)
-    # keyboard.add(
-    #     [
-    #         Callback(
-    #             text="Изменить тип кнопки",
-    #             callback_data=ButtonTypeCallback(
-    #                 button_id=button.button_id,
-    #             ).pack(),
-    #         ),
-    #     ],
-    # )
     keyboard.add(
         Callback(
             label="Текст на кнопке",
@@ -99,6 +92,23 @@ async def button_info_handler(bot: Bot, event: GroupTypes.MessageEvent):
             },
         ),
     )
+    if (
+        button.button_type
+        in [
+            ButtonType.FILE,
+            ButtonType.TEXT,
+        ]
+        and button.parent_button_id is None
+    ):
+        keyboard.row().add(
+            Callback(
+                label="Показ без авторизации",
+                payload={
+                    "type": "show_in_main_menu",
+                    "button_id": button.button_id,
+                },
+            ),
+        )
     if button.button_type in [
         ButtonType.FILE,
         ButtonType.GROUP,
@@ -168,7 +178,7 @@ async def button_info_handler(bot: Bot, event: GroupTypes.MessageEvent):
                 label="Назад",
                 payload={
                     "type": "buttons",
-                    "parent_button_id": button.button_id,
+                    "parent_button_id": button.parent_button_id,
                 },
             )
         )
@@ -529,29 +539,30 @@ async def admin_buttons_handler(
             ),
         ).row()
 
-    keyboard.add(
-        Callback(
-            label="Добавить кнопку",
-            payload={
-                "type": "button_add",
-                "parent_button_id": event.object.payload["parent_button_id"],
-            },
-        )
-    )
-    if event.object.payload.get("parent_button_id") is not None:
-        keyboard.row().add(
+    if len(buttons) < 5:
+        keyboard.add(
             Callback(
-                label="Назад",
+                label="Добавить кнопку",
                 payload={
-                    "type": "button_info",
+                    "type": "button_add",
                     "parent_button_id": event.object.payload[
                         "parent_button_id"
                     ],
                 },
+            )
+        )
+    if event.object.payload.get("parent_button_id") is not None:
+        keyboard.add(
+            Callback(
+                label="Назад",
+                payload={
+                    "type": "button_info",
+                    "button_id": event.object.payload["parent_button_id"],
+                },
             ),
         )
     else:
-        keyboard.row().add(
+        keyboard.add(
             Callback(
                 label="Назад",
                 payload={
@@ -901,7 +912,9 @@ async def button_click_handler(
             )
             button = result.scalars().first()
 
-    if button.parent_button_id:
+    if event.object.payload["authorized"] == False:
+        back_callback = {"type": "main_info"}
+    elif button.parent_button_id:
         back_callback = {
             "type": "button_click",
             "button_id": button.parent_button_id,
@@ -1010,14 +1023,14 @@ async def button_click_handler(
                 peer_id=event.object.peer_id,
                 title=os.path.basename(button.file_path),
             )
-        back_keyboard = Keyboard()
+        back_keyboard = Keyboard(one_time=True)
         back_keyboard.add(Callback(label="Назад", payload=back_callback))
         await bot.api.messages.send(
             user_id=event.object.user_id,
             attachment=doc,
             message=button.text,
             keyboard=back_keyboard.get_json(),
-            random_id=0
+            random_id=0,
         )
         pass
 
@@ -1078,7 +1091,8 @@ async def button_list(bot: Bot, event: GroupTypes.MessageEvent):
                             and_(
                                 Button.parent_button_id.is_(None),
                                 or_(
-                                    Button.to_role == RoleType.PARENT,
+                                    Button.to_role
+                                    == RoleType.SPEECH_THERAPIST,
                                     Button.to_role.is_(None),
                                 ),
                             )
@@ -1107,3 +1121,91 @@ async def button_list(bot: Bot, event: GroupTypes.MessageEvent):
                 keyboard=keyboard.get_json(),
                 random_id=0,
             )
+
+
+async def show_in_main_menu(bot: Bot, event: GroupTypes.MessageEvent):
+    """Обработка нажатия кнопки 'Показ без авторизации'."""
+    await bot.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=event.object.user_id,
+        peer_id=event.object.peer_id,
+    )
+    await bot.api.messages.delete(
+        [event.object.conversation_message_id],
+        peer_id=event.object.peer_id,
+        delete_for_all=True,
+    )
+    async with async_session() as session:
+        async with session.begin():
+            result = await session.execute(
+                select(Button).where(
+                    Button.button_id == event.object.payload["button_id"]
+                )
+            )
+            button = result.scalars().first()
+            await session.execute(
+                update(Button)
+                .where(Button.button_id == button.button_id)
+                .values(is_in_main_menu=not button.is_in_main_menu)
+            )
+    await bot.api.messages.send(
+        user_id=event.object.user_id,
+        message="Изменено отображение в главном меню",
+        keyboard=admin_keyboard,
+        random_id=0,
+    )
+
+
+async def main_menu_button_list(bot: Bot, event: GroupTypes.MessageEvent):
+    """Обработка ввода команды '/start' или 'Начать'."""
+    user_id = event.object.user_id
+    await bot.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=user_id,
+        peer_id=event.object.peer_id,
+    )
+    # await bot.api.messages.delete(
+    #     [event.object.conversation_message_id],
+    #     peer_id=event.object.peer_id,
+    #     delete_for_all=True,
+    # )
+    async with async_session() as session:
+        async with session.begin():
+            buttons = await session.execute(
+                select(Button).where(
+                    and_(
+                        Button.parent_button_id.is_(None),
+                        Button.is_in_main_menu.is_(True),
+                    )
+                )
+            )
+            buttons = buttons.scalars().all()
+
+        keyboard = await get_main_keyboard(None)
+        keyboard.add(
+            Callback(
+                "Назад",
+                {
+                    "type": "choose_role",
+                },
+            )
+        )
+
+        try:
+            await bot.api.messages.edit(
+                conversation_message_id=event.object.conversation_message_id,
+                peer_id=event.object.peer_id,
+                message="Выберите опцию:",
+                keyboard=keyboard.get_json(),
+                random_id=0,
+            )
+        except VKAPIError[100]:
+            await bot.api.messages.send(
+                peer_id=event.object.peer_id,
+                message="Выберите опцию:",
+                keyboard=keyboard.get_json(),
+                random_id=0,
+            )
+
+
+            

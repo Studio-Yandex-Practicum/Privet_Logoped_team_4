@@ -8,6 +8,7 @@ from handlers import (
     role_handler,
     start_handler,
     admin_buttons_handler,
+    admin_start_handler_callback,
 )
 from vkbottle import BaseStateGroup, GroupEventType, DocMessagesUploader
 from vkbottle.bot import Bot, Message, MessageEvent
@@ -58,6 +59,33 @@ class AdminStates(BaseStateGroup):
 @bot.on.private_message(lev="/admin")
 async def admin_start(message: Message):
     await admin_start_handler(bot, message, AdminStates)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "main_info"}),
+)
+async def admin_start(event: MessageEvent):
+    await admin_buttons_handler.main_menu_button_list(bot, event)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "choose_role"}),
+)
+async def admin_start(event: MessageEvent):
+    await start_handler.choose_role_handler(bot, event, UserStates)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "admin"}),
+)
+async def admin_start(event: MessageEvent):
+    await admin_start_handler_callback(bot, event, AdminStates)
 
 
 @bot.on.raw_event(
@@ -206,6 +234,24 @@ async def admin_button_add(event: MessageEvent):
         await admin_buttons_handler.button_add_handler(bot, event, AdminStates)
 
 
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "show_in_main_menu"}),
+)
+async def button_main_menu_admin(event: MessageEvent):
+    await admin_buttons_handler.show_in_main_menu(bot, event)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "role"}),
+)
+async def choose_role(event: MessageEvent):
+    await start_handler.role_handler(bot, event)
+
+
 @bot.on.private_message(state=AdminStates.WAITING_ON_BUTTON_TEXT_CREATE)
 async def admin_options_on_button_text_create(message: Message):
     await admin_buttons_handler.get_on_button_text_create(
@@ -237,7 +283,9 @@ async def add_promocodes_admin(event: MessageEvent):
     PayloadRule({"type": "delete_promocode"}),
 )
 async def delete_promocodes_admin(event: MessageEvent):
-    await admin_promocodes_handler.delete_button_promocode_handler(bot, event, AdminStates)
+    await admin_promocodes_handler.delete_button_promocode_handler(
+        bot, event, AdminStates
+    )
 
 
 @bot.on.message(state=AdminStates.DELETE_PROMOCODE)
