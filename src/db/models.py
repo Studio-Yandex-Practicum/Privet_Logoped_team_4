@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from .config import database_url
-from .constants import LinkResourseType, RoleName
+from .constants import LinkResourseType, RoleName, NotificationInterval, NotificationWeekDay
 
 Base = declarative_base()
 
@@ -24,6 +24,24 @@ class LinkType(enum.Enum):
     FILEPATH = LinkResourseType.FILEPATH
 
 
+class NotificationIntervalType(enum.Enum):
+    """Enum типов интервалов уведомлений."""
+    EVERY_DAY = NotificationInterval.EVERY_DAY
+    OTHER_DAY = NotificationInterval.OTHER_DAY
+    USER_CHOICE = NotificationInterval.USER_CHOICE
+
+
+class NotificationWeekDayType(enum.Enum):
+    """Enum типов дней недели."""
+    MONDAY = NotificationWeekDay.MONDAY
+    TUESDAY = NotificationWeekDay.TUESDAY
+    WEDNESDAY = NotificationWeekDay.WEDNESDAY
+    THURSDAY = NotificationWeekDay.THURSDAY
+    FRIDAY = NotificationWeekDay.FRIDAY
+    SATURDAY = NotificationWeekDay.SATURDAY
+    SUNDAY = NotificationWeekDay.SUNDAY
+
+
 class TGUser(AsyncAttrs, Base):
     """Модель пользователя телеграм."""
     __tablename__ = 'tg_users'
@@ -32,8 +50,8 @@ class TGUser(AsyncAttrs, Base):
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
     notificate_at = Column(Integer)
-    notification_interval = Column(String(100))
-    notification_day = Column(String(100))
+    notification_interval = Column(Enum(NotificationIntervalType))
+    notification_day = Column(Enum(NotificationWeekDayType))
     notification_access = Column(Boolean, default=False)
 
 
@@ -45,8 +63,8 @@ class VKUser(AsyncAttrs, Base):
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
     notificate_at = Column(Integer)
-    notification_interval = Column(String(100))
-    notification_day = Column(String(100))
+    notification_interval = Column(Enum(NotificationIntervalType))
+    notification_day = Column(Enum(NotificationWeekDayType))
     notification_access = Column(Boolean, default=False)
 
 

@@ -36,10 +36,6 @@ async def every_day_notification(bot):
                         if (user.notificate_at == current_time and
                             day_of_week == current_weekday):
                             await send_notification(user, bot)
-                        else:
-                            raise Exception('День недели введен неверно')
-                else:
-                    continue
 
 async def other_day_notification(bot):
     async with async_session() as session:

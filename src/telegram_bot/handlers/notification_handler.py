@@ -16,7 +16,7 @@ async def notifications(message: Message, state: FSMContext):
     await state.set_state(NotificationStates.notification)
     async with async_session() as session:
             async with session.begin():
-                result = await session.execute(select(TGUser).where(TGUser.user_id == message.chat.id))
+                result = await session.execute(select(TGUser).where(TGUser.user_id == message.from_user.id))
                 user = result.scalars().first()
                 if user.notification_access == False:
                      reply_markup = kb.notifications_off
@@ -63,7 +63,7 @@ async def schedule_user_choice_time_notification(message: Message, state: FSMCon
                 result = await session.execute(select(TGUser).where(TGUser.user_id == message.chat.id))
                 user = result.scalars().first()
                 user.notification_day = current_state
-    await state.update_data(NotificationStates.user_choice)
+    await state.set_state(NotificationStates.user_choice)
     await message.answer('Укажите время в часах, пример: 9, 10, 11')
 
 @router.message(F.text == 'Назад')
