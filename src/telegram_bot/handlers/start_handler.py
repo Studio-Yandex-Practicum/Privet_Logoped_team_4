@@ -28,6 +28,9 @@ from db.models import (  # noqa
     RoleType,
     ButtonType,
 )
+from aiogram.types import Message
+
+from .state import AdminStates, Level
 
 router = Router()
 

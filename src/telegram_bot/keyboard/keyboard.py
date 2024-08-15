@@ -79,33 +79,43 @@ therapist = ReplyKeyboardMarkup(
     input_field_placeholder="Выберите пункт меню...",
 )
 
-admin = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [
-            InlineKeyboardButton(text="Промокоды", callback_data="promocodes"),
-            InlineKeyboardButton(
-                text="Кнопки",
-                callback_data=cb.ButtonGroupCallback(button_id=None).pack(),
-            ),
-        ],
-    ],
+links = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='Добавить ссылку')],
+        [KeyboardButton(text='Удалить ссылку')],
+        [KeyboardButton(text='Загрузить файл')],
+        [KeyboardButton(text='Назад')]],
+    resize_keyboard=True,
+    input_field_placeholder='Выберите пункт меню...'
 )
 
-promocodes = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="Добавить промокод", callback_data="add_promocode"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text="Удалить промокод",
-                callback_data=cb.PromocodeDeleteCallback().pack(),
-            )
-        ],
-        [InlineKeyboardButton(text="Назад", callback_data="admin")],
-    ],
+links_types = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='Ссылка')],
+        [KeyboardButton(text='Путь к файлу')],
+        [KeyboardButton(text='Отмена')]],
+    resize_keyboard=True,
+    input_field_placeholder='Выберите пункт меню...'
+)
+
+links_to_role = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='Родитель')],
+        [KeyboardButton(text='Логопед')],
+        [KeyboardButton(text='Общее')],
+        [KeyboardButton(text='Отмена')]],
+    resize_keyboard=True,
+    input_field_placeholder='Выберите пункт меню...'
+)
+
+promocodes = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='Добавить промокод')],
+        [KeyboardButton(text='Удалить промокод')],
+        [KeyboardButton(text='Загрузить файл')],
+        [KeyboardButton(text='Назад')]],
+    resize_keyboard=True,
+    input_field_placeholder='Выберите пункт меню...'
 )
 
 cancel = ReplyKeyboardMarkup(

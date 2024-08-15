@@ -9,6 +9,8 @@ class Level(StatesGroup):
     faq = State()
     therapist = State()
     role_chose = State()
+    waiting_for_message = State()
+    awaiting_admin_reply = State()
 
 
 class AdminStates(StatesGroup):
@@ -17,6 +19,7 @@ class AdminStates(StatesGroup):
     admin = State()
     links = State()
     promocodes = State()
+    users = State()
     waiting_link_name = State()
     waiting_link_type = State()
     waiting_link = State()
@@ -33,3 +36,5 @@ class AdminStates(StatesGroup):
     waiting_on_button_text_create = State()
     waiting_button_text_create = State()
     waiting_button_file_create = State()
+    waiting_user_id_to_ban = State()
+    waiting_user_id_to_unban = State()

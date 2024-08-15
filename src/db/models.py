@@ -60,6 +60,7 @@ class TGUser(AsyncAttrs, Base):
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
+    is_banned = Column(Numeric, default=0)
 
 
 class VKUser(AsyncAttrs, Base):
@@ -70,6 +71,7 @@ class VKUser(AsyncAttrs, Base):
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
+    is_banned = Column(Numeric, default=0)
 
 
 class Link(AsyncAttrs, Base):

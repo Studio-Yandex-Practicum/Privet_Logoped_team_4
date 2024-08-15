@@ -9,7 +9,7 @@ parent_folder_path = os.path.abspath(
 )
 sys.path.append(parent_folder_path)
 
-from db.models import PromoCode, RoleType, TGUser, async_session  # noqa
+from db.models import PromoCode, RoleType, TGUser, async_session   # noqa
 
 
 async def chose_role(user_id: int, role: RoleType):
@@ -57,7 +57,7 @@ async def get_user(user_id):
 
 
 async def send_notification(bot, user_id, first_name, role_type):
-    user = await get_user(user_id)
+    # user = await get_user(user_id)
     admin_ids = await get_admin_users()
     for admin in admin_ids:
         text = f'Зарегистрирован: {first_name} с ролью {"родитель" if role_type == RoleType.PARENT else "логопед"}'

@@ -9,17 +9,20 @@ from handlers import (
     start_handler,
     admin_buttons_handler,
     admin_start_handler_callback,
+    ban_user, unban_user
 )
 from vkbottle import BaseStateGroup, GroupEventType, DocMessagesUploader
 from vkbottle.bot import Bot, Message, MessageEvent
 from rules import PayloadRule
 from keyboards.keyboards import cancel_keyboard
+from middleware import BanMiddleware
 
-logging.basicConfig(level=logging.INFO)
 
 bot = Bot(api=api, labeler=labeler, state_dispenser=state_dispenser)
 bot.labeler.vbml_ignore_case = True
 doc_uploader = DocMessagesUploader(bot.api)
+
+bot.labeler.message_view.register_middleware(BanMiddleware)
 
 
 class UserStates(BaseStateGroup):
@@ -30,6 +33,7 @@ class UserStates(BaseStateGroup):
     FAQ_STATE = "faq_options"
     SPEECH_THERAPIST_STATE = "speech_therapist_options"
     PROMOCODE_STATE = "enter_promocode"
+    WAITING_FOR_MESSAGE = "waiting_for_message"
 
 
 class AdminStates(BaseStateGroup):
@@ -37,6 +41,7 @@ class AdminStates(BaseStateGroup):
 
     ADMIN_STATE = "admin_options"
     LINKS_STATE = "links_options"
+    USERS_STATE = 'users_options'
     PROMOCODES_STATE = "promocodes_options"
     WAITING_LINK_NAME = "waiting_link_name"
     WAITING_LINK_TYPE = "waiting_link_type"
@@ -54,6 +59,8 @@ class AdminStates(BaseStateGroup):
     WAITING_ON_BUTTON_TEXT_CREATE = "waiting_on_button_text_create"
     WAITING_BUTTON_TEXT_CREATE = "waiting_button_text_create"
     WAITING_BUTTON_FILE_CREATE = "waiting_button_file_create"
+    WAITING_USER_ID_TO_BAN = 'waiting_user_id_to_ban'
+    WAITING_USER_ID_TO_UNBAN = 'waiting_user_id_to_unban'
 
 
 @bot.on.private_message(lev="/admin")
@@ -309,6 +316,21 @@ async def add_promocodes_admin_filepath(message: Message):
     )
 
 
+@bot.on.private_message(state=AdminStates.USERS_STATE)
+async def users_options(message: Message):
+    await admin_users_handler(bot, message, AdminStates)
+
+
+@bot.on.private_message(state=AdminStates.WAITING_USER_ID_TO_BAN)
+async def waiting_user_id_to_ban(message: Message):
+    await ban_user(bot, message, AdminStates)
+
+
+@bot.on.private_message(state=AdminStates.WAITING_USER_ID_TO_UNBAN)
+async def waiting_user_id_to_unban(message: Message):
+    await unban_user(bot, message, AdminStates)
+
+
 @bot.on.private_message(lev=["/start", "Начать"])
 async def greeting(message: Message):
     await start_handler.start_handler(bot, message, UserStates)
@@ -339,6 +361,19 @@ async def enter_promocode(message: Message):
 async def default(message: Message):
     await start_handler.promocode_handler(bot, message, doc_uploader, False)
 
+@bot.on.message(state=UserStates.WAITING_FOR_MESSAGE)
+async def handle_user_message_state(message: Message):
+    await handle_user_message(bot, message, UserStates)
+
+
+@bot.on.message()
+async def main_handler(message: Message):
+    user_state = await bot.state_dispenser.get(message.from_id)
+
+    if user_state == UserStates.WAITING_FOR_MESSAGE:
+        await handle_user_message(bot, message, UserStates)
+    else:
+        await parent_handler(bot, message, UserStates)
 
 if __name__ == "__main__":
     bot.run_forever()

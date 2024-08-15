@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher
 from config import tg_token
 from handlers import (
     admin_links_router,
@@ -9,9 +10,12 @@ from handlers import (
     admin_router,
     start_router,
     admin_buttons_router,
+    promocode_router,
+    ask_admin_router
 )
 from middleware import PromocodeMiddleware
 
+from middleware import BanCheckMiddleware, PromocodeMiddleware
 logging.basicConfig(level=logging.INFO)
 
 
@@ -23,14 +27,12 @@ async def main():
     dp.include_routers(
         admin_links_router,
         admin_promocodes_router,
-        admin_router,
-        # admin_upload_router,
+        admin_router, # admin_upload_router,
         # faq_router,
         # file_router,
-        # parent_router,
         start_router,
         # therapist_router,
-        admin_buttons_router,
+        admin_buttons_router, promocode_router, ask_admin_router
     )
     await dp.start_polling(bot)
 
