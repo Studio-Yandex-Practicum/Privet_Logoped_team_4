@@ -2,9 +2,10 @@ from typing import Optional
 from aiogram import Router
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import (
-    Message, InlineKeyboardMarkup,
+    Message,
+    InlineKeyboardMarkup,
     InlineKeyboardButton,
-    CallbackQuery,)
+)
 from sqlalchemy.future import select
 from aiogram.fsm.context import FSMContext
 
@@ -24,7 +25,11 @@ def get_reply_keyboard(user_id: int):
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Написать в личные сообщения", url=user_chat_url)]
+            [
+                InlineKeyboardButton(
+                    text="Написать в личные сообщения", url=user_chat_url
+                )
+            ]
         ]
     )
     return keyboard
@@ -32,7 +37,6 @@ def get_reply_keyboard(user_id: int):
 
 @router.message(Level.waiting_for_message)
 async def forward_to_admins(message: Message, state: FSMContext):
-    print("forward_to_admins triggered")
     async with async_session() as session:
         admins_query = await session.execute(
             select(TGUser).where(TGUser.is_admin == 1)
@@ -53,7 +57,7 @@ async def forward_to_admins(message: Message, state: FSMContext):
             await message.bot.send_message(
                 admin.user_id,
                 f"Новое сообщение от {user_reference}:\n{user_message}",
-                reply_markup=keyboard
+                reply_markup=keyboard,
             )
         except Exception as e:
             print(f"Ошибка при отправке сообщения админу {admin.user_id}: {e}")

@@ -1,36 +1,25 @@
+import os
+import sys
+from typing import Union
+
 import keyboard.keyboard as kb
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (
-    Message,
-    CallbackQuery,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    FSInputFile,
-)
+from aiogram.types import (CallbackQuery, FSInputFile, InlineKeyboardButton,
+                           InlineKeyboardMarkup, Message)
+from callbacks import VisitButtonCallback
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
-from typing import Union
-from callbacks import VisitButtonCallback
 
-import os
-import sys
+from .state import Level
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..")
 )
 sys.path.append(parent_folder_path)
-from db.models import (  # noqa
-    async_session,
-    TGUser,
-    Button,
-    RoleType,
-    ButtonType,
-)
-from aiogram.types import Message
-
-from .state import AdminStates, Level
+from db.models import (Button, ButtonType, RoleType, TGUser,  # noqa
+                       async_session)
 
 router = Router()
 
@@ -38,6 +27,7 @@ router = Router()
 @router.message(CommandStart())
 @router.callback_query(F.data == "start")
 async def cmd_start(message: Union[Message, CallbackQuery], state: FSMContext):
+    await state.clear()
     async with async_session() as session:
         async with session.begin():
             user = await session.execute(
@@ -131,8 +121,10 @@ async def info_callback(callback: CallbackQuery):
 async def visit_callback(
     callback: CallbackQuery,
     callback_data: VisitButtonCallback,
+    state: FSMContext,
 ):
     """Обработка нажатия на кнопку."""
+    await state.clear()
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
@@ -173,7 +165,7 @@ async def visit_callback(
         )
     elif button.button_type == ButtonType.ADMIN_MESSAGE:
         await callback.message.answer(
-            "Тут будет письмо админам",
+            "Пожалуйста, напишите ваше сообщение, и оно будет отправлено логопедам.",
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
@@ -185,6 +177,7 @@ async def visit_callback(
                 ]
             ),
         )
+        await state.set_state(Level.waiting_for_message)
     elif button.button_type == ButtonType.MAILING:
         await callback.message.answer(
             "Тут будет рассылка",
