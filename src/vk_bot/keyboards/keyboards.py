@@ -97,6 +97,11 @@ admin_keyboard = (
         Callback("Пользователи", payload={"type": "users"}),
         color=KeyboardButtonColor.PRIMARY,
     )
+    .row()
+    .add(
+        Callback("Рассылка", payload={"type": "mailing"}),
+        color=KeyboardButtonColor.PRIMARY,
+    )
 )
 
 cancel_keyboard = Keyboard(one_time=True).add(
@@ -171,9 +176,106 @@ admin_users_keyboard = (
     )
     .row()
     .add(
-        Callback("Разблокировать пользователя", payload={"type": "unban_user"}),
+        Callback(
+            "Разблокировать пользователя", payload={"type": "unban_user"}
+        ),
         color=KeyboardButtonColor.PRIMARY,
     )
     .row()
-    .add(Callback("Назад", payload={"type": "admin"}), color=KeyboardButtonColor.NEGATIVE)
+    .add(
+        Callback("Назад", payload={"type": "admin"}),
+        color=KeyboardButtonColor.NEGATIVE,
+    )
 )
+
+mailing = (
+    Keyboard(inline=True)
+    .add(
+        Callback("Отправить рассылку", payload={"type": "send_mailing"}),
+        color=KeyboardButtonColor.PRIMARY,
+    )
+    .row()
+    .add(
+        Callback("Назад", payload={"type": "admin"}),
+        color=KeyboardButtonColor.NEGATIVE,
+    )
+)
+
+
+mailing_role = (
+    Keyboard(inline=True)
+    .add(
+        Callback(
+            "Родителям",
+            payload={"type": "mailing_role", "role": "parent"},
+        ),
+        color=KeyboardButtonColor.PRIMARY,
+    )
+    .row()
+    .add(
+        Callback(
+            "Логопедам",
+            payload={"type": "mailing_role", "role": "speech_therapist"},
+        ),
+        color=KeyboardButtonColor.PRIMARY,
+    )
+    .row()
+    .add(
+        Callback("Всем", payload={"type": "mailing_role", "role": "all"}),
+        color=KeyboardButtonColor.SECONDARY,
+    )
+)
+
+
+async def get_mailing_settings_keyboard(state: dict) -> Keyboard:
+    keyboard = Keyboard(inline=True)
+    keyboard.add(
+        Callback(
+            (
+                "Отправить всем: ✅"
+                if state["ignore_subscribed"]
+                else "Отправить всем: ❌"
+            ),
+            payload={
+                "type": "mailing_settings",
+                "ignore_subscribed": not state["ignore_subscribed"],
+                "role": state["role"],
+                "message": state["message"],
+            },
+        )
+    )
+
+    keyboard.row().add(
+        Callback(
+            (
+                "Всем ролям"
+                if state["role"] == "all"
+                else (
+                    "Только родителям"
+                    if state["role"] == "parent"
+                    else "Только логопедам"
+                )
+            ),
+            payload={
+                "type": "mailing_settings_role",
+            },
+        )
+    )
+
+    keyboard.row().add(
+        Callback(
+            "Отмена",
+            payload={
+                "type": "mailing",
+            },
+        )
+    ).add(
+        Callback(
+            "Отправить",
+            payload={
+                "type": "send_mailing_messages",
+            },
+        )
+    )
+
+    return keyboard

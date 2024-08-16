@@ -38,3 +38,4 @@ class AdminStates(StatesGroup):
     waiting_button_file_create = State()
     waiting_user_id_to_ban = State()
     waiting_user_id_to_unban = State()
+    send_mailing = State()

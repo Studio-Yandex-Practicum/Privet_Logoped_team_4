@@ -6,10 +6,15 @@ import keyboard.keyboard as kb
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (CallbackQuery, FSInputFile, InlineKeyboardButton,
-                           InlineKeyboardMarkup, Message)
-from callbacks import VisitButtonCallback
-from sqlalchemy import select
+from aiogram.types import (
+    CallbackQuery,
+    FSInputFile,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
+from callbacks import SubscribeButtonCallback, VisitButtonCallback
+from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 
 from .state import Level
@@ -18,8 +23,13 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..")
 )
 sys.path.append(parent_folder_path)
-from db.models import (Button, ButtonType, RoleType, TGUser,  # noqa
-                       async_session)
+from db.models import (  # noqa
+    Button,
+    ButtonType,
+    RoleType,
+    TGUser,
+    async_session,
+)
 
 router = Router()
 
@@ -130,7 +140,7 @@ async def visit_callback(
             result = await session.execute(
                 select(TGUser).where(TGUser.user_id == callback.from_user.id)
             )
-            user = result.scalars().first()
+            user: TGUser = result.scalars().first()
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
@@ -149,62 +159,63 @@ async def visit_callback(
         ).pack()
     else:
         back_callback = "start"
+    back_keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Назад",
+                    callback_data=back_callback,
+                )
+            ]
+        ]
+    )
     if button.button_type == ButtonType.NOTIFICATION:
         await callback.message.answer(
             "Тут будут уведомления",
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text="Назад",
-                            callback_data=back_callback,
-                        )
-                    ]
-                ]
-            ),
+            reply_markup=back_keyboard,
         )
     elif button.button_type == ButtonType.ADMIN_MESSAGE:
         await callback.message.answer(
             "Пожалуйста, напишите ваше сообщение, и оно будет отправлено логопедам.",
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text="Назад",
-                            callback_data=back_callback,
-                        )
-                    ]
-                ]
-            ),
+            reply_markup=back_keyboard,
         )
         await state.set_state(Level.waiting_for_message)
     elif button.button_type == ButtonType.MAILING:
+        msg_text = (
+            "✅ Вы подписаны на рассылку"
+            if user.is_subscribed
+            else "❌ Вы не подписаны на рассылку"
+        )
+        btn_text = (
+            "Отписаться от рассылки"
+            if user.is_subscribed
+            else "Подписаться на рассылку"
+        )
+        buttons = [
+            [
+                InlineKeyboardButton(
+                    text=btn_text,
+                    callback_data=SubscribeButtonCallback(
+                        is_subscribed=user.is_subscribed or False,
+                        button_id=button.button_id,
+                    ).pack(),
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Назад",
+                    callback_data=back_callback,
+                )
+            ],
+        ]
         await callback.message.answer(
-            "Тут будет рассылка",
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text="Назад",
-                            callback_data=back_callback,
-                        )
-                    ]
-                ]
-            ),
+            msg_text,
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
         )
     elif button.button_type == ButtonType.TEXT:
         await callback.message.answer(
             button.text,
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text="Назад",
-                            callback_data=back_callback,
-                        )
-                    ]
-                ]
-            ),
+            reply_markup=back_keyboard,
         )
     elif button.button_type == ButtonType.GROUP:
         keyboard_markup = await kb.get_start_keyboard(
@@ -231,14 +242,65 @@ async def visit_callback(
                 filename=button.text + "." + button.file_path.split(".")[-1],
             ),
             caption=button.text,
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text="Назад",
-                            callback_data=back_callback,
-                        )
-                    ]
-                ]
-            ),
+            reply_markup=back_keyboard,
         )
+
+
+@router.callback_query(SubscribeButtonCallback.filter())
+async def subscribe_callback(
+    callback: CallbackQuery, callback_data: SubscribeButtonCallback
+):
+    """Обработка нажатия на кнопку."""
+    is_subscribed = not callback_data.is_subscribed
+    async with async_session() as session:
+        async with session.begin():
+            await session.execute(
+                update(TGUser).where(TGUser.user_id == callback.from_user.id).values(
+                    is_subscribed=is_subscribed
+                )
+            )
+    async with async_session() as session:
+        async with session.begin():
+            result = await session.execute(
+                select(Button).where(
+                    Button.button_id == callback_data.button_id
+                )
+            )
+            button = result.scalars().first()
+    if button.parent_button_id:
+        back_callback = VisitButtonCallback(
+            button_id=button.parent_button_id
+        ).pack()
+    else:
+        back_callback = "start"
+    msg_text = (
+        "✅ Вы подписаны на рассылку"
+        if is_subscribed
+        else "❌ Вы не подписаны на рассылку"
+    )
+    btn_text = (
+        "Отписаться от рассылки"
+        if is_subscribed
+        else "Подписаться на рассылку"
+    )
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=btn_text,
+                callback_data=SubscribeButtonCallback(
+                    is_subscribed=is_subscribed,
+                    button_id=button.button_id,
+                ).pack(),
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="Назад",
+                callback_data=back_callback,
+            )
+        ],
+    ]
+    await callback.message.edit_text(
+        msg_text,
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
+    )

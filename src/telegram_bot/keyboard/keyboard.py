@@ -81,21 +81,23 @@ therapist = ReplyKeyboardMarkup(
 
 links = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text='Добавить ссылку')],
-        [KeyboardButton(text='Удалить ссылку')],
-        [KeyboardButton(text='Загрузить файл')],
-        [KeyboardButton(text='Назад')]],
+        [KeyboardButton(text="Добавить ссылку")],
+        [KeyboardButton(text="Удалить ссылку")],
+        [KeyboardButton(text="Загрузить файл")],
+        [KeyboardButton(text="Назад")],
+    ],
     resize_keyboard=True,
-    input_field_placeholder='Выберите пункт меню...'
+    input_field_placeholder="Выберите пункт меню...",
 )
 
 links_types = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text='Ссылка')],
-        [KeyboardButton(text='Путь к файлу')],
-        [KeyboardButton(text='Отмена')]],
+        [KeyboardButton(text="Ссылка")],
+        [KeyboardButton(text="Путь к файлу")],
+        [KeyboardButton(text="Отмена")],
+    ],
     resize_keyboard=True,
-    input_field_placeholder='Выберите пункт меню...'
+    input_field_placeholder="Выберите пункт меню...",
 )
 admin = InlineKeyboardMarkup(
     inline_keyboard=[
@@ -109,35 +111,50 @@ admin = InlineKeyboardMarkup(
                 text="Пользователи",
                 callback_data="users",
             ),
+            InlineKeyboardButton(
+                text="Рассылка",
+                callback_data="mailing",
+            ),
         ],
     ],
 )
 
 users = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text='Заблокировать пользователя', callback_data="ban_user")],
-        [InlineKeyboardButton(text='Разблокировать пользователя', callback_data="unban_user")],
-        [InlineKeyboardButton(text='Назад', callback_data="admin")]],
+        [
+            InlineKeyboardButton(
+                text="Заблокировать пользователя", callback_data="ban_user"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Разблокировать пользователя", callback_data="unban_user"
+            )
+        ],
+        [InlineKeyboardButton(text="Назад", callback_data="admin")],
+    ],
 )
 
 links_to_role = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text='Родитель')],
-        [KeyboardButton(text='Логопед')],
-        [KeyboardButton(text='Общее')],
-        [KeyboardButton(text='Отмена')]],
+        [KeyboardButton(text="Родитель")],
+        [KeyboardButton(text="Логопед")],
+        [KeyboardButton(text="Общее")],
+        [KeyboardButton(text="Отмена")],
+    ],
     resize_keyboard=True,
-    input_field_placeholder='Выберите пункт меню...'
+    input_field_placeholder="Выберите пункт меню...",
 )
 
 promocodes = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text='Добавить промокод')],
-        [KeyboardButton(text='Удалить промокод')],
-        [KeyboardButton(text='Загрузить файл')],
-        [KeyboardButton(text='Назад')]],
+        [KeyboardButton(text="Добавить промокод")],
+        [KeyboardButton(text="Удалить промокод")],
+        [KeyboardButton(text="Загрузить файл")],
+        [KeyboardButton(text="Назад")],
+    ],
     resize_keyboard=True,
-    input_field_placeholder='Выберите пункт меню...'
+    input_field_placeholder="Выберите пункт меню...",
 )
 
 cancel = ReplyKeyboardMarkup(
@@ -149,9 +166,49 @@ cancel = ReplyKeyboardMarkup(
 
 role = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="Родитель", callback_data="parent")],
-        [InlineKeyboardButton(text="Логопед", callback_data="therapist")],
+        [
+            InlineKeyboardButton(text="Родитель", callback_data="parent"),
+            InlineKeyboardButton(text="Логопед", callback_data="therapist"),
+        ],
         [InlineKeyboardButton(text="Информация", callback_data="info")],
+    ],
+)
+
+mailing = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="Отправить рассылку", callback_data="send_mailing"
+            )
+        ],
+        [InlineKeyboardButton(text="Назад", callback_data="admin")],
+    ],
+)
+
+mailing_role = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="Родителям",
+                callback_data=cb.MailingButtonRole(
+                    role=RoleType.PARENT
+                ).pack(),
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Логопедам",
+                callback_data=cb.MailingButtonRole(
+                    role=RoleType.SPEECH_THERAPIST
+                ).pack(),
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Всем",
+                callback_data=cb.MailingButtonRole(role=None).pack(),
+            )
+        ],
     ],
 )
 
@@ -243,10 +300,14 @@ async def get_button_settings_keyboard(button: Button):
             ),
         ],
     )
-    if button.button_type in [
-        ButtonType.FILE,
-        ButtonType.TEXT,
-    ] and button.parent_button_id is None:
+    if (
+        button.button_type
+        in [
+            ButtonType.FILE,
+            ButtonType.TEXT,
+        ]
+        and button.parent_button_id is None
+    ):
         buttons.append(
             [
                 InlineKeyboardButton(
@@ -352,3 +413,47 @@ async def get_button_settings_keyboard(button: Button):
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
 
     return keyboard
+
+
+async def get_mailing_settings_keyboard(state: dict) -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=(
+                    "Отправить всем: ✅"
+                    if state["ignore_subscribed"]
+                    else "Отправить всем: ❌"
+                ),
+                callback_data=cb.MailingButtonSettings(
+                    message=state["message"],
+                    role=state["role"],
+                    ignore_subscribed=not state["ignore_subscribed"],
+                ).pack(),
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=(
+                    "Всем ролям"
+                    if state["role"] == None
+                    else (
+                        "Только родителям"
+                        if state["role"] == RoleType.PARENT
+                        else "Только логопедам"
+                    )
+                ),
+                callback_data="mailing_settings_role",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="Отмена",
+                callback_data="send_mailing",
+            ),
+            InlineKeyboardButton(
+                text="Отправить",
+                callback_data="send_mailing_messages",
+            ),
+        ],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

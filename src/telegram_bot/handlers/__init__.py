@@ -10,3 +10,4 @@ from .start_handler import router as start_router  # noqa
 # from .therapist_handler import router as therapist_router  # noqa
 from .admin_buttons_handler import router as admin_buttons_router  # noqa
 from .ask_admin_handler import router as ask_admin_router  # noqa
+from .admin_mailing_handler import router as admin_mailing_router  # noqa
