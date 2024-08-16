@@ -9,6 +9,7 @@ from handlers import (
     admin_start_handler_callback,
     admin_users_handler,
     ask_admin_handler,
+    admin_mailing_handler,
 )
 from vkbottle import BaseStateGroup, GroupEventType, DocMessagesUploader
 from vkbottle.bot import Bot, Message, MessageEvent
@@ -60,6 +61,8 @@ class AdminStates(BaseStateGroup):
     WAITING_BUTTON_FILE_CREATE = "waiting_button_file_create"
     WAITING_USER_ID_TO_BAN = "waiting_user_id_to_ban"
     WAITING_USER_ID_TO_UNBAN = "waiting_user_id_to_unban"
+    SEND_MAILING = "send_mailing"
+    MAILING_SETTINGS = "mailing_settings"
 
 
 @bot.on.private_message(lev="/admin")
@@ -302,9 +305,7 @@ async def delete_promocodes_admin(event: MessageEvent):
     PayloadRule({"type": "users"}),
 )
 async def users_admin(event: MessageEvent):
-    await admin_users_handler.admin_users_handler(
-        bot, event, AdminStates
-    )
+    await admin_users_handler.admin_users_handler(bot, event, AdminStates)
 
 
 @bot.on.raw_event(
@@ -313,9 +314,7 @@ async def users_admin(event: MessageEvent):
     PayloadRule({"type": "ban_user"}),
 )
 async def ban_user_click(event: MessageEvent):
-    await admin_users_handler.ban_user_click(
-        bot, event, AdminStates
-    )
+    await admin_users_handler.ban_user_click(bot, event, AdminStates)
 
 
 @bot.on.raw_event(
@@ -324,9 +323,7 @@ async def ban_user_click(event: MessageEvent):
     PayloadRule({"type": "unban_user"}),
 )
 async def unban_user_click(event: MessageEvent):
-    await admin_users_handler.unban_user_click(
-        bot, event, AdminStates
-    )
+    await admin_users_handler.unban_user_click(bot, event, AdminStates)
 
 
 @bot.on.message(state=AdminStates.DELETE_PROMOCODE)
@@ -394,6 +391,67 @@ async def enter_promocode(message: Message):
 @bot.on.private_message(state=UserStates.WAITING_FOR_MESSAGE)
 async def handle_user_message_state(message: Message):
     await ask_admin_handler.handle_user_message(bot, message, UserStates)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "mailing"}),
+)
+async def cmd_mailing(event: MessageEvent):
+    await admin_mailing_handler.cmd_mailing(bot, event)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "send_mailing"}),
+)
+async def send_mailing(event: MessageEvent):
+    await admin_mailing_handler.send_mailing(bot, event, AdminStates)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "mailing_settings"}),
+)
+async def mailing_settings(event: MessageEvent):
+    await admin_mailing_handler.mailing_settings(bot, event, AdminStates)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "mailing_settings_role"}),
+)
+async def mailing_settings_role(event: MessageEvent):
+    await admin_mailing_handler.mailing_settings_role(bot, event, AdminStates)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "mailing_role"}),
+)
+async def mailing_settings_role_select(event: MessageEvent):
+    await admin_mailing_handler.mailing_settings_role_select(
+        bot, event, AdminStates
+    )
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "send_mailing_messages"}),
+)
+async def send_mailing_messages(event: MessageEvent):
+    await admin_mailing_handler.send_mailing_messages(bot, event, AdminStates)
+
+
+@bot.on.private_message(state=AdminStates.SEND_MAILING)
+async def send_mailing_state(message: Message):
+    await admin_mailing_handler.mailing_message(bot, message, AdminStates)
 
 
 @bot.on.private_message()
