@@ -1,5 +1,3 @@
-import logging
-
 from config import api, labeler, state_dispenser
 from handlers import (
     admin_promocodes_handler,
@@ -9,7 +7,10 @@ from handlers import (
     start_handler,
     admin_buttons_handler,
     admin_start_handler_callback,
-    ban_user, unban_user
+    ban_user,
+    unban_user,
+    admin_users_handler,
+    ask_admin_handler,
 )
 from vkbottle import BaseStateGroup, GroupEventType, DocMessagesUploader
 from vkbottle.bot import Bot, Message, MessageEvent
@@ -41,7 +42,7 @@ class AdminStates(BaseStateGroup):
 
     ADMIN_STATE = "admin_options"
     LINKS_STATE = "links_options"
-    USERS_STATE = 'users_options'
+    USERS_STATE = "users_options"
     PROMOCODES_STATE = "promocodes_options"
     WAITING_LINK_NAME = "waiting_link_name"
     WAITING_LINK_TYPE = "waiting_link_type"
@@ -59,8 +60,8 @@ class AdminStates(BaseStateGroup):
     WAITING_ON_BUTTON_TEXT_CREATE = "waiting_on_button_text_create"
     WAITING_BUTTON_TEXT_CREATE = "waiting_button_text_create"
     WAITING_BUTTON_FILE_CREATE = "waiting_button_file_create"
-    WAITING_USER_ID_TO_BAN = 'waiting_user_id_to_ban'
-    WAITING_USER_ID_TO_UNBAN = 'waiting_user_id_to_unban'
+    WAITING_USER_ID_TO_BAN = "waiting_user_id_to_ban"
+    WAITING_USER_ID_TO_UNBAN = "waiting_user_id_to_unban"
 
 
 @bot.on.private_message(lev="/admin")
@@ -73,7 +74,7 @@ async def admin_start(message: Message):
     MessageEvent,
     PayloadRule({"type": "main_info"}),
 )
-async def admin_start(event: MessageEvent):
+async def admin_main_info(event: MessageEvent):
     await admin_buttons_handler.main_menu_button_list(bot, event)
 
 
@@ -82,7 +83,7 @@ async def admin_start(event: MessageEvent):
     MessageEvent,
     PayloadRule({"type": "choose_role"}),
 )
-async def admin_start(event: MessageEvent):
+async def choose_role(event: MessageEvent):
     await start_handler.choose_role_handler(bot, event, UserStates)
 
 
@@ -91,7 +92,7 @@ async def admin_start(event: MessageEvent):
     MessageEvent,
     PayloadRule({"type": "admin"}),
 )
-async def admin_start(event: MessageEvent):
+async def admin(event: MessageEvent):
     await admin_start_handler_callback(bot, event, AdminStates)
 
 
@@ -215,7 +216,9 @@ async def admin_button_list(event: MessageEvent):
     PayloadRule({"type": "button_click"}),
 )
 async def button_click(event: MessageEvent):
-    await admin_buttons_handler.button_click_handler(bot, event, doc_uploader)
+    await admin_buttons_handler.button_click_handler(
+        bot, event, doc_uploader, UserStates
+    )
 
 
 @bot.on.raw_event(
@@ -255,7 +258,7 @@ async def button_main_menu_admin(event: MessageEvent):
     MessageEvent,
     PayloadRule({"type": "role"}),
 )
-async def choose_role(event: MessageEvent):
+async def choose_role2(event: MessageEvent):
     await start_handler.role_handler(bot, event)
 
 
@@ -343,7 +346,7 @@ async def promo(message: Message):
 
 
 @bot.on.private_message(state=UserStates.ROLE_STATE)
-async def choose_role(message: Message):
+async def choose_role3(message: Message):
     await role_handler(message)
 
 
@@ -357,23 +360,15 @@ async def enter_promocode(message: Message):
     await start_handler.promocode_handler(bot, message, doc_uploader)
 
 
+@bot.on.private_message(state=UserStates.WAITING_FOR_MESSAGE)
+async def handle_user_message_state(message: Message):
+    await ask_admin_handler.handle_user_message(bot, message, UserStates)
+
+
 @bot.on.private_message()
 async def default(message: Message):
     await start_handler.promocode_handler(bot, message, doc_uploader, False)
 
-@bot.on.message(state=UserStates.WAITING_FOR_MESSAGE)
-async def handle_user_message_state(message: Message):
-    await handle_user_message(bot, message, UserStates)
-
-
-@bot.on.message()
-async def main_handler(message: Message):
-    user_state = await bot.state_dispenser.get(message.from_id)
-
-    if user_state == UserStates.WAITING_FOR_MESSAGE:
-        await handle_user_message(bot, message, UserStates)
-    else:
-        await parent_handler(bot, message, UserStates)
 
 if __name__ == "__main__":
     bot.run_forever()

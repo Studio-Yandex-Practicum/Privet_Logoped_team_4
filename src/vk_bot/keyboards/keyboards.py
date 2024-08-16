@@ -92,6 +92,9 @@ admin_keyboard = (
         ),
         color=KeyboardButtonColor.PRIMARY,
     )
+    .row()
+    .add(Callback('Пользователи', payload={"type": "users"}),
+         color=KeyboardButtonColor.PRIMARY)
 )
 
 cancel_keyboard = Keyboard(one_time=True).add(
@@ -147,8 +150,24 @@ async def get_main_keyboard(role_type: Optional[RoleType]) -> Keyboard:
         keyboard.row().add(
             Callback(
                 button.button_name,
-                {"type": "button_click", "button_id": button.button_id, "authorized": role_type is not None},
+                {
+                    "type": "button_click",
+                    "button_id": button.button_id,
+                    "authorized": role_type is not None,
+                },
             )
         )
 
     return keyboard
+
+
+admin_users_keyboard = (
+    Keyboard(inline=True)
+    .add(Text("Заблокировать пользователя"), color=KeyboardButtonColor.PRIMARY)
+    .row()
+    .add(
+        Text("Разблокировать пользователя"), color=KeyboardButtonColor.PRIMARY
+    )
+    .row()
+    .add(Text("Назад"), color=KeyboardButtonColor.NEGATIVE)
+)

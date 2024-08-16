@@ -895,7 +895,8 @@ async def get_button_file_edit(message: Message, AdminStates, bot: Bot):
 
 
 async def button_click_handler(
-    bot: Bot, event: GroupTypes.MessageEvent, doc_uploader: DocMessagesUploader
+    bot: Bot, event: GroupTypes.MessageEvent, doc_uploader: DocMessagesUploader,
+    UserStates
 ):
     """Обработка нажатия на кнопку."""
     data = event.object.payload
@@ -945,10 +946,11 @@ async def button_click_handler(
         back_keyboard.add(Callback(label="Назад", payload=back_callback))
         await bot.api.messages.send(
             event.object.user_id,
-            message="Тут будет письмо админам",
+            message="Введите ваше сообщение для логопеда:",
             keyboard=back_keyboard.get_json(),
             random_id=0,
         )
+        await bot.state_dispenser.set(event.object.user_id, UserStates.WAITING_FOR_MESSAGE)
     elif button.button_type == ButtonType.MAILING:
         await bot.api.messages.send_message_event_answer(
             event_id=event.object.event_id,
