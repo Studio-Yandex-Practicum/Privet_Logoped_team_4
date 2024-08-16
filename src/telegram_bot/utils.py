@@ -48,5 +48,3 @@ async def other_day_notification(bot):
                     if (user.notification_interval == 'other_day' and
                         user.notificate_at == current_time):
                             await send_notification(user, bot)
-                else:
-                    continue

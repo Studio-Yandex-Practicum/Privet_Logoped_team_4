@@ -16,7 +16,6 @@ from utils import every_day_notification, other_day_notification
 
 logging.basicConfig(level=logging.INFO)
 
-
 async def main():
     bot = Bot(token=tg_token)
     dp = Dispatcher()

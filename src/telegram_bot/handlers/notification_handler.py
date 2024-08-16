@@ -26,7 +26,7 @@ async def notifications(message: Message, state: FSMContext):
                          reply_markup=reply_markup)
 
 @router.message(F.text == 'Включить уведомления')
-async def schedule_daily_notification(message: Message, state: FSMContext):
+async def notification_activate(message: Message, state: FSMContext):
     await message.answer('Выберите интервал уведомлений:',
                          reply_markup=kb.notifications)
 
