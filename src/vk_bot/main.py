@@ -7,8 +7,6 @@ from handlers import (
     start_handler,
     admin_buttons_handler,
     admin_start_handler_callback,
-    ban_user,
-    unban_user,
     admin_users_handler,
     ask_admin_handler,
 )
@@ -298,6 +296,39 @@ async def delete_promocodes_admin(event: MessageEvent):
     )
 
 
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "users"}),
+)
+async def users_admin(event: MessageEvent):
+    await admin_users_handler.admin_users_handler(
+        bot, event, AdminStates
+    )
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "ban_user"}),
+)
+async def ban_user_click(event: MessageEvent):
+    await admin_users_handler.ban_user_click(
+        bot, event, AdminStates
+    )
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "unban_user"}),
+)
+async def unban_user_click(event: MessageEvent):
+    await admin_users_handler.unban_user_click(
+        bot, event, AdminStates
+    )
+
+
 @bot.on.message(state=AdminStates.DELETE_PROMOCODE)
 async def delete_promocodes_admin_text(message: Message):
     await admin_promocodes_handler.delete_promocode_handler(
@@ -326,12 +357,12 @@ async def users_options(message: Message):
 
 @bot.on.private_message(state=AdminStates.WAITING_USER_ID_TO_BAN)
 async def waiting_user_id_to_ban(message: Message):
-    await ban_user(bot, message, AdminStates)
+    await admin_users_handler.ban_user(bot, message, AdminStates)
 
 
 @bot.on.private_message(state=AdminStates.WAITING_USER_ID_TO_UNBAN)
 async def waiting_user_id_to_unban(message: Message):
-    await unban_user(bot, message, AdminStates)
+    await admin_users_handler.unban_user(bot, message, AdminStates)
 
 
 @bot.on.private_message(lev=["/start", "Начать"])
