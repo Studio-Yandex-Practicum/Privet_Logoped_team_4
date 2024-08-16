@@ -10,6 +10,7 @@ from handlers import (
     start_router,
     admin_buttons_router,
     ask_admin_router,
+    admin_users_router
 )
 
 from middleware import BanCheckMiddleware, PromocodeMiddleware
@@ -33,6 +34,7 @@ async def main():
         # therapist_router,
         admin_buttons_router,
         ask_admin_router,
+        admin_users_router
     )
     await dp.start_polling(bot)
 

@@ -97,6 +97,28 @@ links_types = ReplyKeyboardMarkup(
     resize_keyboard=True,
     input_field_placeholder='Выберите пункт меню...'
 )
+admin = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(text="Промокоды", callback_data="promocodes"),
+            InlineKeyboardButton(
+                text="Кнопки",
+                callback_data=cb.ButtonGroupCallback(button_id=None).pack(),
+            ),
+            InlineKeyboardButton(
+                text="Пользователи",
+                callback_data="users",
+            ),
+        ],
+    ],
+)
+
+users = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text='Заблокировать пользователя', callback_data="ban_user")],
+        [InlineKeyboardButton(text='Разблокировать пользователя', callback_data="unban_user")],
+        [InlineKeyboardButton(text='Назад', callback_data="admin")]],
+)
 
 links_to_role = ReplyKeyboardMarkup(
     keyboard=[
