@@ -61,6 +61,7 @@ class TGUser(AsyncAttrs, Base):
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
     is_banned = Column(Numeric, default=0)
+    is_subscribed = Column(Boolean(), default=False)
 
 
 class VKUser(AsyncAttrs, Base):
@@ -72,6 +73,7 @@ class VKUser(AsyncAttrs, Base):
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
     is_banned = Column(Numeric, default=0)
+    is_subscribed = Column(Boolean(), default=False)
 
 
 class Link(AsyncAttrs, Base):

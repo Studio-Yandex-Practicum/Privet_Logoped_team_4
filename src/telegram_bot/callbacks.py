@@ -71,3 +71,17 @@ class ButtonAddFileCallback(CallbackData, prefix="button_file"):
 class VisitButtonCallback(CallbackData, prefix="visit_button"):
     button_id: int
     authorized: bool = True
+
+
+class SubscribeButtonCallback(CallbackData, prefix="subscribe_button"):
+    button_id: int
+    is_subscribed: bool
+
+
+class MailingButtonSettings(CallbackData, prefix="mailing_settings"):
+    role: Optional[RoleType]
+    ignore_subscribed: bool
+
+
+class MailingButtonRole(CallbackData, prefix="mailing_role"):
+    role: Optional[RoleType]
