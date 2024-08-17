@@ -8,10 +8,13 @@ from db.models import (
     NotificationWeekDayType,
     NotificationIntervalType,
 )
+import random
 
 
 async def send_notification(user: User, bot: Bot):
-    await bot.send_message(user.user_id, "Вам пришло уведомление!")
+    people = ["с Лисой", "с Мишкой", "со Слоном", "с Кроликом", "с Котом"]
+    person = random.choice(people)
+    await bot.send_message(user.user_id, f"Поиграйте с {person}!")
 
 
 async def every_day_notification(bot: Bot):
