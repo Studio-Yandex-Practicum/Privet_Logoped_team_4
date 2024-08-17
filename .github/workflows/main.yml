@@ -3,7 +3,7 @@ name: Main Workflow
 on:
   push:
     branches:
-      - dev
+      - bug/fix_workflow_deployment
 
 jobs:
 #   test:
@@ -64,13 +64,13 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
-          cd /Privet_Logoped_team_4/
+          cd /home/yc-user/Privet_Logoped_team_4/
           git pull origin dev
-          source /Privet_Logoped_team_4/src/telegram_bot/venv/bin/activate
+          source /home/yc-user/Privet_Logoped_team_4/src/telegram_bot/venv/bin/activate
           pip install -r src/telegram_bot/requirements.txt
           alembic upgrade head
           deactivate
-          source /Privet_Logoped_team_4/src/vk_bot/venv/bin/activate
+          source /home/yc-user/Privet_Logoped_team_4/src/vk_bot/venv/bin/activate
           pip install -r src/vk_bot/requirements.txt
           deactivate
           sudo systemctl restart docker-compose-db.service
