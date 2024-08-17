@@ -65,7 +65,7 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           cd /home/yc-user/Privet_Logoped_team_4/
-          git pull origin dev
+          git pull origin bug/fix_workflow_deployment
           source /home/yc-user/Privet_Logoped_team_4/src/telegram_bot/venv/bin/activate
           pip install -r src/telegram_bot/requirements.txt
           alembic upgrade head
