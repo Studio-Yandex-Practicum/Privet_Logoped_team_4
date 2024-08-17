@@ -75,8 +75,12 @@ def upgrade() -> None:
     )
     op.add_column(
         "vk_users",
-        sa.Column("notifications_enabled", sa.Boolean(), nullable=False, default=False),
+        sa.Column("notifications_enabled", sa.Boolean(), default=False),
     )
+    op.execute(
+        'UPDATE vk_users SET notifications_enabled = False WHERE notifications_enabled IS NULL'
+    )
+    op.alter_column('vk_users', 'notifications_enabled', nullable=False)
     # ### end Alembic commands ###
 
 
