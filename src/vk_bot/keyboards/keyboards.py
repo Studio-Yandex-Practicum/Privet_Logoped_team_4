@@ -1,15 +1,16 @@
 import os
 import sys
+from typing import Optional
 
 from sqlalchemy import and_, or_, select
 from vkbottle import Callback, Keyboard, KeyboardButtonColor, Text
-from typing import Optional
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../..")
 )
 sys.path.append(parent_folder_path)
-from db.models import Button, RoleType, async_session, NotificationInterval, NotificationWeekDay # noqa
+from db.models import (Button, NotificationInterval,  # noqa
+                       NotificationWeekDay, RoleType, async_session)
 
 role_keyboard = (
     Keyboard(inline=True)
@@ -281,9 +282,7 @@ async def get_mailing_settings_keyboard(state: dict) -> Keyboard:
     return keyboard
 
 
-def get_notifications_keyboard(
-    button_id: int, on: bool
-) -> Keyboard:
+def get_notifications_keyboard(button_id: int, on: bool) -> Keyboard:
     if on:
         keyboard = Keyboard(inline=True)
         keyboard.add(
@@ -293,7 +292,7 @@ def get_notifications_keyboard(
                     "type": "notification_interval",
                     "button_id": button_id,
                     "interval": None,
-                }
+                },
             )
         )
         keyboard.row().add(
@@ -303,7 +302,7 @@ def get_notifications_keyboard(
                     "type": "enable_notifications",
                     "button_id": button_id,
                     "is_enabled": False,
-                }
+                },
             )
         )
         return keyboard
@@ -316,7 +315,7 @@ def get_notifications_keyboard(
                     "type": "enable_notifications",
                     "button_id": button_id,
                     "is_enabled": True,
-                }
+                },
             )
         )
         return keyboard
@@ -333,7 +332,7 @@ def get_notifications_interval_keyboard(
                 "type": "notification_interval",
                 "button_id": button_id,
                 "interval": NotificationInterval.EVERY_DAY,
-            }
+            },
         )
     )
     keyboard.add(
@@ -343,7 +342,7 @@ def get_notifications_interval_keyboard(
                 "type": "notification_interval",
                 "button_id": button_id,
                 "interval": NotificationInterval.OTHER_DAY,
-            }
+            },
         )
     )
     keyboard.row().add(
@@ -353,7 +352,7 @@ def get_notifications_interval_keyboard(
                 "type": "notification_interval",
                 "button_id": button_id,
                 "interval": NotificationInterval.USER_CHOICE,
-            }
+            },
         )
     )
     return keyboard

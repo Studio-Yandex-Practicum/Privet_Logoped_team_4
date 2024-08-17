@@ -4,26 +4,14 @@ import keyboard.keyboard as kb
 from aiogram import Bot, F, Router
 from aiogram.filters.state import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (
-    CallbackQuery,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    Message,
-)
-from callbacks import (
-    ButtonAddCallback,
-    ButtonAddFileCallback,
-    ButtonAddTypeCallback,
-    ButtonChooseRoleCallback,
-    ButtonDeleteCallback,
-    ButtonGroupCallback,
-    ButtonInfoCallback,
-    ButtonOnButtonTextCallback,
-    ButtonRoleCallback,
-    ButtonTextCallback,
-    ButtonTypeCallback,
-    ButtonInMainMenuCallback
-)
+from aiogram.types import (CallbackQuery, InlineKeyboardButton,
+                           InlineKeyboardMarkup, Message)
+from callbacks import (ButtonAddCallback, ButtonAddFileCallback,
+                       ButtonAddTypeCallback, ButtonChooseRoleCallback,
+                       ButtonDeleteCallback, ButtonGroupCallback,
+                       ButtonInfoCallback, ButtonInMainMenuCallback,
+                       ButtonOnButtonTextCallback, ButtonRoleCallback,
+                       ButtonTextCallback, ButtonTypeCallback)
 from sqlalchemy import select, update
 
 from db.models import Button, ButtonType, RoleType, async_session
@@ -44,9 +32,7 @@ async def button_info_handler(
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
-                select(Button).where(
-                    Button.button_id == callback_data.button_id
-                )
+                select(Button).where(Button.button_id == callback_data.button_id)
             )
             button: Button = result.scalars().first()
 
@@ -65,17 +51,13 @@ async def button_delete_handler(
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
-                select(Button).where(
-                    Button.button_id == callback_data.button_id
-                )
+                select(Button).where(Button.button_id == callback_data.button_id)
             )
             button = result.scalars().first()
             await session.delete(button)
 
     await callback.message.delete()
-    await callback.message.answer(
-        "Кнопка успешно удалена", reply_markup=kb.admin
-    )
+    await callback.message.answer("Кнопка успешно удалена", reply_markup=kb.admin)
 
 
 @router.callback_query(ButtonOnButtonTextCallback.filter())
@@ -90,9 +72,7 @@ async def button_on_text_handler(
     await state.update_data(button_id=callback_data.button_id)
 
     await callback.message.delete()
-    await callback.message.answer(
-        "Отправьте текст на кнопке", reply_markup=kb.cancel
-    )
+    await callback.message.answer("Отправьте текст на кнопке", reply_markup=kb.cancel)
 
 
 @router.callback_query(ButtonTypeCallback.filter())
@@ -107,9 +87,7 @@ async def button_type_handler(
         async with async_session() as session:
             async with session.begin():
                 result = await session.execute(
-                    select(Button).where(
-                        Button.button_id == callback_data.button_id
-                    )
+                    select(Button).where(Button.button_id == callback_data.button_id)
                 )
                 button = result.scalars().first()
                 button.button_type = callback_data.button_type
@@ -119,9 +97,7 @@ async def button_type_handler(
                 #     ButtonType.NOTIFICATION,
                 # ]:
                 #     button.text = ""
-        await callback.message.answer(
-            "Тип кнопки изменен", reply_markup=kb.admin
-        )
+        await callback.message.answer("Тип кнопки изменен", reply_markup=kb.admin)
         return
     type_kb = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -184,9 +160,7 @@ async def button_type_handler(
     await callback.message.edit_text("Выберите тип", reply_markup=type_kb)
 
 
-@router.message(
-    F.text == "Отмена", StateFilter(AdminStates.waiting_on_button_text)
-)
+@router.message(F.text == "Отмена", StateFilter(AdminStates.waiting_on_button_text))
 async def cancel_button_on_text_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста на кнопке."""
     await message.answer("Отменено", reply_markup=kb.admin)
@@ -226,9 +200,7 @@ async def button_text_handler(
     )
 
 
-@router.message(
-    F.text == "Отмена", StateFilter(AdminStates.waiting_button_text)
-)
+@router.message(F.text == "Отмена", StateFilter(AdminStates.waiting_button_text))
 async def cancel_button_text_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста при нажатии на кнопку."""
     await message.answer("Отменено", reply_markup=kb.admin)
@@ -305,9 +277,7 @@ async def button_role_handler(
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
-                select(Button).where(
-                    Button.button_id == callback_data.button_id
-                )
+                select(Button).where(Button.button_id == callback_data.button_id)
             )
             button = result.scalars().first()
             button.to_role = callback_data.button_role
@@ -325,9 +295,7 @@ async def admin_buttons_handler(
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
-                select(Button).where(
-                    Button.parent_button_id == callback_data.button_id
-                )
+                select(Button).where(Button.parent_button_id == callback_data.button_id)
             )
             buttons = result.scalars().all()
 
@@ -337,9 +305,7 @@ async def admin_buttons_handler(
             [
                 InlineKeyboardButton(
                     text=button.button_name,
-                    callback_data=ButtonInfoCallback(
-                        button_id=button.button_id
-                    ).pack(),
+                    callback_data=ButtonInfoCallback(button_id=button.button_id).pack(),
                 ),
             ]
         )
@@ -383,9 +349,7 @@ async def admin_buttons_handler(
 
 
 @router.callback_query(ButtonAddCallback.filter())
-async def button_add_handler(
-    callback: CallbackQuery, callback_data: ButtonAddCallback
-):
+async def button_add_handler(callback: CallbackQuery, callback_data: ButtonAddCallback):
     """Обработка выбора кнопки 'Добавить кнопку'."""
     await callback.answer()
 
@@ -465,9 +429,7 @@ async def button_add_type_handler(
 
     await callback.message.delete()
 
-    await callback.message.answer(
-        "Введите текст на кнопке", reply_markup=kb.cancel
-    )
+    await callback.message.answer("Введите текст на кнопке", reply_markup=kb.cancel)
     await state.set_state(AdminStates.waiting_on_button_text_create)
     await state.update_data(
         button_type=callback_data.button_type,
@@ -478,9 +440,7 @@ async def button_add_type_handler(
 @router.message(
     F.text == "Отмена", StateFilter(AdminStates.waiting_on_button_text_create)
 )
-async def cancel_on_button_text_create_handler(
-    message: Message, state: FSMContext
-):
+async def cancel_on_button_text_create_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста при нажатии на кнопку."""
     await message.answer("Отменено", reply_markup=kb.admin)
     await state.clear()
@@ -520,12 +480,8 @@ async def get_on_button_text_create(message: Message, state: FSMContext):
         await state.clear()
 
 
-@router.message(
-    StateFilter(AdminStates.waiting_button_text_create), F.text == "Отмена"
-)
-async def cancel_button_text_create_handler(
-    message: Message, state: FSMContext
-):
+@router.message(StateFilter(AdminStates.waiting_button_text_create), F.text == "Отмена")
+async def cancel_button_text_create_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста при нажатии на кнопку."""
     await message.answer("Отменено", reply_markup=kb.admin)
     await state.clear()
@@ -555,21 +511,13 @@ async def get_button_text_create(message: Message, state: FSMContext):
         await message.answer("Кнопка добавлена", reply_markup=kb.admin)
 
 
-@router.message(
-    StateFilter(AdminStates.waiting_button_file_create), F.document
-)
-async def get_button_file_create(
-    message: Message, state: FSMContext, bot: Bot
-):
+@router.message(StateFilter(AdminStates.waiting_button_file_create), F.document)
+async def get_button_file_create(message: Message, state: FSMContext, bot: Bot):
     """Обработка выбора файла при нажатии на кнопку."""
     dest = (
         Path(__file__).parent.parent.parent.parent
         / "files"
-        / (
-            message.document.file_id
-            + "."
-            + message.document.file_name.split(".")[-1]
-        )
+        / (message.document.file_id + "." + message.document.file_name.split(".")[-1])
     )
     await bot.download(message.document.file_id, dest)
 
@@ -588,12 +536,8 @@ async def get_button_file_create(
     await message.answer("Кнопка добавлена", reply_markup=kb.admin)
 
 
-@router.message(
-    StateFilter(AdminStates.waiting_button_file_create), F.text == "Отмена"
-)
-async def cancel_button_file_create_handler(
-    message: Message, state: FSMContext
-):
+@router.message(StateFilter(AdminStates.waiting_button_file_create), F.text == "Отмена")
+async def cancel_button_file_create_handler(message: Message, state: FSMContext):
     """Обработка отмены выбора файла при нажатии на кнопку."""
     await message.answer("Отменено", reply_markup=kb.admin)
     await state.clear()
@@ -620,19 +564,13 @@ async def button_add_file_callback(
     await callback.message.answer("Выберите файл", reply_markup=kb.cancel)
 
 
-@router.message(
-    StateFilter(AdminStates.waiting_button_file), F.document
-)
+@router.message(StateFilter(AdminStates.waiting_button_file), F.document)
 async def get_button_file_edit(message: Message, state: FSMContext, bot: Bot):
     """Обработка выбора файла при нажатии на кнопку."""
     dest = (
         Path(__file__).parent.parent.parent.parent
         / "files"
-        / (
-            message.document.file_id
-            + "."
-            + message.document.file_name.split(".")[-1]
-        )
+        / (message.document.file_id + "." + message.document.file_name.split(".")[-1])
     )
     await bot.download(message.document.file_id, dest)
 
@@ -640,17 +578,15 @@ async def get_button_file_edit(message: Message, state: FSMContext, bot: Bot):
     async with async_session() as session:
         async with session.begin():
             await session.execute(
-                update(Button).where(Button.button_id == data["button_id"]).values(
-                    file_path=str(dest)
-                )
+                update(Button)
+                .where(Button.button_id == data["button_id"])
+                .values(file_path=str(dest))
             )
 
     await message.answer("Кнопка обновлена", reply_markup=kb.admin)
 
 
-@router.message(
-    StateFilter(AdminStates.waiting_button_file), F.text == "Отмена"
-)
+@router.message(StateFilter(AdminStates.waiting_button_file), F.text == "Отмена")
 async def cancel_button_file_edit_handler(message: Message, state: FSMContext):
     """Обработка отмены выбора файла при нажатии на кнопку."""
     await message.answer("Отменено", reply_markup=kb.admin)
@@ -673,11 +609,10 @@ async def button_in_main_menu_handler(
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
-                update(Button).returning(Button).where(
-                    Button.button_id == callback_data.button_id
-                ).values(
-                    is_in_main_menu=not callback_data.is_enabled
-                )
+                update(Button)
+                .returning(Button)
+                .where(Button.button_id == callback_data.button_id)
+                .values(is_in_main_menu=not callback_data.is_enabled)
             )
             button: Button = result.scalars().first()
 

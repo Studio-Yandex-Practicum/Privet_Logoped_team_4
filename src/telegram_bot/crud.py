@@ -4,12 +4,10 @@ import sys
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(parent_folder_path)
 
-from db.models import PromoCode, RoleType, TGUser, async_session   # noqa
+from db.models import PromoCode, RoleType, TGUser, async_session  # noqa
 
 
 async def chose_role(user_id: int, role: RoleType):
@@ -49,9 +47,7 @@ async def get_admin_users():
 
 async def get_user(user_id):
     async with async_session() as session:
-        result = await session.execute(
-            select(TGUser).where(TGUser.user_id == user_id)
-        )
+        result = await session.execute(select(TGUser).where(TGUser.user_id == user_id))
         user = result.scalars().first()
         return user
 

@@ -2,23 +2,15 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
-from config import tg_token
-from handlers import (
-    admin_links_router,
-    admin_promocodes_router,
-    admin_router,
-    start_router,
-    admin_buttons_router,
-    ask_admin_router,
-    admin_users_router,
-    admin_mailing_router,
-    notification_router
-)
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from notifications import every_day_notification, other_day_notification
-
+from config import tg_token
+from handlers import (admin_buttons_router, admin_links_router,
+                      admin_mailing_router, admin_promocodes_router,
+                      admin_router, admin_users_router, ask_admin_router,
+                      notification_router, start_router)
 from middleware import BanCheckMiddleware, PromocodeMiddleware
+from notifications import every_day_notification, other_day_notification
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,8 +21,12 @@ async def main():
     dp.update.outer_middleware(PromocodeMiddleware())
     dp.update.outer_middleware(BanCheckMiddleware())
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(every_day_notification, CronTrigger.from_crontab('0 * * * *'), args=[bot])
-    scheduler.add_job(other_day_notification, CronTrigger.from_crontab('0 * */2 * *'), args=[bot])
+    scheduler.add_job(
+        every_day_notification, CronTrigger.from_crontab("0 * * * *"), args=[bot]
+    )
+    scheduler.add_job(
+        other_day_notification, CronTrigger.from_crontab("0 * */2 * *"), args=[bot]
+    )
     scheduler.start()
 
     dp.include_routers(
@@ -45,7 +41,7 @@ async def main():
         ask_admin_router,
         admin_users_router,
         admin_mailing_router,
-        notification_router
+        notification_router,
     )
     await dp.start_polling(bot)
 

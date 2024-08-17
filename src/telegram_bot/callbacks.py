@@ -1,11 +1,13 @@
-from aiogram.filters.callback_data import CallbackData
-import sys
 import os
+import sys
 from typing import Optional
+
+from aiogram.filters.callback_data import CallbackData
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-from db.models import ButtonType, RoleType, NotificationIntervalType, NotificationWeekDayType  # noqa
+from db.models import NotificationIntervalType  # noqa
+from db.models import ButtonType, NotificationWeekDayType, RoleType
 
 
 class PromocodeDeleteCallback(CallbackData, prefix="promo_list_delete"):

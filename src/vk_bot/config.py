@@ -1,11 +1,11 @@
+from environs import Env
 from vkbottle import API, BuiltinStateDispenser
 from vkbottle.bot import BotLabeler
-from environs import Env
 
 env = Env()
 env.read_env()
 
-vk_token = env('VK_TOKEN')
+vk_token = env("VK_TOKEN")
 
 api = API(vk_token)
 labeler = BotLabeler()

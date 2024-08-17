@@ -7,9 +7,7 @@ from aiogram.types import FSInputFile, TelegramObject, Update
 from crud import get_promocode
 from sqlalchemy import select
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(parent_folder_path)
 
 from db.models import PromoCode, RoleType, TGUser, async_session  # noqa
@@ -28,9 +26,7 @@ class PromocodeMiddleware(BaseMiddleware):
         promo = await get_promocode(event.message.text)
         if promo is not None:
             await event.message.reply_document(
-                FSInputFile(
-                    promo, f"{event.message.text}.{promo.split('.')[-1]}"
-                )
+                FSInputFile(promo, f"{event.message.text}.{promo.split('.')[-1]}")
             )
             return
         return await handler(event, data)

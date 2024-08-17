@@ -4,9 +4,7 @@ import sys
 from sqlalchemy.future import select
 from vkbottle.bot import Bot, Message
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
 
 from db.models import VKUser, async_session  # noqa
@@ -18,9 +16,7 @@ async def handle_user_message(bot: Bot, message: Message, UserStates):
 
     async with async_session() as session:
         # Получаем администраторов из базы данных
-        admins_query = await session.execute(
-            select(VKUser).where(VKUser.is_admin == 1)
-        )
+        admins_query = await session.execute(select(VKUser).where(VKUser.is_admin == 1))
         admins = admins_query.scalars().all()
 
         for admin in admins:
@@ -32,9 +28,7 @@ async def handle_user_message(bot: Bot, message: Message, UserStates):
                     message=f"Новое сообщение от пользователя [id{user_id}|{user_id}]:\n{user_message}",
                 )
             except Exception as e:
-                print(
-                    f"Ошибка при отправке сообщения админу {admin.user_id}: {e}"
-                )
+                print(f"Ошибка при отправке сообщения админу {admin.user_id}: {e}")
 
     # Информируем пользователя о том, что сообщение отправлено
     await message.answer("Ваше сообщение отправлено логопедам.")

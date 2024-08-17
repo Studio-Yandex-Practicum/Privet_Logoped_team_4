@@ -1,26 +1,17 @@
-from config import api, labeler, state_dispenser
-from handlers import (
-    admin_promocodes_handler,
-    admin_start_handler,
-    faq_handler,
-    role_handler,
-    start_handler,
-    admin_buttons_handler,
-    admin_start_handler_callback,
-    admin_users_handler,
-    ask_admin_handler,
-    admin_mailing_handler,
-    notification_handler,
-)
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from notifications import every_day_notification, other_day_notification
-from vkbottle import BaseStateGroup, GroupEventType, DocMessagesUploader
-from vkbottle.bot import Bot, Message, MessageEvent
-from rules import PayloadRule
+from config import api, labeler, state_dispenser
+from handlers import (admin_buttons_handler, admin_mailing_handler,
+                      admin_promocodes_handler, admin_start_handler,
+                      admin_start_handler_callback, admin_users_handler,
+                      ask_admin_handler, faq_handler, notification_handler,
+                      role_handler, start_handler)
 from keyboards.keyboards import cancel_keyboard
 from middleware import BanMiddleware
-
+from notifications import every_day_notification, other_day_notification
+from rules import PayloadRule
+from vkbottle import BaseStateGroup, DocMessagesUploader, GroupEventType
+from vkbottle.bot import Bot, Message, MessageEvent
 
 bot = Bot(api=api, labeler=labeler, state_dispenser=state_dispenser)
 bot.labeler.vbml_ignore_case = True
@@ -246,7 +237,9 @@ async def notification_interval(event: MessageEvent):
     if "day_of_week" in payload and payload["day_of_week"] is not None:
         await notification_handler.choose_day_of_week(bot, event, UserStates)
     elif "interval" in payload and payload["interval"] is not None:
-        await notification_handler.choose_interval_select(bot, event, UserStates)
+        await notification_handler.choose_interval_select(
+            bot, event, UserStates
+        )
     else:
         await notification_handler.choose_interval(bot, event)
 
@@ -495,7 +488,15 @@ async def default(message: Message):
 
 if __name__ == "__main__":
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(every_day_notification, CronTrigger.from_crontab('* * * * *'), args=[bot])
-    scheduler.add_job(other_day_notification, CronTrigger.from_crontab('* * */2 * *'), args=[bot])
+    scheduler.add_job(
+        every_day_notification,
+        CronTrigger.from_crontab("* * * * *"),
+        args=[bot],
+    )
+    scheduler.add_job(
+        other_day_notification,
+        CronTrigger.from_crontab("* * */2 * *"),
+        args=[bot],
+    )
     scheduler.start()
     bot.run_forever()

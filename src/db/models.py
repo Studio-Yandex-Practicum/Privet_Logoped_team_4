@@ -1,34 +1,15 @@
 import enum
 
-from sqlalchemy import (
-    Column,
-    DateTime,
-    Enum,
-    Integer,
-    Numeric,
-    String,
-    func,
-    BigInteger,
-    ForeignKey,
-    Text,
-    Boolean,
-)
-from sqlalchemy.ext.asyncio import (
-    AsyncAttrs,
-    AsyncSession,
-    create_async_engine,
-)
+from sqlalchemy import (BigInteger, Boolean, Column, DateTime, Enum,
+                        ForeignKey, Integer, Numeric, String, Text, func)
+from sqlalchemy.ext.asyncio import (AsyncAttrs, AsyncSession,
+                                    create_async_engine)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy.orm import backref, relationship, sessionmaker
 
 from .config import database_url
-from .constants import (
-    LinkResourseType,
-    RoleName,
-    ButtonTypeEnum,
-    NotificationInterval,
-    NotificationWeekDay,
-)
+from .constants import (ButtonTypeEnum, LinkResourseType, NotificationInterval,
+                        NotificationWeekDay, RoleName)
 
 Base = declarative_base()
 
@@ -154,6 +135,4 @@ class Button(AsyncAttrs, Base):
 
 engine = create_async_engine(database_url, echo=False)
 
-async_session = sessionmaker(
-    engine, expire_on_commit=False, class_=AsyncSession
-)
+async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)

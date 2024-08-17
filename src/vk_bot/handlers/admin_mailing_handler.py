@@ -6,26 +6,14 @@ from sqlalchemy import and_, select
 from vkbottle import Bot, GroupTypes
 from vkbottle.bot import Message
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
-from keyboards.keyboards import (  # noqa
-    admin_keyboard,
-    cancel_keyboard,
-    get_mailing_settings_keyboard,
-    get_main_keyboard,
-    mailing,
-    mailing_role,
-)
+from keyboards.keyboards import cancel_keyboard  # noqa
+from keyboards.keyboards import (admin_keyboard, get_mailing_settings_keyboard,
+                                 get_main_keyboard, mailing, mailing_role)
 
-from db.models import (  # noqa
-    Button,
-    ButtonType,
-    RoleType,
-    VKUser,
-    async_session,
-)
+from db.models import (Button, ButtonType, RoleType, VKUser,  # noqa
+                       async_session)
 
 
 async def cmd_mailing(bot: Bot, event: GroupTypes.MessageEvent):
@@ -84,9 +72,7 @@ async def mailing_message(bot: Bot, message: Message, AdminStates):
     await message.answer("Настройки рассылки", keyboard=keyboard)
 
 
-async def mailing_settings(
-    bot: Bot, event: GroupTypes.MessageEvent, AdminStates
-):
+async def mailing_settings(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
     await bot.api.messages.send_message_event_answer(
         event_id=event.object.event_id,
         user_id=event.object.user_id,
@@ -115,9 +101,7 @@ async def mailing_settings(
     )
 
 
-async def mailing_settings_role(
-    bot: Bot, event: GroupTypes.MessageEvent, AdminStates
-):
+async def mailing_settings_role(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
     await bot.api.messages.send_message_event_answer(
         event_id=event.object.event_id,
         user_id=event.object.user_id,
@@ -162,9 +146,7 @@ async def mailing_settings_role_select(
     )
 
 
-async def send_mailing_messages(
-    bot: Bot, event: GroupTypes.MessageEvent, AdminStates
-):
+async def send_mailing_messages(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
     await bot.api.messages.send_message_event_answer(
         event_id=event.object.event_id,
         user_id=event.object.user_id,

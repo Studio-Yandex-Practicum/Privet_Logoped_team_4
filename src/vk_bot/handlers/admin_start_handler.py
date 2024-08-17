@@ -1,13 +1,11 @@
 import os
 import sys
 
-from vkbottle import Bot, GroupTypes
 from keyboards.keyboards import admin_keyboard
 from sqlalchemy import and_, select
+from vkbottle import Bot, GroupTypes
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
 from db.models import VKUser, async_session  # noqa
 
@@ -25,8 +23,7 @@ async def admin_start_handler(bot, message, AdminStates):
     if user:
         await message.answer(
             message=(
-                "Здравствуйте! Выберите одну из "
-                "предложенных опций администратора:"
+                "Здравствуйте! Выберите одну из " "предложенных опций администратора:"
             ),
             keyboard=admin_keyboard,
         )
@@ -62,9 +59,7 @@ async def admin_start_handler_callback(
             conversation_message_id=event.object.conversation_message_id,
             keyboard=admin_keyboard,
         )
-        await bot.state_dispenser.set(
-            event.object.peer_id, AdminStates.ADMIN_STATE
-        )
+        await bot.state_dispenser.set(event.object.peer_id, AdminStates.ADMIN_STATE)
     else:
         await bot.api.messages.edit(
             peer_id=event.object.peer_id,

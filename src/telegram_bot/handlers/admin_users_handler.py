@@ -5,14 +5,12 @@ import keyboard.keyboard as kb
 from aiogram import F, Router
 from aiogram.filters.state import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy import update
 
 from .state import AdminStates
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
 
 from db.models import TGUser, async_session  # noqa
@@ -22,9 +20,7 @@ router = Router()
 
 @router.callback_query(F.data == "users")
 async def users_menu(callback: CallbackQuery):
-    await callback.message.edit_text(
-        'Вы нажали "Пользователи"', reply_markup=kb.users
-    )
+    await callback.message.edit_text('Вы нажали "Пользователи"', reply_markup=kb.users)
 
 
 @router.callback_query(F.data == "ban_user")
@@ -39,9 +35,7 @@ async def admin_ban_user(callback: CallbackQuery, state: FSMContext):
 async def ban_user(message: Message, state: FSMContext):
     """Обработка ввода id пользователя и обработка его бана."""
     if message.text == "Отмена":
-        await message.answer(
-            "Отмена добавления промокода.", reply_markup=kb.users
-        )
+        await message.answer("Отмена добавления промокода.", reply_markup=kb.users)
     else:
         try:
             user_id = int(message.text)
@@ -61,9 +55,7 @@ async def ban_user(message: Message, state: FSMContext):
                     await session.execute(banned_user)
                     await session.commit()
             except Exception:
-                await message.answer(
-                    "Попробуйте еще раз.", reply_markup=kb.users
-                )
+                await message.answer("Попробуйте еще раз.", reply_markup=kb.users)
             else:
                 await message.answer(
                     f"Пользователь с id {user_id} успешно забанен.",
@@ -84,9 +76,7 @@ async def admin_unban_user(callback: CallbackQuery, state: FSMContext):
 async def unban_user(message: Message, state: FSMContext):
     """Обработка ввода id пользователя и обработка его разбана."""
     if message.text == "Отмена":
-        await message.answer(
-            "Отмена удаления промокода.", reply_markup=kb.users
-        )
+        await message.answer("Отмена удаления промокода.", reply_markup=kb.users)
     else:
         try:
             user_id = int(message.text)
@@ -106,9 +96,7 @@ async def unban_user(message: Message, state: FSMContext):
                     await session.execute(banned_user)
                     await session.commit()
             except Exception:
-                await message.answer(
-                    "Попробуйте еще раз.", reply_markup=kb.users
-                )
+                await message.answer("Попробуйте еще раз.", reply_markup=kb.users)
             else:
                 await message.answer(
                     f"Пользователь с id {user_id} успешно разбанен.",

@@ -1,24 +1,19 @@
 import os
 import sys
-
-from keyboards.keyboards import (
-    admin_keyboard,
-    admin_promocodes_keyboard,
-    cancel_keyboard,
-)
-from sqlalchemy import delete, select
-from sqlalchemy.dialects.postgresql import insert
-from vkbottle import CtxStorage, Bot, GroupTypes
-from vkbottle.bot import Message
-from vkbottle_types.objects import MessagesMessageAttachmentType
 import uuid
 from pathlib import Path
+
 import aiofiles
 from aiohttp import ClientSession
+from keyboards.keyboards import (admin_keyboard, admin_promocodes_keyboard,
+                                 cancel_keyboard)
+from sqlalchemy import delete, select
+from sqlalchemy.dialects.postgresql import insert
+from vkbottle import Bot, CtxStorage, GroupTypes
+from vkbottle.bot import Message
+from vkbottle_types.objects import MessagesMessageAttachmentType
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
 from db.models import PromoCode, async_session  # noqa
 
@@ -38,9 +33,7 @@ async def add_promocode(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
         random_id=0,
         keyboard=cancel_keyboard,
     )
-    await bot.state_dispenser.set(
-        event.object.peer_id, AdminStates.WAITING_PROMOCODE
-    )
+    await bot.state_dispenser.set(event.object.peer_id, AdminStates.WAITING_PROMOCODE)
 
 
 async def add_promocode_text(bot: Bot, message: Message, AdminStates):
@@ -62,9 +55,7 @@ async def add_promocode_text(bot: Bot, message: Message, AdminStates):
         promocode=message.text,
     )
 
-    await message.answer(
-        "Отправьте документ для промокода:", keyboard=cancel_keyboard
-    )
+    await message.answer("Отправьте документ для промокода:", keyboard=cancel_keyboard)
 
 
 async def add_promocode_file(bot: Bot, message: Message, AdminStates):
@@ -77,13 +68,9 @@ async def add_promocode_file(bot: Bot, message: Message, AdminStates):
         await message.answer(
             "Отмена добавления промокода.", keyboard=admin_promocodes_keyboard
         )
-        await bot.state_dispenser.set(
-            message.peer_id, AdminStates.PROMOCODES_STATE
-        )
+        await bot.state_dispenser.set(message.peer_id, AdminStates.PROMOCODES_STATE)
     elif not message.attachments:
-        await message.answer(
-            "Отправлен некорректный файл.", keyboard=cancel_keyboard
-        )
+        await message.answer("Отправлен некорректный файл.", keyboard=cancel_keyboard)
     else:
         data = await bot.state_dispenser.get(message.peer_id)
         promocode = data.payload.get("promocode")
@@ -100,9 +87,7 @@ async def add_promocode_file(bot: Bot, message: Message, AdminStates):
                 file_info = attachment.photo.sizes[-1]
                 file_url = file_info.url
                 file_name = uuid.uuid5(uuid.NAMESPACE_DNS, file_url).hex
-                file_extension = (
-                    os.path.basename(file_url).split("?")[0].split(".")[-1]
-                )
+                file_extension = os.path.basename(file_url).split("?")[0].split(".")[-1]
 
             if file_info:
                 async with ClientSession() as session:
@@ -148,9 +133,7 @@ async def delete_button_promocode_handler(
         random_id=0,
         keyboard=cancel_keyboard,
     )
-    await bot.state_dispenser.set(
-        event.object.peer_id, AdminStates.DELETE_PROMOCODE
-    )
+    await bot.state_dispenser.set(event.object.peer_id, AdminStates.DELETE_PROMOCODE)
 
 
 async def delete_promocode_handler(bot: Bot, message: Message, AdminStates):
@@ -173,7 +156,9 @@ async def delete_promocode_handler(bot: Bot, message: Message, AdminStates):
             )
             return
         await session.execute(
-            delete(PromoCode).where(PromoCode.promocode_id == promocode_result.promocode_id)
+            delete(PromoCode).where(
+                PromoCode.promocode_id == promocode_result.promocode_id
+            )
         )
         await session.commit()
     await bot.state_dispenser.delete(message.peer_id)

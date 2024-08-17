@@ -1,45 +1,28 @@
 import os
 import sys
-
-from vkbottle import (
-    Bot,
-    GroupTypes,
-    Keyboard,
-    KeyboardButtonColor,
-    Callback,
-    ShowSnackbarEvent,
-    DocMessagesUploader,
-)
-from vkbottle import VKAPIError
-from vkbottle.bot import Message
-from vkbottle_types.objects import MessagesMessageAttachmentType
-from sqlalchemy import select, and_, or_, update
-from pathlib import Path
-from aiohttp import ClientSession
-import aiofiles
 import uuid
 from contextlib import suppress
+from pathlib import Path
+
+import aiofiles
+from aiohttp import ClientSession
+from sqlalchemy import and_, or_, select, update
+from vkbottle import (Bot, Callback, DocMessagesUploader, GroupTypes, Keyboard,
+                      KeyboardButtonColor, ShowSnackbarEvent, VKAPIError)
+from vkbottle.bot import Message
+from vkbottle_types.objects import MessagesMessageAttachmentType
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../..")
 )
 sys.path.append(parent_folder_path)
-from keyboards.keyboards import (  # noqa
-    admin_keyboard,
-    cancel_keyboard,
-    get_main_keyboard,
-    get_notifications_keyboard,
-)
+from keyboards.keyboards import cancel_keyboard  # noqa
+from keyboards.keyboards import (admin_keyboard, get_main_keyboard,
+                                 get_notifications_keyboard)
 
-from db.models import (  # noqa
-    Button,
-    ButtonType,
-    RoleType,
-    async_session,
-    VKUser,
-    NotificationIntervalType,
-    NotificationWeekDayType,
-)
+from db.models import NotificationIntervalType  # noqa
+from db.models import (Button, ButtonType, NotificationWeekDayType, RoleType,
+                       VKUser, async_session)
 
 
 async def button_info_handler(bot: Bot, event: GroupTypes.MessageEvent):

@@ -1,13 +1,11 @@
-from vkbottle import Bot
-from datetime import datetime
-from sqlalchemy.future import select
-from db.models import (
-    VKUser,
-    async_session,
-    NotificationWeekDayType,
-    NotificationIntervalType,
-)
 import random
+from datetime import datetime
+
+from sqlalchemy.future import select
+from vkbottle import Bot
+
+from db.models import (NotificationIntervalType, NotificationWeekDayType,
+                       VKUser, async_session)
 
 
 async def send_notification(user_id: int, bot: Bot):

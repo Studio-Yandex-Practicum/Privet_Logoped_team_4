@@ -1,16 +1,11 @@
 import os
 import sys
 
-from keyboards.keyboards import (
-    admin_users_keyboard,
-    cancel_keyboard,
-)
+from keyboards.keyboards import admin_users_keyboard, cancel_keyboard
 from sqlalchemy import update
 from vkbottle import Bot, GroupTypes
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
 from db.models import VKUser, async_session  # noqa
 
@@ -87,9 +82,7 @@ async def unban_user(bot, message, AdminStates):
     await bot.state_dispenser.set(message.peer_id, AdminStates.USERS_STATE)
 
 
-async def admin_users_handler(
-    bot: Bot, event: GroupTypes.MessageEvent, AdminStates
-):
+async def admin_users_handler(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
     """
     Обработка выбора кнопки 'Заблокировать пользователя',
     'Разблокировать пользователя' или 'Назад'.

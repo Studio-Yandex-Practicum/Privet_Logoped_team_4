@@ -1,15 +1,13 @@
 from typing import Optional
+
 from aiogram import Router
 from aiogram.filters.callback_data import CallbackData
-from aiogram.types import (
-    Message,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-)
-from sqlalchemy.future import select
 from aiogram.fsm.context import FSMContext
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from sqlalchemy.future import select
 
-from db.models import async_session, TGUser
+from db.models import TGUser, async_session
+
 from .state import Level
 
 router = Router()
@@ -38,9 +36,7 @@ def get_reply_keyboard(user_id: int):
 @router.message(Level.waiting_for_message)
 async def forward_to_admins(message: Message, state: FSMContext):
     async with async_session() as session:
-        admins_query = await session.execute(
-            select(TGUser).where(TGUser.is_admin == 1)
-        )
+        admins_query = await session.execute(select(TGUser).where(TGUser.is_admin == 1))
         admins = admins_query.scalars().all()
 
     user_id = message.from_user.id

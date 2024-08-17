@@ -9,9 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy import and_, select
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
 from db.models import TGUser, async_session  # noqa
 
@@ -26,14 +24,14 @@ async def cmd_admin(message: Union[Message, CallbackQuery], state: FSMContext):
     user_id = message.from_user.id
     async with async_session() as session:
         result = await session.execute(
-            select(TGUser).where(
-                and_(TGUser.user_id == user_id, TGUser.is_admin == 1)
-            )
+            select(TGUser).where(and_(TGUser.user_id == user_id, TGUser.is_admin == 1))
         )
         user = result.scalars().first()
     if user:
         if isinstance(message, CallbackQuery):
-            await message.message.edit_text('Админ-панель "Привет, Логопед"', reply_markup=kb.admin)
+            await message.message.edit_text(
+                'Админ-панель "Привет, Логопед"', reply_markup=kb.admin
+            )
         else:
             await message.answer(
                 'Админ-панель "Привет, Логопед"', reply_markup=kb.admin
@@ -46,4 +44,6 @@ async def cmd_admin(message: Union[Message, CallbackQuery], state: FSMContext):
 async def admin_promocodes_handler(callback: CallbackQuery):
     """Обработка выбора кнопки 'Промокоды'."""
     await callback.answer()
-    await callback.message.edit_text("Управление промокодами", reply_markup=kb.promocodes)
+    await callback.message.edit_text(
+        "Управление промокодами", reply_markup=kb.promocodes
+    )

@@ -7,13 +7,12 @@ from aiogram import F, Router
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from callbacks import MailingButtonRole, MailingButtonSettings
 from sqlalchemy import and_, select
-from .state import AdminStates
-from callbacks import MailingButtonSettings, MailingButtonRole
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+from .state import AdminStates
+
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
 from db.models import TGUser, async_session  # noqa
 
@@ -22,9 +21,7 @@ router = Router()
 
 @router.callback_query(F.data == "mailing")
 @router.message(Command("mailing"))
-async def cmd_mailing(
-    callback: Union[CallbackQuery, Message], state: FSMContext
-):
+async def cmd_mailing(callback: Union[CallbackQuery, Message], state: FSMContext):
     await state.clear()
     await callback.message.edit_text("Рассылка", reply_markup=kb.mailing)
 
@@ -36,9 +33,7 @@ async def send_mailing(callback: CallbackQuery, state: FSMContext):
         "Отправьте сообщение для рассылки", reply_markup=kb.cancel
     )
     await state.set_state(AdminStates.send_mailing)
-    await state.update_data(
-        {"role": None, "message": None, "ignore_subscribed": False}
-    )
+    await state.update_data({"role": None, "message": None, "ignore_subscribed": False})
 
 
 @router.message(StateFilter(AdminStates.send_mailing))
@@ -75,9 +70,7 @@ async def mailing_settings(
             "ignore_subscribed": callback_data.ignore_subscribed,
         }
     )
-    await callback.message.edit_text(
-        "Настройки рассылки", reply_markup=keyboard
-    )
+    await callback.message.edit_text("Настройки рассылки", reply_markup=keyboard)
 
 
 @router.callback_query(F.data == "mailing_settings_role")
@@ -102,9 +95,7 @@ async def mailing_settings_role_select(
             "ignore_subscribed": state_data["ignore_subscribed"],
         }
     )
-    await callback.message.edit_text(
-        "Настройки рассылки", reply_markup=keyboard
-    )
+    await callback.message.edit_text("Настройки рассылки", reply_markup=keyboard)
 
 
 @router.callback_query(F.data == "send_mailing_messages")
@@ -114,10 +105,7 @@ async def send_mailing_messages(callback: CallbackQuery, state: FSMContext):
         async with session.begin():
             if state_data["role"] is None and state_data["ignore_subscribed"]:
                 stmt = select(TGUser)
-            elif (
-                state_data["role"] is None
-                and not state_data["ignore_subscribed"]
-            ):
+            elif state_data["role"] is None and not state_data["ignore_subscribed"]:
                 stmt = select(TGUser).where(TGUser.is_subscribed.is_(True))
             elif state_data["role"] and state_data["ignore_subscribed"]:
                 stmt = select(TGUser).where(TGUser.role == state_data["role"])
@@ -141,6 +129,4 @@ async def send_mailing_messages(callback: CallbackQuery, state: FSMContext):
                     )
                 except Exception as e:
                     print(e)
-    await callback.message.edit_text(
-        "Рассылка отправлена!", reply_markup=kb.admin
-    )
+    await callback.message.edit_text("Рассылка отправлена!", reply_markup=kb.admin)

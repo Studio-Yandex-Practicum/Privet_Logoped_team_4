@@ -1,14 +1,12 @@
+import random
+from datetime import datetime
+
 from aiogram import Bot
 from aiogram.types import User
-from datetime import datetime
 from sqlalchemy.future import select
-from db.models import (
-    TGUser,
-    async_session,
-    NotificationWeekDayType,
-    NotificationIntervalType,
-)
-import random
+
+from db.models import (NotificationIntervalType, NotificationWeekDayType,
+                       TGUser, async_session)
 
 
 async def send_notification(user: User, bot: Bot):
@@ -29,8 +27,7 @@ async def every_day_notification(bot: Bot):
             for user in users:
                 if user.notifications_enabled is True:
                     if (
-                        user.notification_interval
-                        == NotificationIntervalType.EVERY_DAY
+                        user.notification_interval == NotificationIntervalType.EVERY_DAY
                         and user.notificate_at == current_time
                     ):
                         await send_notification(user, bot)
@@ -38,40 +35,19 @@ async def every_day_notification(bot: Bot):
                         user.notification_interval
                         == NotificationIntervalType.USER_CHOICE
                     ):
-                        if (
-                            user.notification_day
-                            == NotificationWeekDayType.MONDAY
-                        ):
+                        if user.notification_day == NotificationWeekDayType.MONDAY:
                             day_of_week = 0
-                        elif (
-                            user.notification_day
-                            == NotificationWeekDayType.TUESDAY
-                        ):
+                        elif user.notification_day == NotificationWeekDayType.TUESDAY:
                             day_of_week = 1
-                        elif (
-                            user.notification_day
-                            == NotificationWeekDayType.WEDNESDAY
-                        ):
+                        elif user.notification_day == NotificationWeekDayType.WEDNESDAY:
                             day_of_week = 2
-                        elif (
-                            user.notification_day
-                            == NotificationWeekDayType.THURSDAY
-                        ):
+                        elif user.notification_day == NotificationWeekDayType.THURSDAY:
                             day_of_week = 3
-                        elif (
-                            user.notification_day
-                            == NotificationWeekDayType.FRIDAY
-                        ):
+                        elif user.notification_day == NotificationWeekDayType.FRIDAY:
                             day_of_week = 4
-                        elif (
-                            user.notification_day
-                            == NotificationWeekDayType.SATURDAY
-                        ):
+                        elif user.notification_day == NotificationWeekDayType.SATURDAY:
                             day_of_week = 5
-                        elif (
-                            user.notification_day
-                            == NotificationWeekDayType.SUNDAY
-                        ):
+                        elif user.notification_day == NotificationWeekDayType.SUNDAY:
                             day_of_week = 6
                         if (
                             user.notificate_at == current_time
@@ -91,8 +67,7 @@ async def other_day_notification(bot: Bot):
             for user in users:
                 if user.notifications_enabled is True:
                     if (
-                        user.notification_interval
-                        == NotificationIntervalType.OTHER_DAY
+                        user.notification_interval == NotificationIntervalType.OTHER_DAY
                         and user.notificate_at == current_time
                     ):
                         await send_notification(user, bot)

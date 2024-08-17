@@ -1,24 +1,15 @@
 import os
 import sys
 
-from vkbottle import Bot, GroupTypes, Callback
-from vkbottle.bot import Message
-from sqlalchemy import select, update
 import keyboards.keyboards as kb
+from sqlalchemy import select, update
+from vkbottle import Bot, Callback, GroupTypes
+from vkbottle.bot import Message
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
-from db.models import VKUser, async_session  # noqa
-
-from db.models import (  # noqa
-    VKUser,
-    async_session,
-    NotificationIntervalType,
-    Button,
-    NotificationWeekDayType,
-)
+from db.models import NotificationIntervalType  # noqa
+from db.models import Button, NotificationWeekDayType, VKUser, async_session
 
 
 async def enable_notifications(
@@ -87,9 +78,7 @@ async def choose_interval(
         user_id=event.object.user_id,
         peer_id=event.object.peer_id,
     )
-    keyboard = kb.get_notifications_interval_keyboard(
-        event.object.payload["button_id"]
-    )
+    keyboard = kb.get_notifications_interval_keyboard(event.object.payload["button_id"])
     keyboard.row().add(
         Callback(
             "Назад",
@@ -107,9 +96,7 @@ async def choose_interval(
     )
 
 
-async def choose_interval_select(
-    bot: Bot, event: GroupTypes.MessageEvent, UserStates
-):
+async def choose_interval_select(bot: Bot, event: GroupTypes.MessageEvent, UserStates):
     await bot.api.messages.send_message_event_answer(
         event_id=event.object.event_id,
         user_id=event.object.user_id,
@@ -170,22 +157,16 @@ async def choose_interval_select_hour(bot: Bot, message: Message):
     try:
         hour = int(message.text)
     except ValueError:
-        await message.answer(
-            "Вы ввели некорректное значение", reply_markup=kb.cancel
-        )
+        await message.answer("Вы ввели некорректное значение", reply_markup=kb.cancel)
         return
     if hour < 0 or hour > 23:
-        await message.answer(
-            "Вы ввели некорректное значение", reply_markup=kb.cancel
-        )
+        await message.answer("Вы ввели некорректное значение", reply_markup=kb.cancel)
         return
     data = await bot.state_dispenser.get(message.peer_id)
     if data.payload["notification_interval"] == NotificationIntervalType.USER_CHOICE:
         await message.answer(
             "Выберите день недели для уведомлений:",
-            keyboard=kb.get_notifications_dayofweek_keyboard(
-                data.payload["button_id"]
-            ),
+            keyboard=kb.get_notifications_dayofweek_keyboard(data.payload["button_id"]),
         )
         return
     async with async_session() as session:
@@ -195,7 +176,9 @@ async def choose_interval_select_hour(bot: Bot, message: Message):
                 .where(VKUser.user_id == message.from_id)
                 .values(
                     notificate_at=hour,
-                    notification_interval=NotificationIntervalType(data.payload["notification_interval"]),
+                    notification_interval=NotificationIntervalType(
+                        data.payload["notification_interval"]
+                    ),
                 )
             )
             result = await session.execute(
@@ -226,9 +209,7 @@ async def choose_interval_select_hour(bot: Bot, message: Message):
     await bot.state_dispenser.delete(message.peer_id)
 
 
-async def choose_day_of_week(
-    bot: Bot, event: GroupTypes.MessageEvent, UserStates
-):
+async def choose_day_of_week(bot: Bot, event: GroupTypes.MessageEvent, UserStates):
     await bot.api.messages.send_message_event_answer(
         event_id=event.object.event_id,
         user_id=event.object.user_id,

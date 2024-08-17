@@ -1,9 +1,7 @@
 import os
 import sys
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
 from keyboards.keyboards import admin_keyboard, admin_promocodes_keyboard
 
@@ -19,9 +17,7 @@ async def admin_handler(bot, message, AdminStates):
         await message.answer(
             "Вы выбрали Промокоды.", keyboard=admin_promocodes_keyboard
         )
-        await bot.state_dispenser.set(
-            message.peer_id, AdminStates.PROMOCODES_STATE
-        )
+        await bot.state_dispenser.set(message.peer_id, AdminStates.PROMOCODES_STATE)
     else:
         await message.answer(
             "Пожалуйста, выберите одну из предложенных опций:",

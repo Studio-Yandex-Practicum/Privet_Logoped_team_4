@@ -1,26 +1,21 @@
 import os
 import sys
-from vkbottle import Keyboard, Callback, DocMessagesUploader, Bot, GroupTypes
-from vkbottle.bot import Message
-import keyboards.keyboards as kb
-
-from keyboards.keyboards import role_keyboard, cancel_keyboard
-from sqlalchemy import select, or_, and_
-from pathlib import Path
-from sqlalchemy.dialects.postgresql import insert
 from contextlib import suppress
+from pathlib import Path
+
+import keyboards.keyboards as kb
+from keyboards.keyboards import cancel_keyboard, role_keyboard
+from sqlalchemy import and_, or_, select
+from sqlalchemy.dialects.postgresql import insert
+from vkbottle import Bot, Callback, DocMessagesUploader, GroupTypes, Keyboard
+from vkbottle.bot import Message
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../..")
 )
 sys.path.append(parent_folder_path)
-from db.models import (  # noqa
-    VKUser,
-    async_session,
-    Button,
-    PromoCode,
-    RoleType,
-)
+from db.models import VKUser  # noqa
+from db.models import Button, PromoCode, RoleType, async_session
 
 
 async def start_handler(bot: Bot, message: Message, UserStates):
@@ -75,7 +70,9 @@ async def start_handler(bot: Bot, message: Message, UserStates):
             )
 
 
-async def choose_role_handler(bot: Bot, event: GroupTypes.MessageEvent, UserStates):
+async def choose_role_handler(
+    bot: Bot, event: GroupTypes.MessageEvent, UserStates
+):
     await bot.api.messages.send_message_event_answer(
         event_id=event.object.event_id,
         peer_id=event.object.peer_id,

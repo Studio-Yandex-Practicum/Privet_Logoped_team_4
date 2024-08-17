@@ -1,13 +1,11 @@
 import os
 import sys
 
-from vkbottle.bot import Message
-from keyboards.keyboards import role_keyboard, get_main_keyboard
+from keyboards.keyboards import get_main_keyboard, role_keyboard
 from sqlalchemy.dialects.postgresql import insert
+from vkbottle.bot import Message
 
-parent_folder_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")
-)
+parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
 from db.models import RoleType, VKUser, async_session  # noqa
 

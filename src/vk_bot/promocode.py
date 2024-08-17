@@ -1,5 +1,6 @@
 from sqlalchemy import select
-from db.models import async_session, PromoCode
+
+from db.models import PromoCode, async_session
 
 
 async def get_promocode(promo):

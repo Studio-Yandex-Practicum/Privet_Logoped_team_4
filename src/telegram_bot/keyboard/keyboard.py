@@ -1,26 +1,17 @@
-from aiogram.types import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
-    ReplyKeyboardMarkup,
-)
-import callbacks as cb
-from typing import Optional
-import sys
 import os
-from sqlalchemy import and_, select, or_
+import sys
+from typing import Optional
+
+import callbacks as cb
+from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
+                           KeyboardButton, ReplyKeyboardMarkup)
+from sqlalchemy import and_, or_, select
 
 grand_parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(grand_parent_dir)
-from db.models import (  # noqa
-    RoleType,
-    async_session,
-    Button,
-    ButtonType,
-    NotificationInterval,
-    NotificationWeekDay,
-    NotificationIntervalType,
-)
+from db.models import NotificationInterval  # noqa
+from db.models import (Button, ButtonType, NotificationIntervalType,
+                       NotificationWeekDay, RoleType, async_session)
 
 main = ReplyKeyboardMarkup(
     keyboard=[
@@ -156,11 +147,7 @@ links_to_role = ReplyKeyboardMarkup(
 
 promocodes = InlineKeyboardMarkup(
     inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="Добавить промокод", callback_data="add_promocode"
-            )
-        ],
+        [InlineKeyboardButton(text="Добавить промокод", callback_data="add_promocode")],
         [
             InlineKeyboardButton(
                 text="Удалить промокод",
@@ -190,11 +177,7 @@ role = InlineKeyboardMarkup(
 
 mailing = InlineKeyboardMarkup(
     inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="Отправить рассылку", callback_data="send_mailing"
-            )
-        ],
+        [InlineKeyboardButton(text="Отправить рассылку", callback_data="send_mailing")],
         [InlineKeyboardButton(text="Назад", callback_data="admin")],
     ],
 )
@@ -204,9 +187,7 @@ mailing_role = InlineKeyboardMarkup(
         [
             InlineKeyboardButton(
                 text="Родителям",
-                callback_data=cb.MailingButtonRole(
-                    role=RoleType.PARENT
-                ).pack(),
+                callback_data=cb.MailingButtonRole(role=RoleType.PARENT).pack(),
             )
         ],
         [
@@ -227,9 +208,7 @@ mailing_role = InlineKeyboardMarkup(
 )
 
 
-def get_notifications_keyboard(
-    button_id: int, on: bool
-) -> InlineKeyboardMarkup:
+def get_notifications_keyboard(button_id: int, on: bool) -> InlineKeyboardMarkup:
     if on:
         return InlineKeyboardMarkup(
             inline_keyboard=[
@@ -521,9 +500,7 @@ async def get_button_settings_keyboard(button: Button):
             [
                 InlineKeyboardButton(
                     text="Назад",
-                    callback_data=cb.ButtonGroupCallback(
-                        button_id=None
-                    ).pack(),
+                    callback_data=cb.ButtonGroupCallback(button_id=None).pack(),
                 ),
             ]
         )

@@ -1,29 +1,17 @@
+import keyboard.keyboard as kb
 from aiogram import F, Router
-from aiogram.types import (
-    Message,
-    CallbackQuery,
-    InlineKeyboardButton,
-)
-from aiogram.fsm.context import FSMContext
 from aiogram.filters import StateFilter
-from sqlalchemy.future import select
-from callbacks import (
-    EnableNotifications,
-    VisitButtonCallback,
-    NotificationIntervalCallback,
-)
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, InlineKeyboardButton, Message
+from callbacks import (EnableNotifications, NotificationIntervalCallback,
+                       VisitButtonCallback)
 from sqlalchemy import update
+from sqlalchemy.future import select
+
+from db.models import (Button, NotificationIntervalType,
+                       NotificationWeekDayType, TGUser, async_session)
 
 from .state import Level
-from db.models import (
-    TGUser,
-    async_session,
-    NotificationIntervalType,
-    Button,
-    NotificationWeekDayType,
-)
-import keyboard.keyboard as kb
-
 
 router = Router()
 
@@ -45,15 +33,11 @@ async def enable_notifications(
                 callback_data.button_id, user.notifications_enabled
             )
             button = await session.execute(
-                select(Button).where(
-                    Button.button_id == callback_data.button_id
-                )
+                select(Button).where(Button.button_id == callback_data.button_id)
             )
             button = button.scalars().first()
     if button.parent_button_id:
-        back_callback = VisitButtonCallback(
-            button_id=button.parent_button_id
-        ).pack()
+        back_callback = VisitButtonCallback(button_id=button.parent_button_id).pack()
     else:
         back_callback = "start"
     reply_markup.inline_keyboard.append(
@@ -78,17 +62,13 @@ async def enable_notifications(
     await callback.message.edit_text(message_text, reply_markup=reply_markup)
 
 
-@router.callback_query(
-    NotificationIntervalCallback.filter(F.interval == None)  # noqa
-)
+@router.callback_query(NotificationIntervalCallback.filter(F.interval == None))  # noqa
 async def choose_interval(
     callback: CallbackQuery,
     callback_data: NotificationIntervalCallback,
     state: FSMContext,
 ):
-    reply_markup = kb.get_notifications_interval_keyboard(
-        callback_data.button_id
-    )
+    reply_markup = kb.get_notifications_interval_keyboard(callback_data.button_id)
     reply_markup.inline_keyboard.append(
         [
             InlineKeyboardButton(
@@ -133,9 +113,7 @@ async def choose_interval_select_hour(
         async with async_session() as session:
             async with session.begin():
                 result = await session.execute(
-                    select(TGUser).where(
-                        TGUser.user_id == message.from_user.id
-                    )
+                    select(TGUser).where(TGUser.user_id == message.from_user.id)
                 )
                 user: TGUser = result.scalars().first()
                 data = await state.get_data()
@@ -166,22 +144,16 @@ async def choose_interval_select_hour(
     try:
         hour = int(message.text)
     except ValueError:
-        await message.answer(
-            "Вы ввели некорректное значение", reply_markup=kb.cancel
-        )
+        await message.answer("Вы ввели некорректное значение", reply_markup=kb.cancel)
         return
     if hour < 0 or hour > 23:
-        await message.answer(
-            "Вы ввели некорректное значение", reply_markup=kb.cancel
-        )
+        await message.answer("Вы ввели некорректное значение", reply_markup=kb.cancel)
         return
     data = await state.get_data()
     if data["notification_interval"] == NotificationIntervalType.USER_CHOICE:
         await message.answer(
             "Выберите день недели для уведомлений:",
-            reply_markup=kb.get_notifications_dayofweek_keyboard(
-                data["button_id"]
-            ),
+            reply_markup=kb.get_notifications_dayofweek_keyboard(data["button_id"]),
         )
         return
     async with async_session() as session:
@@ -206,9 +178,7 @@ async def choose_interval_select_hour(
             )
             button = button.scalars().first()
     if button.parent_button_id:
-        back_callback = VisitButtonCallback(
-            button_id=button.parent_button_id
-        ).pack()
+        back_callback = VisitButtonCallback(button_id=button.parent_button_id).pack()
     else:
         back_callback = "start"
     reply_markup.inline_keyboard.append(
@@ -246,15 +216,11 @@ async def choose_day_of_week(
                 callback_data.button_id, user.notifications_enabled
             )
             button = await session.execute(
-                select(Button).where(
-                    Button.button_id == callback_data.button_id
-                )
+                select(Button).where(Button.button_id == callback_data.button_id)
             )
             button = button.scalars().first()
     if button.parent_button_id:
-        back_callback = VisitButtonCallback(
-            button_id=button.parent_button_id
-        ).pack()
+        back_callback = VisitButtonCallback(button_id=button.parent_button_id).pack()
     else:
         back_callback = "start"
     reply_markup.inline_keyboard.append(
