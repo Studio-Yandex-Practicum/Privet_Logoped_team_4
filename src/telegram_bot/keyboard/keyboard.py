@@ -154,15 +154,21 @@ links_to_role = ReplyKeyboardMarkup(
     input_field_placeholder="Выберите пункт меню...",
 )
 
-promocodes = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="Добавить промокод")],
-        [KeyboardButton(text="Удалить промокод")],
-        [KeyboardButton(text="Загрузить файл")],
-        [KeyboardButton(text="Назад")],
+promocodes = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="Добавить промокод", callback_data="add_promocode"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Удалить промокод",
+                callback_data=cb.PromocodeDeleteCallback().pack(),
+            )
+        ],
+        [InlineKeyboardButton(text="Назад", callback_data="admin")],
     ],
-    resize_keyboard=True,
-    input_field_placeholder="Выберите пункт меню...",
 )
 
 cancel = ReplyKeyboardMarkup(
