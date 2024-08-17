@@ -463,9 +463,9 @@ async def button_add_type_handler(
     """Обработка выбора кнопки 'Добавить кнопку'."""
     await callback.answer()
 
-    # await callback.message.delete()
+    await callback.message.delete()
 
-    await callback.message.edit_text(
+    await callback.message.answer(
         "Введите текст на кнопке", reply_markup=kb.cancel
     )
     await state.set_state(AdminStates.waiting_on_button_text_create)

@@ -11,6 +11,7 @@ class Level(StatesGroup):
     role_chose = State()
     waiting_for_message = State()
     awaiting_admin_reply = State()
+    notification_hour = State()
 
 
 class AdminStates(StatesGroup):

@@ -11,7 +11,7 @@ from sqlalchemy import (
     BigInteger,
     ForeignKey,
     Text,
-    Boolean
+    Boolean,
 )
 from sqlalchemy.ext.asyncio import (
     AsyncAttrs,
@@ -22,7 +22,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
 
 from .config import database_url
-from .constants import LinkResourseType, RoleName, ButtonTypeEnum
+from .constants import (
+    LinkResourseType,
+    RoleName,
+    ButtonTypeEnum,
+    NotificationInterval,
+    NotificationWeekDay,
+)
 
 Base = declarative_base()
 
@@ -52,6 +58,26 @@ class ButtonType(enum.Enum):
     NOTIFICATION = ButtonTypeEnum.NOTIFICATION
 
 
+class NotificationIntervalType(enum.Enum):
+    """Enum типов интервалов уведомлений."""
+
+    EVERY_DAY = NotificationInterval.EVERY_DAY
+    OTHER_DAY = NotificationInterval.OTHER_DAY
+    USER_CHOICE = NotificationInterval.USER_CHOICE
+
+
+class NotificationWeekDayType(enum.Enum):
+    """Enum типов дней недели."""
+
+    MONDAY = NotificationWeekDay.MONDAY
+    TUESDAY = NotificationWeekDay.TUESDAY
+    WEDNESDAY = NotificationWeekDay.WEDNESDAY
+    THURSDAY = NotificationWeekDay.THURSDAY
+    FRIDAY = NotificationWeekDay.FRIDAY
+    SATURDAY = NotificationWeekDay.SATURDAY
+    SUNDAY = NotificationWeekDay.SUNDAY
+
+
 class TGUser(AsyncAttrs, Base):
     """Модель пользователя телеграм."""
 
@@ -60,6 +86,10 @@ class TGUser(AsyncAttrs, Base):
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
+    notificate_at = Column(Integer)
+    notification_interval = Column(Enum(NotificationIntervalType))
+    notification_day = Column(Enum(NotificationWeekDayType))
+    notifications_enabled = Column(Boolean(), default=False, nullable=False)
     is_banned = Column(Numeric, default=0)
     is_subscribed = Column(Boolean(), default=False)
 
@@ -72,6 +102,10 @@ class VKUser(AsyncAttrs, Base):
     role = Column(Enum(RoleType), nullable=False)
     is_admin = Column(Numeric, default=0)
     created_at = Column(DateTime, default=func.now())
+    notificate_at = Column(Integer)
+    notification_interval = Column(Enum(NotificationIntervalType))
+    notification_day = Column(Enum(NotificationWeekDayType))
+    notifications_enabled = Column(Boolean(), default=False, nullable=False)
     is_banned = Column(Numeric, default=0)
     is_subscribed = Column(Boolean(), default=False)
 

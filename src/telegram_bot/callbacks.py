@@ -5,7 +5,7 @@ from typing import Optional
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-from db.models import ButtonType, RoleType  # noqa
+from db.models import ButtonType, RoleType, NotificationIntervalType, NotificationWeekDayType  # noqa
 
 
 class PromocodeDeleteCallback(CallbackData, prefix="promo_list_delete"):
@@ -85,3 +85,14 @@ class MailingButtonSettings(CallbackData, prefix="mailing_settings"):
 
 class MailingButtonRole(CallbackData, prefix="mailing_role"):
     role: Optional[RoleType]
+
+
+class EnableNotifications(CallbackData, prefix="notify"):
+    is_enabled: bool
+    button_id: int
+
+
+class NotificationIntervalCallback(CallbackData, prefix="notify_interval"):
+    interval: Optional[NotificationIntervalType]
+    button_id: int
+    day_of_week: Optional[NotificationWeekDayType] = None

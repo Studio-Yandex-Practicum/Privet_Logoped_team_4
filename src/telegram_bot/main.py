@@ -12,7 +12,11 @@ from handlers import (
     ask_admin_router,
     admin_users_router,
     admin_mailing_router,
+    notification_router
 )
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from notifications import every_day_notification, other_day_notification
 
 from middleware import BanCheckMiddleware, PromocodeMiddleware
 
@@ -24,6 +28,10 @@ async def main():
     dp = Dispatcher()
     dp.update.outer_middleware(PromocodeMiddleware())
     dp.update.outer_middleware(BanCheckMiddleware())
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(every_day_notification, CronTrigger.from_crontab('0 * * * *'), args=[bot])
+    scheduler.add_job(other_day_notification, CronTrigger.from_crontab('0 * */2 * *'), args=[bot])
+    scheduler.start()
 
     dp.include_routers(
         admin_links_router,
@@ -37,6 +45,7 @@ async def main():
         ask_admin_router,
         admin_users_router,
         admin_mailing_router,
+        notification_router
     )
     await dp.start_polling(bot)
 

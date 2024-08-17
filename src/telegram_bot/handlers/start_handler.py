@@ -29,6 +29,8 @@ from db.models import (  # noqa
     RoleType,
     TGUser,
     async_session,
+    NotificationIntervalType,
+    NotificationWeekDayType
 )
 
 router = Router()
@@ -170,9 +172,40 @@ async def visit_callback(
         ]
     )
     if button.button_type == ButtonType.NOTIFICATION:
+        async with async_session() as session:
+            async with session.begin():
+                result = await session.execute(
+                    select(TGUser).where(
+                        TGUser.user_id == callback.from_user.id
+                    )
+                )
+                user = result.scalars().first()
+                reply_markup = kb.get_notifications_keyboard(
+                    button.button_id, user.notifications_enabled
+                )
+        reply_markup.inline_keyboard.append(
+            [
+                InlineKeyboardButton(
+                    text="Назад",
+                    callback_data=back_callback,
+                )
+            ]
+        )
+        if user.notifications_enabled is False:
+            message_text = "Сейчас вы не получаете уведомления"
+        else:
+            message_text = "Вы получаете уведомления"
+            if user.notification_interval == NotificationIntervalType.USER_CHOICE:
+                message_text += f" по выбранному интервалу: в {user.notificate_at}:00 в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
+            elif user.notification_interval == NotificationIntervalType.EVERY_DAY:
+                message_text += f" ежедневно в {user.notificate_at}:00"
+            elif user.notification_interval == NotificationIntervalType.OTHER_DAY:
+                message_text += (
+                    f" в {user.notificate_at}:00 каждый второй день"
+                )
         await callback.message.answer(
-            "Тут будут уведомления",
-            reply_markup=back_keyboard,
+            message_text,
+            reply_markup=reply_markup,
         )
     elif button.button_type == ButtonType.ADMIN_MESSAGE:
         await callback.message.answer(
@@ -255,9 +288,9 @@ async def subscribe_callback(
     async with async_session() as session:
         async with session.begin():
             await session.execute(
-                update(TGUser).where(TGUser.user_id == callback.from_user.id).values(
-                    is_subscribed=is_subscribed
-                )
+                update(TGUser)
+                .where(TGUser.user_id == callback.from_user.id)
+                .values(is_subscribed=is_subscribed)
             )
     async with async_session() as session:
         async with session.begin():

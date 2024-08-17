@@ -12,7 +12,15 @@ from sqlalchemy import and_, select, or_
 
 grand_parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(grand_parent_dir)
-from db.models import RoleType, async_session, Button, ButtonType  # noqa
+from db.models import (  # noqa
+    RoleType,
+    async_session,
+    Button,
+    ButtonType,
+    NotificationInterval,
+    NotificationWeekDay,
+    NotificationIntervalType,
+)
 
 main = ReplyKeyboardMarkup(
     keyboard=[
@@ -211,6 +219,110 @@ mailing_role = InlineKeyboardMarkup(
         ],
     ],
 )
+
+
+def get_notifications_keyboard(
+    button_id: int, on: bool
+) -> InlineKeyboardMarkup:
+    if on:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="Выбрать интервал",
+                        callback_data=cb.NotificationIntervalCallback(
+                            interval=None,
+                            button_id=button_id,
+                        ).pack(),
+                    ),
+                    InlineKeyboardButton(
+                        text="Выключить уведомления",
+                        callback_data=cb.EnableNotifications(
+                            is_enabled=False, button_id=button_id
+                        ).pack(),
+                    ),
+                ],
+            ],
+            resize_keyboard=True,
+            input_field_placeholder="Выберите пункт меню...",
+        )
+    else:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="Включить уведомления",
+                        callback_data=cb.EnableNotifications(
+                            is_enabled=True,
+                            button_id=button_id,
+                        ).pack(),
+                    )
+                ],
+            ],
+        )
+
+
+def get_notifications_interval_keyboard(
+    button_id: int,
+) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Каждый день",
+                    callback_data=cb.NotificationIntervalCallback(
+                        interval=NotificationIntervalType.EVERY_DAY,
+                        button_id=button_id,
+                    ).pack(),
+                ),
+                InlineKeyboardButton(
+                    text="Через день",
+                    callback_data=cb.NotificationIntervalCallback(
+                        interval=NotificationIntervalType.OTHER_DAY,
+                        button_id=button_id,
+                    ).pack(),
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Выбор пользователя",
+                    callback_data=cb.NotificationIntervalCallback(
+                        interval=NotificationIntervalType.USER_CHOICE,
+                        button_id=button_id,
+                    ).pack(),
+                ),
+            ],
+        ]
+    )
+
+
+def get_notifications_dayofweek_keyboard(
+    button_id: int,
+) -> InlineKeyboardMarkup:
+    days_of_week = {
+        NotificationWeekDay.MONDAY: "Понедельник",
+        NotificationWeekDay.TUESDAY: "Вторник",
+        NotificationWeekDay.WEDNESDAY: "Среда",
+        NotificationWeekDay.THURSDAY: "Четверг",
+        NotificationWeekDay.FRIDAY: "Пятница",
+        NotificationWeekDay.SATURDAY: "Суббота",
+        NotificationWeekDay.SUNDAY: "Воскресенье",
+    }
+    buttons = []
+    for day, text in days_of_week.items():
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=text,
+                    callback_data=cb.NotificationIntervalCallback(
+                        interval=NotificationIntervalType.USER_CHOICE,
+                        button_id=button_id,
+                        day_of_week=day,
+                    ).pack(),
+                )
+            ]
+        )
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 async def get_start_keyboard(
@@ -435,7 +547,7 @@ async def get_mailing_settings_keyboard(state: dict) -> InlineKeyboardMarkup:
             InlineKeyboardButton(
                 text=(
                     "Всем ролям"
-                    if state["role"] == None
+                    if state["role"] is None
                     else (
                         "Только родителям"
                         if state["role"] == RoleType.PARENT

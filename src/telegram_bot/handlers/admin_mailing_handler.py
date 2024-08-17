@@ -112,20 +112,23 @@ async def send_mailing_messages(callback: CallbackQuery, state: FSMContext):
     state_data = await state.get_data()
     async with async_session() as session:
         async with session.begin():
-            stmt = select(TGUser).where(
-                and_(
-                    (
-                        TGUser.role == state_data["role"]
-                        if state_data["role"]
-                        else True
-                    ),
-                    (
-                        TGUser.is_subscribed == True
-                        if state_data["ignore_subscribed"]
-                        else True
-                    ),
+            if state_data["role"] is None and state_data["ignore_subscribed"]:
+                stmt = select(TGUser)
+            elif (
+                state_data["role"] is None
+                and not state_data["ignore_subscribed"]
+            ):
+                stmt = select(TGUser).where(TGUser.is_subscribed.is_(True))
+            elif state_data["role"] and state_data["ignore_subscribed"]:
+                stmt = select(TGUser).where(TGUser.role == state_data["role"])
+            else:
+                stmt = select(TGUser).where(
+                    and_(
+                        TGUser.role == state_data["role"],
+                        TGUser.is_subscribed.is_(True),
+                    )
                 )
-            )
+
             result = await session.execute(stmt)
             tg_users: list[TGUser] = result.scalars().all()
 

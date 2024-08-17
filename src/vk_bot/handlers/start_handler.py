@@ -165,7 +165,7 @@ async def role_handler(bot: Bot, event: GroupTypes.MessageEvent):
 
     await bot.api.messages.edit(
         event.object.peer_id,
-        message="Роль изменена",
+        message="Выберите опцию",
         keyboard=keyboard.get_json(),
         conversation_message_id=event.object.conversation_message_id,
     )
