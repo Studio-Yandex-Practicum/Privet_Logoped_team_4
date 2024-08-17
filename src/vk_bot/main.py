@@ -490,12 +490,12 @@ if __name__ == "__main__":
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
         every_day_notification,
-        CronTrigger.from_crontab("* * * * *"),
+        CronTrigger.from_crontab("0 * * * *"),
         args=[bot],
     )
     scheduler.add_job(
         other_day_notification,
-        CronTrigger.from_crontab("* * */2 * *"),
+        CronTrigger.from_crontab("0 * */2 * *"),
         args=[bot],
     )
     scheduler.start()
