@@ -9,7 +9,7 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../..")
 )
 sys.path.append(parent_folder_path)
-from db.models import Button, RoleType, async_session  # noqa
+from db.models import Button, RoleType, async_session, NotificationInterval, NotificationWeekDay # noqa
 
 role_keyboard = (
     Keyboard(inline=True)
@@ -278,4 +278,110 @@ async def get_mailing_settings_keyboard(state: dict) -> Keyboard:
         )
     )
 
+    return keyboard
+
+
+def get_notifications_keyboard(
+    button_id: int, on: bool
+) -> Keyboard:
+    if on:
+        keyboard = Keyboard(inline=True)
+        keyboard.add(
+            Callback(
+                "Выбрать интервал",
+                payload={
+                    "type": "notification_interval",
+                    "button_id": button_id,
+                    "interval": None,
+                }
+            )
+        )
+        keyboard.row().add(
+            Callback(
+                "Выключить уведомления",
+                payload={
+                    "type": "enable_notifications",
+                    "button_id": button_id,
+                    "is_enabled": False,
+                }
+            )
+        )
+        return keyboard
+    else:
+        keyboard = Keyboard(inline=True)
+        keyboard.add(
+            Callback(
+                "Включить уведомления",
+                payload={
+                    "type": "enable_notifications",
+                    "button_id": button_id,
+                    "is_enabled": True,
+                }
+            )
+        )
+        return keyboard
+
+
+def get_notifications_interval_keyboard(
+    button_id: int,
+) -> Keyboard:
+    keyboard = Keyboard(inline=True)
+    keyboard.add(
+        Callback(
+            "Каждый день",
+            payload={
+                "type": "notification_interval",
+                "button_id": button_id,
+                "interval": NotificationInterval.EVERY_DAY,
+            }
+        )
+    )
+    keyboard.add(
+        Callback(
+            "Через день",
+            payload={
+                "type": "notification_interval",
+                "button_id": button_id,
+                "interval": NotificationInterval.OTHER_DAY,
+            }
+        )
+    )
+    keyboard.row().add(
+        Callback(
+            "Выбор пользователя",
+            payload={
+                "type": "notification_interval",
+                "button_id": button_id,
+                "interval": NotificationInterval.USER_CHOICE,
+            }
+        )
+    )
+    return keyboard
+
+
+def get_notifications_dayofweek_keyboard(
+    button_id: int,
+) -> Keyboard:
+    days_of_week = {
+        NotificationWeekDay.MONDAY: "Понедельник",
+        NotificationWeekDay.TUESDAY: "Вторник",
+        NotificationWeekDay.WEDNESDAY: "Среда",
+        NotificationWeekDay.THURSDAY: "Четверг",
+        NotificationWeekDay.FRIDAY: "Пятница",
+        NotificationWeekDay.SATURDAY: "Суббота",
+        NotificationWeekDay.SUNDAY: "Воскресенье",
+    }
+    keyboard = Keyboard(inline=True)
+    for day, text in days_of_week.items():
+        keyboard.row().add(
+            Callback(
+                text,
+                payload={
+                    "type": "notification_interval",
+                    "button_id": button_id,
+                    "interval": NotificationInterval.USER_CHOICE,
+                    "day_of_week": day,
+                },
+            )
+        )
     return keyboard

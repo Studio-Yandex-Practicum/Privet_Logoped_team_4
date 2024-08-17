@@ -18,6 +18,7 @@ from pathlib import Path
 from aiohttp import ClientSession
 import aiofiles
 import uuid
+from contextlib import suppress
 
 parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../..")
@@ -26,7 +27,8 @@ sys.path.append(parent_folder_path)
 from keyboards.keyboards import (  # noqa
     admin_keyboard,
     cancel_keyboard,
-    get_main_keyboard
+    get_main_keyboard,
+    get_notifications_keyboard,
 )
 
 from db.models import (  # noqa
@@ -35,6 +37,8 @@ from db.models import (  # noqa
     RoleType,
     async_session,
     VKUser,
+    NotificationIntervalType,
+    NotificationWeekDayType,
 )
 
 
@@ -895,8 +899,10 @@ async def get_button_file_edit(message: Message, AdminStates, bot: Bot):
 
 
 async def button_click_handler(
-    bot: Bot, event: GroupTypes.MessageEvent, doc_uploader: DocMessagesUploader,
-    UserStates
+    bot: Bot,
+    event: GroupTypes.MessageEvent,
+    doc_uploader: DocMessagesUploader,
+    UserStates,
 ):
     """Обработка нажатия на кнопку."""
     data = event.object.payload
@@ -928,12 +934,62 @@ async def button_click_handler(
             user_id=event.object.user_id,
             peer_id=event.object.peer_id,
         )
-        back_keyboard = Keyboard()
-        back_keyboard.add(Callback(label="Назад", payload=back_callback))
+        async with async_session() as session:
+            async with session.begin():
+                result = await session.execute(
+                    select(VKUser).where(
+                        VKUser.user_id == event.object.user_id
+                    )
+                )
+                user: VKUser = result.scalars().first()
+                keyboard = get_notifications_keyboard(
+                    event.object.payload["button_id"],
+                    user.notifications_enabled,
+                )
+        if button.parent_button_id:
+            back_callback = {
+                "type": "button_click",
+                "button_id": button.parent_button_id,
+            }
+        else:
+            back_callback = {"type": "button_list"}
+        keyboard.row().add(
+            Callback(
+                "Назад",
+                payload=back_callback,
+            )
+        )
+        if user.notifications_enabled is False:
+            message_text = "Сейчас вы не получаете уведомления"
+        else:
+            message_text = "Вы получаете уведомления"
+            if (
+                user.notification_interval
+                == NotificationIntervalType.USER_CHOICE
+            ):
+                message_text += f" по выбранному интервалу: в {user.notificate_at}:00 в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
+            elif (
+                user.notification_interval
+                == NotificationIntervalType.EVERY_DAY
+            ):
+                message_text += f" ежедневно в {user.notificate_at}:00"
+            elif (
+                user.notification_interval
+                == NotificationIntervalType.OTHER_DAY
+            ):
+                message_text += (
+                    f" в {user.notificate_at}:00 каждый второй день"
+                )
+        with suppress(VKAPIError[100], VKAPIError[15]):
+            await bot.api.messages.delete(
+                [event.object.conversation_message_id],
+                peer_id=event.object.peer_id,
+                delete_for_all=True,
+            )
         await bot.api.messages.send(
             event.object.user_id,
-            message="Тут будет настройка уведомлений",
-            keyboard=back_keyboard.get_json(),
+            message=message_text,
+            keyboard=keyboard.get_json(),
             random_id=0,
         )
     elif button.button_type == ButtonType.ADMIN_MESSAGE:
@@ -950,7 +1006,9 @@ async def button_click_handler(
             keyboard=back_keyboard.get_json(),
             random_id=0,
         )
-        await bot.state_dispenser.set(event.object.user_id, UserStates.WAITING_FOR_MESSAGE)
+        await bot.state_dispenser.set(
+            event.object.user_id, UserStates.WAITING_FOR_MESSAGE
+        )
     elif button.button_type == ButtonType.MAILING:
         await bot.api.messages.send_message_event_answer(
             event_id=event.object.event_id,
@@ -1072,7 +1130,10 @@ async def button_list(bot: Bot, event: GroupTypes.MessageEvent):
                 keyboard.row().add(
                     Callback(
                         button.button_name,
-                        {"type": "button_click", "button_id": button.button_id},
+                        {
+                            "type": "button_click",
+                            "button_id": button.button_id,
+                        },
                     )
                 )
 
@@ -1083,7 +1144,7 @@ async def button_list(bot: Bot, event: GroupTypes.MessageEvent):
                     "Выберите одну из предложенных опций:"
                 ),
                 keyboard=keyboard,
-                random_id=0
+                random_id=0,
             )
         if user.role == RoleType.SPEECH_THERAPIST:
             async with async_session() as session:
@@ -1208,6 +1269,3 @@ async def main_menu_button_list(bot: Bot, event: GroupTypes.MessageEvent):
                 keyboard=keyboard.get_json(),
                 random_id=0,
             )
-
-
-            

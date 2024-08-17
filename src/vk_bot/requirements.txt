@@ -33,3 +33,4 @@ vkbottle==4.3.12
 vkbottle-types==5.131.146.16
 watchfiles==0.18.1
 yarl==1.9.4
+apscheduler==3.9.1

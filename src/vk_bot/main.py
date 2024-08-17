@@ -10,7 +10,11 @@ from handlers import (
     admin_users_handler,
     ask_admin_handler,
     admin_mailing_handler,
+    notification_handler,
 )
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from notifications import every_day_notification, other_day_notification
 from vkbottle import BaseStateGroup, GroupEventType, DocMessagesUploader
 from vkbottle.bot import Bot, Message, MessageEvent
 from rules import PayloadRule
@@ -34,6 +38,7 @@ class UserStates(BaseStateGroup):
     SPEECH_THERAPIST_STATE = "speech_therapist_options"
     PROMOCODE_STATE = "enter_promocode"
     WAITING_FOR_MESSAGE = "waiting_for_message"
+    NOTIFICATION_HOUR = "notification_hour"
 
 
 class AdminStates(BaseStateGroup):
@@ -225,6 +230,30 @@ async def button_click(event: MessageEvent):
 @bot.on.raw_event(
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
+    PayloadRule({"type": "enable_notifications"}),
+)
+async def enable_notifications(event: MessageEvent):
+    await notification_handler.enable_notifications(bot, event)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "notification_interval"}),
+)
+async def notification_interval(event: MessageEvent):
+    payload = event.object.payload
+    if "day_of_week" in payload and payload["day_of_week"] is not None:
+        await notification_handler.choose_day_of_week(bot, event, UserStates)
+    elif "interval" in payload and payload["interval"] is not None:
+        await notification_handler.choose_interval_select(bot, event, UserStates)
+    else:
+        await notification_handler.choose_interval(bot, event)
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
     PayloadRule({"type": "button_list"}),
 )
 async def button_list(event: MessageEvent):
@@ -378,6 +407,11 @@ async def choose_role3(message: Message):
     await role_handler(message)
 
 
+@bot.on.private_message(state=UserStates.NOTIFICATION_HOUR)
+async def notification_hour(message: Message):
+    await notification_handler.choose_interval_select_hour(bot, message)
+
+
 @bot.on.private_message(state=UserStates.FAQ_STATE)
 async def faq_options(message: Message):
     await faq_handler(bot, message, UserStates)
@@ -460,4 +494,8 @@ async def default(message: Message):
 
 
 if __name__ == "__main__":
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(every_day_notification, CronTrigger.from_crontab('* * * * *'), args=[bot])
+    scheduler.add_job(other_day_notification, CronTrigger.from_crontab('* * */2 * *'), args=[bot])
+    scheduler.start()
     bot.run_forever()
