@@ -13,7 +13,7 @@ async def send_notification(user: User, bot: Bot):
     try:
         people = ["с Лисой", "с Мишкой", "со Слоном", "с Кроликом", "с Котом"]
         person = random.choice(people)
-        await bot.send_message(user.user_id, f"Поиграйте с {person}!")
+        await bot.send_message(user.user_id, f"Поиграйте {person}!")
     except Exception as e:
         print(f"Ошибка при отправке уведомления: {e}")
 
