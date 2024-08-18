@@ -22,7 +22,6 @@ router = Router()
 
 
 @router.callback_query(F.data == "mailing", AdminFilter())
-@router.message(Command("mailing"), AdminFilter())
 async def cmd_mailing(callback: Union[CallbackQuery, Message], state: FSMContext):
     await state.clear()
     await callback.message.edit_text("Рассылка", reply_markup=kb.mailing)

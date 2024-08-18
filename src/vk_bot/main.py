@@ -1,17 +1,26 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from config import api, labeler, state_dispenser
-from handlers import (admin_buttons_handler, admin_mailing_handler,
-                      admin_promocodes_handler, admin_start_handler,
-                      admin_start_handler_callback, admin_users_handler,
-                      ask_admin_handler, faq_handler, notification_handler,
-                      role_handler, start_handler)
+from handlers import (
+    admin_buttons_handler,
+    admin_mailing_handler,
+    admin_promocodes_handler,
+    admin_start_handler,
+    admin_start_handler_callback,
+    admin_users_handler,
+    ask_admin_handler,
+    faq_handler,
+    notification_handler,
+    role_handler,
+    start_handler,
+)
 from keyboards.keyboards import cancel_keyboard
 from middleware import BanMiddleware
 from notifications import every_day_notification, other_day_notification
 from rules import PayloadRule
 from vkbottle import BaseStateGroup, DocMessagesUploader, GroupEventType
 from vkbottle.bot import Bot, Message, MessageEvent
+from rules import AdminRule
 
 bot = Bot(api=api, labeler=labeler, state_dispenser=state_dispenser)
 bot.labeler.vbml_ignore_case = True
@@ -61,7 +70,7 @@ class AdminStates(BaseStateGroup):
     MAILING_SETTINGS = "mailing_settings"
 
 
-@bot.on.private_message(lev="/admin")
+@bot.on.private_message(AdminRule(), lev="/admin")
 async def admin_start(message: Message):
     await admin_start_handler(bot, message, AdminStates)
 
@@ -88,6 +97,7 @@ async def choose_role(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "admin"}),
+    AdminRule(),
 )
 async def admin(event: MessageEvent):
     await admin_start_handler_callback(bot, event, AdminStates)
@@ -97,6 +107,7 @@ async def admin(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "button_info"}),
+    AdminRule(),
 )
 async def admin_button(event: MessageEvent):
     await admin_buttons_handler.button_info_handler(bot, event)
@@ -106,6 +117,7 @@ async def admin_button(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "edit_text"}),
+    AdminRule(),
 )
 async def admin_button_text(event: MessageEvent):
     await admin_buttons_handler.button_on_text_handler(bot, event, AdminStates)
@@ -115,6 +127,7 @@ async def admin_button_text(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "edit_file"}),
+    AdminRule(),
 )
 async def admin_button_edit_file(event: MessageEvent):
     await admin_buttons_handler.button_add_file_callback(
@@ -126,22 +139,25 @@ async def admin_button_edit_file(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "delete_button"}),
+    AdminRule(),
 )
 async def admin_button_delete(event: MessageEvent):
     await admin_buttons_handler.button_delete_handler(bot, event)
 
 
-@bot.on.private_message(state=AdminStates.WAITING_ON_BUTTON_TEXT)
+@bot.on.private_message(AdminRule(), state=AdminStates.WAITING_ON_BUTTON_TEXT)
 async def admin_options_on_button_text(message: Message):
     await admin_buttons_handler.get_button_on_text(bot, message)
 
 
-@bot.on.private_message(state=AdminStates.WAITING_BUTTON_FILE)
+@bot.on.private_message(AdminRule(), state=AdminStates.WAITING_BUTTON_FILE)
 async def admin_options_on_button_file(message: Message):
     await admin_buttons_handler.get_button_file_edit(message, AdminStates, bot)
 
 
-@bot.on.private_message(state=AdminStates.WAITING_BUTTON_FILE_CREATE)
+@bot.on.private_message(
+    AdminRule(), state=AdminStates.WAITING_BUTTON_FILE_CREATE
+)
 async def admin_options_on_button_file_create(message: Message):
     await admin_buttons_handler.get_button_file_create(
         message, AdminStates, bot
@@ -152,17 +168,20 @@ async def admin_options_on_button_file_create(message: Message):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "edit_click_text"}),
+    AdminRule(),
 )
 async def admin_button_edit_click_text(event: MessageEvent):
     await admin_buttons_handler.button_text_handler(bot, event, AdminStates)
 
 
-@bot.on.private_message(state=AdminStates.WAITING_BUTTON_TEXT)
+@bot.on.private_message(AdminRule(), state=AdminStates.WAITING_BUTTON_TEXT)
 async def admin_options_waiting_button_text(message: Message):
     await admin_buttons_handler.get_button_text(bot, AdminStates, message)
 
 
-@bot.on.private_message(state=AdminStates.WAITING_BUTTON_TEXT_CREATE)
+@bot.on.private_message(
+    AdminRule(), state=AdminStates.WAITING_BUTTON_TEXT_CREATE
+)
 async def admin_options_waiting_button_text_create(message: Message):
     await admin_buttons_handler.get_button_text_create(
         message, AdminStates, bot
@@ -173,6 +192,7 @@ async def admin_options_waiting_button_text_create(message: Message):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "edit_roles"}),
+    AdminRule(),
 )
 async def admin_button_edit_role(event: MessageEvent):
     await admin_buttons_handler.button_choose_role_handler(
@@ -184,6 +204,7 @@ async def admin_button_edit_role(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "button_role"}),
+    AdminRule(),
 )
 async def admin_button_role(event: MessageEvent):
     await admin_buttons_handler.button_role_handler(bot, event, AdminStates)
@@ -193,6 +214,7 @@ async def admin_button_role(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "edit_group"}),
+    AdminRule(),
 )
 async def admin_edit_group(event: MessageEvent):
     await admin_buttons_handler.admin_buttons_handler(bot, event, AdminStates)
@@ -202,6 +224,7 @@ async def admin_edit_group(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "buttons"}),
+    AdminRule(),
 )
 async def admin_button_list(event: MessageEvent):
     await admin_buttons_handler.admin_buttons_handler(bot, event, AdminStates)
@@ -257,6 +280,7 @@ async def button_list(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "button_add"}),
+    AdminRule(),
 )
 async def admin_button_add(event: MessageEvent):
     if "button_type" in event.object.payload:
@@ -271,6 +295,7 @@ async def admin_button_add(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "show_in_main_menu"}),
+    AdminRule(),
 )
 async def button_main_menu_admin(event: MessageEvent):
     await admin_buttons_handler.show_in_main_menu(bot, event)
@@ -296,6 +321,7 @@ async def admin_options_on_button_text_create(message: Message):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "promocodes"}),
+    AdminRule(),
 )
 async def promocodes_admin(event: MessageEvent):
     await admin_promocodes_handler.promocodes_menu(bot, event)
@@ -305,6 +331,7 @@ async def promocodes_admin(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "add_promocode"}),
+    AdminRule(),
 )
 async def add_promocodes_admin(event: MessageEvent):
     await admin_promocodes_handler.add_promocode(bot, event, AdminStates)
@@ -314,6 +341,7 @@ async def add_promocodes_admin(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "delete_promocode"}),
+    AdminRule(),
 )
 async def delete_promocodes_admin(event: MessageEvent):
     await admin_promocodes_handler.delete_button_promocode_handler(
@@ -325,6 +353,7 @@ async def delete_promocodes_admin(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "users"}),
+    AdminRule(),
 )
 async def users_admin(event: MessageEvent):
     await admin_users_handler.admin_users_handler(bot, event, AdminStates)
@@ -334,6 +363,7 @@ async def users_admin(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "ban_user"}),
+    AdminRule(),
 )
 async def ban_user_click(event: MessageEvent):
     await admin_users_handler.ban_user_click(bot, event, AdminStates)
@@ -343,43 +373,46 @@ async def ban_user_click(event: MessageEvent):
     GroupEventType.MESSAGE_EVENT,
     MessageEvent,
     PayloadRule({"type": "unban_user"}),
+    AdminRule(),
 )
 async def unban_user_click(event: MessageEvent):
     await admin_users_handler.unban_user_click(bot, event, AdminStates)
 
 
-@bot.on.message(state=AdminStates.DELETE_PROMOCODE)
+@bot.on.message(AdminRule(), state=AdminStates.DELETE_PROMOCODE)
 async def delete_promocodes_admin_text(message: Message):
     await admin_promocodes_handler.delete_promocode_handler(
         bot, message, AdminStates
     )
 
 
-@bot.on.message(state=AdminStates.WAITING_PROMOCODE)
+@bot.on.message(AdminRule(), state=AdminStates.WAITING_PROMOCODE)
 async def add_promocodes_admin_text(message: Message):
     await admin_promocodes_handler.add_promocode_text(
         bot, message, AdminStates
     )
 
 
-@bot.on.message(state=AdminStates.WAITING_PROMOCODE_FILEPATH)
+@bot.on.message(AdminRule(), state=AdminStates.WAITING_PROMOCODE_FILEPATH)
 async def add_promocodes_admin_filepath(message: Message):
     await admin_promocodes_handler.add_promocode_file(
         bot, message, AdminStates
     )
 
 
-@bot.on.private_message(state=AdminStates.USERS_STATE)
+@bot.on.private_message(AdminRule(), state=AdminStates.USERS_STATE)
 async def users_options(message: Message):
     await admin_users_handler(bot, message, AdminStates)
 
 
-@bot.on.private_message(state=AdminStates.WAITING_USER_ID_TO_BAN)
+@bot.on.private_message(AdminRule(), state=AdminStates.WAITING_USER_ID_TO_BAN)
 async def waiting_user_id_to_ban(message: Message):
     await admin_users_handler.ban_user(bot, message, AdminStates)
 
 
-@bot.on.private_message(state=AdminStates.WAITING_USER_ID_TO_UNBAN)
+@bot.on.private_message(
+    AdminRule(), state=AdminStates.WAITING_USER_ID_TO_UNBAN
+)
 async def waiting_user_id_to_unban(message: Message):
     await admin_users_handler.unban_user(bot, message, AdminStates)
 
