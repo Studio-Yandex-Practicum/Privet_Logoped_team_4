@@ -1,0 +1,12 @@
+[Unit]
+Description=Telegram Bot Service
+After=network.target
+
+[Service]
+User=yc-user
+WorkingDirectory=/home/yc-user/Privet_Logoped_team_4/src/telegram_bot
+ExecStart=/home/yc-user/Privet_Logoped_team_4/src/telegram_bot/venv/bin/python /home/yc-user/Privet_Logoped_team_4/src/telegram_bot/main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

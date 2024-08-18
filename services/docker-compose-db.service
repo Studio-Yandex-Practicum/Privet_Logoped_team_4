@@ -1,0 +1,14 @@
+[Unit]
+Description=Docker Compose Database Service
+PartOf=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+WorkingDirectory=/home/yc-user/Privet_Logoped_team_4
+ExecStart=sudo /usr/bin/docker compose up -d
+ExecStop=sudo /usr/bin/docker compose down
+
+[Install]
+WantedBy=multi-user.target
