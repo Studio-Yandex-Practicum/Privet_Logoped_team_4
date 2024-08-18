@@ -389,6 +389,11 @@ async def greeting(message: Message):
     await start_handler.start_handler(bot, message, UserStates)
 
 
+@bot.on.private_message(lev=["/role", "Сменить роль"])
+async def cmd_role(message: Message):
+    await start_handler.choose_role_cmd(bot, message)
+
+
 @bot.on.private_message(lev=["/promo", "Промокод"])
 async def promo(message: Message):
     await message.answer("Введите промокод:", keyboard=cancel_keyboard)

@@ -32,7 +32,6 @@ async def button_info_handler(bot: Bot, event: GroupTypes.MessageEvent):
         user_id=event.object.user_id,
         peer_id=event.object.peer_id,
     )
-    Callback
 
     async with async_session() as session:
         async with session.begin():
@@ -985,7 +984,7 @@ async def button_click_handler(
         back_keyboard.add(Callback(label="Назад", payload=back_callback))
         await bot.api.messages.send(
             event.object.user_id,
-            message="Введите ваше сообщение для логопеда:",
+            message="Пожалуйста, напишите ваше сообщение, и оно будет отправлено автору.",
             keyboard=back_keyboard.get_json(),
             random_id=0,
         )

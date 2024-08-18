@@ -12,6 +12,7 @@ from callbacks import PromocodeDeleteCallback, PromocodeItemDeleteCallback
 from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 
+from filters import AdminFilter
 from .state import AdminStates
 
 parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -22,7 +23,7 @@ from db.models import PromoCode, async_session  # noqa
 router = Router()
 
 
-@router.callback_query(F.data == "add_promocode")
+@router.callback_query(F.data == "add_promocode", AdminFilter())
 async def admin_add_promocode(query: CallbackQuery, state: FSMContext):
     """Обработка выбора кнопки 'Добавить промокод'."""
     await query.message.delete()
@@ -30,7 +31,7 @@ async def admin_add_promocode(query: CallbackQuery, state: FSMContext):
     await state.set_state(AdminStates.waiting_promocode)
 
 
-@router.message(StateFilter(AdminStates.waiting_promocode))
+@router.message(StateFilter(AdminStates.waiting_promocode), AdminFilter())
 async def get_promocode(message: Message, state: FSMContext):
     """Обработка ввода промокода."""
     if message.text == "Отмена":
@@ -42,7 +43,7 @@ async def get_promocode(message: Message, state: FSMContext):
         await state.set_state(AdminStates.waiting_promocode_filepath)
 
 
-@router.message(StateFilter(AdminStates.waiting_promocode_filepath), F.document)
+@router.message(StateFilter(AdminStates.waiting_promocode_filepath), F.document, AdminFilter())
 async def add_promocode(message: Message, state: FSMContext, bot: Bot):
     """Обработка отправки файла промокода и добавление записи в бд."""
     if message.text == "Отмена":
@@ -85,7 +86,7 @@ async def add_promocode(message: Message, state: FSMContext, bot: Bot):
             await state.clear()
 
 
-@router.message(StateFilter(AdminStates.waiting_promocode_filepath))
+@router.message(StateFilter(AdminStates.waiting_promocode_filepath), AdminFilter())
 async def add_promocode_incorrect(message: Message, state: FSMContext, bot: Bot):
     """Обработка неправильной отправки файла промокода и добавление записи в бд."""
     if message.text == "Отмена":
@@ -96,7 +97,7 @@ async def add_promocode_incorrect(message: Message, state: FSMContext, bot: Bot)
 
 
 # @router.message(F.text == "Удалить промокод")
-@router.callback_query(PromocodeDeleteCallback.filter())
+@router.callback_query(PromocodeDeleteCallback.filter(), AdminFilter())
 async def admin_delete_promocode(
     query: CallbackQuery,
     state: FSMContext,
@@ -150,7 +151,7 @@ async def admin_delete_promocode(
     await query.message.edit_text("Выберите промокод:", reply_markup=keyboard)
 
 
-@router.callback_query(PromocodeItemDeleteCallback.filter())
+@router.callback_query(PromocodeItemDeleteCallback.filter(), AdminFilter())
 async def delete_promocode(
     message: CallbackQuery,
     state: FSMContext,

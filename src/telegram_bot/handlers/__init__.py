@@ -1,7 +1,6 @@
 # from .therapist_handler import router as therapist_router  # noqa
 from .admin_buttons_handler import router as admin_buttons_router  # noqa
 from .admin_handler import router as admin_router  # noqa
-from .admin_links_handler import router as admin_links_router  # noqa
 from .admin_mailing_handler import router as admin_mailing_router  # noqa
 from .admin_promocodes_handler import router as admin_promocodes_router  # noqa
 from .admin_users_handler import router as admin_users_router  # noqa

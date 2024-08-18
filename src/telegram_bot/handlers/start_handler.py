@@ -4,21 +4,34 @@ from typing import Union
 
 import keyboard.keyboard as kb
 from aiogram import F, Router
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (CallbackQuery, FSInputFile, InlineKeyboardButton,
-                           InlineKeyboardMarkup, Message)
+from aiogram.types import (
+    CallbackQuery,
+    FSInputFile,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 from callbacks import SubscribeButtonCallback, VisitButtonCallback
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 
 from .state import Level
 
-parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+parent_folder_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..")
+)
 sys.path.append(parent_folder_path)
 from db.models import NotificationIntervalType  # noqa
-from db.models import (Button, ButtonType, NotificationWeekDayType, RoleType,
-                       TGUser, async_session)
+from db.models import (
+    Button,
+    ButtonType,
+    NotificationWeekDayType,
+    RoleType,
+    TGUser,
+    async_session,
+)
 
 router = Router()
 
@@ -133,7 +146,9 @@ async def visit_callback(
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
-                select(Button).where(Button.button_id == callback_data.button_id)
+                select(Button).where(
+                    Button.button_id == callback_data.button_id
+                )
             )
             button = result.scalars().first()
 
@@ -141,7 +156,9 @@ async def visit_callback(
     if not callback_data.authorized:
         back_callback = "info"
     elif button.parent_button_id:
-        back_callback = VisitButtonCallback(button_id=button.parent_button_id).pack()
+        back_callback = VisitButtonCallback(
+            button_id=button.parent_button_id
+        ).pack()
     else:
         back_callback = "start"
     back_keyboard = InlineKeyboardMarkup(
@@ -158,7 +175,9 @@ async def visit_callback(
         async with async_session() as session:
             async with session.begin():
                 result = await session.execute(
-                    select(TGUser).where(TGUser.user_id == callback.from_user.id)
+                    select(TGUser).where(
+                        TGUser.user_id == callback.from_user.id
+                    )
                 )
                 user = result.scalars().first()
                 reply_markup = kb.get_notifications_keyboard(
@@ -176,19 +195,30 @@ async def visit_callback(
             message_text = "Сейчас вы не получаете уведомления"
         else:
             message_text = "Вы получаете уведомления"
-            if user.notification_interval == NotificationIntervalType.USER_CHOICE:
+            if (
+                user.notification_interval
+                == NotificationIntervalType.USER_CHOICE
+            ):
                 message_text += f" по выбранному интервалу: в {user.notificate_at}:00 в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
-            elif user.notification_interval == NotificationIntervalType.EVERY_DAY:
+            elif (
+                user.notification_interval
+                == NotificationIntervalType.EVERY_DAY
+            ):
                 message_text += f" ежедневно в {user.notificate_at}:00"
-            elif user.notification_interval == NotificationIntervalType.OTHER_DAY:
-                message_text += f" в {user.notificate_at}:00 каждый второй день"
+            elif (
+                user.notification_interval
+                == NotificationIntervalType.OTHER_DAY
+            ):
+                message_text += (
+                    f" в {user.notificate_at}:00 каждый второй день"
+                )
         await callback.message.answer(
             message_text,
             reply_markup=reply_markup,
         )
     elif button.button_type == ButtonType.ADMIN_MESSAGE:
         await callback.message.answer(
-            "Пожалуйста, напишите ваше сообщение, и оно будет отправлено логопедам.",
+            "Пожалуйста, напишите ваше сообщение, и оно будет отправлено автору.",
             reply_markup=back_keyboard,
         )
         await state.set_state(Level.waiting_for_message)
@@ -274,11 +304,15 @@ async def subscribe_callback(
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(
-                select(Button).where(Button.button_id == callback_data.button_id)
+                select(Button).where(
+                    Button.button_id == callback_data.button_id
+                )
             )
             button = result.scalars().first()
     if button.parent_button_id:
-        back_callback = VisitButtonCallback(button_id=button.parent_button_id).pack()
+        back_callback = VisitButtonCallback(
+            button_id=button.parent_button_id
+        ).pack()
     else:
         back_callback = "start"
     msg_text = (
@@ -286,7 +320,11 @@ async def subscribe_callback(
         if is_subscribed
         else "❌ Вы не подписаны на рассылку"
     )
-    btn_text = "Отписаться от рассылки" if is_subscribed else "Подписаться на рассылку"
+    btn_text = (
+        "Отписаться от рассылки"
+        if is_subscribed
+        else "Подписаться на рассылку"
+    )
     buttons = [
         [
             InlineKeyboardButton(
@@ -308,3 +346,8 @@ async def subscribe_callback(
         msg_text,
         reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
     )
+
+
+@router.message(Command("role"))
+async def role_command(message: Message):
+    await message.answer("Выберите роль:", reply_markup=kb.role)

@@ -87,6 +87,15 @@ async def choose_role_handler(
     )
 
 
+async def choose_role_cmd(
+    bot: Bot, message: Message
+):
+    await message.answer(
+        message="Здравствуйте! Выберите одну из предложенных ролей, или узнайте больше:",
+        keyboard=role_keyboard.get_json(),
+    )
+
+
 async def promocode_handler(
     bot: Bot,
     message: Message,

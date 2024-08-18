@@ -10,6 +10,8 @@ from aiogram.types import CallbackQuery, Message
 from callbacks import MailingButtonRole, MailingButtonSettings
 from sqlalchemy import and_, select
 
+from filters import AdminFilter
+
 from .state import AdminStates
 
 parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -19,14 +21,14 @@ from db.models import TGUser, async_session  # noqa
 router = Router()
 
 
-@router.callback_query(F.data == "mailing")
-@router.message(Command("mailing"))
+@router.callback_query(F.data == "mailing", AdminFilter())
+@router.message(Command("mailing"), AdminFilter())
 async def cmd_mailing(callback: Union[CallbackQuery, Message], state: FSMContext):
     await state.clear()
     await callback.message.edit_text("Рассылка", reply_markup=kb.mailing)
 
 
-@router.callback_query(F.data == "send_mailing")
+@router.callback_query(F.data == "send_mailing", AdminFilter())
 async def send_mailing(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
     await callback.message.answer(
@@ -36,7 +38,7 @@ async def send_mailing(callback: CallbackQuery, state: FSMContext):
     await state.update_data({"role": None, "message": None, "ignore_subscribed": False})
 
 
-@router.message(StateFilter(AdminStates.send_mailing))
+@router.message(StateFilter(AdminStates.send_mailing), AdminFilter())
 async def mailing_message(message: Message, state: FSMContext):
     if message.text == "Отмена":
         await message.answer("Отменено", reply_markup=kb.admin)
@@ -50,7 +52,7 @@ async def mailing_message(message: Message, state: FSMContext):
     await state.set_state(None)
 
 
-@router.callback_query(MailingButtonSettings.filter())
+@router.callback_query(MailingButtonSettings.filter(), AdminFilter())
 async def mailing_settings(
     callback: CallbackQuery,
     callback_data: MailingButtonSettings,
@@ -73,14 +75,14 @@ async def mailing_settings(
     await callback.message.edit_text("Настройки рассылки", reply_markup=keyboard)
 
 
-@router.callback_query(F.data == "mailing_settings_role")
+@router.callback_query(F.data == "mailing_settings_role", AdminFilter())
 async def mailing_settings_role(callback: CallbackQuery):
     await callback.message.edit_text(
         "Выберите роль для рассылки", reply_markup=kb.mailing_role
     )
 
 
-@router.callback_query(MailingButtonRole.filter())
+@router.callback_query(MailingButtonRole.filter(), AdminFilter())
 async def mailing_settings_role_select(
     callback: CallbackQuery,
     callback_data: MailingButtonRole,
@@ -98,7 +100,7 @@ async def mailing_settings_role_select(
     await callback.message.edit_text("Настройки рассылки", reply_markup=keyboard)
 
 
-@router.callback_query(F.data == "send_mailing_messages")
+@router.callback_query(F.data == "send_mailing_messages", AdminFilter())
 async def send_mailing_messages(callback: CallbackQuery, state: FSMContext):
     state_data = await state.get_data()
     async with async_session() as session:

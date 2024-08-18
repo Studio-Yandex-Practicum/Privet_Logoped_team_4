@@ -9,13 +9,16 @@ from db.models import (NotificationIntervalType, NotificationWeekDayType,
 
 
 async def send_notification(user_id: int, bot: Bot):
-    people = ["с Лисой", "с Мишкой", "со Слоном", "с Кроликом", "с Котом"]
-    person = random.choice(people)
-    await bot.api.messages.send(
-        user_id=user_id,
-        message=f"Поиграйте {person}!",
-        random_id=0,
-    )
+    try:
+        people = ["с Лисой", "с Мишкой", "со Слоном", "с Кроликом", "с Котом"]
+        person = random.choice(people)
+        await bot.api.messages.send(
+            user_id=user_id,
+            message=f"Поиграйте {person}!",
+            random_id=0,
+        )
+    except Exception as e:
+        print(f"Ошибка при отправке уведомления: {e}")
 
 
 async def every_day_notification(bot: Bot):

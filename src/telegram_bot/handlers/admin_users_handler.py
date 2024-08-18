@@ -8,6 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy import update
 
+from filters import AdminFilter
 from .state import AdminStates
 
 parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -18,12 +19,12 @@ from db.models import TGUser, async_session  # noqa
 router = Router()
 
 
-@router.callback_query(F.data == "users")
+@router.callback_query(F.data == "users", AdminFilter())
 async def users_menu(callback: CallbackQuery):
     await callback.message.edit_text('Вы нажали "Пользователи"', reply_markup=kb.users)
 
 
-@router.callback_query(F.data == "ban_user")
+@router.callback_query(F.data == "ban_user", AdminFilter())
 async def admin_ban_user(callback: CallbackQuery, state: FSMContext):
     """Обработка выбора кнопки 'Заблокировать пользователя'."""
     await callback.message.delete()
@@ -31,7 +32,7 @@ async def admin_ban_user(callback: CallbackQuery, state: FSMContext):
     await state.set_state(AdminStates.waiting_user_id_to_ban)
 
 
-@router.message(StateFilter(AdminStates.waiting_user_id_to_ban))
+@router.message(StateFilter(AdminStates.waiting_user_id_to_ban), AdminFilter())
 async def ban_user(message: Message, state: FSMContext):
     """Обработка ввода id пользователя и обработка его бана."""
     if message.text == "Отмена":
@@ -64,7 +65,7 @@ async def ban_user(message: Message, state: FSMContext):
     await state.set_state(AdminStates.users)
 
 
-@router.callback_query(F.data == "unban_user")
+@router.callback_query(F.data == "unban_user", AdminFilter())
 async def admin_unban_user(callback: CallbackQuery, state: FSMContext):
     """Обработка выбора кнопки 'Разблокировать пользователя'."""
     await callback.message.delete()
@@ -72,7 +73,7 @@ async def admin_unban_user(callback: CallbackQuery, state: FSMContext):
     await state.set_state(AdminStates.waiting_user_id_to_unban)
 
 
-@router.message(StateFilter(AdminStates.waiting_user_id_to_unban))
+@router.message(StateFilter(AdminStates.waiting_user_id_to_unban), AdminFilter())
 async def unban_user(message: Message, state: FSMContext):
     """Обработка ввода id пользователя и обработка его разбана."""
     if message.text == "Отмена":

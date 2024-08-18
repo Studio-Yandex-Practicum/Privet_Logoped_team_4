@@ -13,6 +13,7 @@ from callbacks import (ButtonAddCallback, ButtonAddFileCallback,
                        ButtonOnButtonTextCallback, ButtonRoleCallback,
                        ButtonTextCallback, ButtonTypeCallback)
 from sqlalchemy import select, update
+from filters import AdminFilter
 
 from db.models import Button, ButtonType, RoleType, async_session
 
@@ -21,7 +22,7 @@ from .state import AdminStates
 router = Router()
 
 
-@router.callback_query(ButtonInfoCallback.filter())
+@router.callback_query(ButtonInfoCallback.filter(), AdminFilter())
 async def button_info_handler(
     callback: CallbackQuery, callback_data: ButtonInfoCallback
 ):
@@ -42,7 +43,7 @@ async def button_info_handler(
     await callback.message.edit_text(message, reply_markup=keyboard)
 
 
-@router.callback_query(ButtonDeleteCallback.filter())
+@router.callback_query(ButtonDeleteCallback.filter(), AdminFilter())
 async def button_delete_handler(
     callback: CallbackQuery, callback_data: ButtonDeleteCallback
 ):
@@ -60,7 +61,7 @@ async def button_delete_handler(
     await callback.message.answer("Кнопка успешно удалена", reply_markup=kb.admin)
 
 
-@router.callback_query(ButtonOnButtonTextCallback.filter())
+@router.callback_query(ButtonOnButtonTextCallback.filter(), AdminFilter())
 async def button_on_text_handler(
     callback: CallbackQuery,
     callback_data: ButtonOnButtonTextCallback,
@@ -75,7 +76,7 @@ async def button_on_text_handler(
     await callback.message.answer("Отправьте текст на кнопке", reply_markup=kb.cancel)
 
 
-@router.callback_query(ButtonTypeCallback.filter())
+@router.callback_query(ButtonTypeCallback.filter(), AdminFilter())
 async def button_type_handler(
     callback: CallbackQuery,
     callback_data: ButtonTypeCallback,
@@ -160,14 +161,14 @@ async def button_type_handler(
     await callback.message.edit_text("Выберите тип", reply_markup=type_kb)
 
 
-@router.message(F.text == "Отмена", StateFilter(AdminStates.waiting_on_button_text))
+@router.message(F.text == "Отмена", StateFilter(AdminStates.waiting_on_button_text), AdminFilter())
 async def cancel_button_on_text_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста на кнопке."""
     await message.answer("Отменено", reply_markup=kb.admin)
     await state.clear()
 
 
-@router.message(StateFilter(AdminStates.waiting_on_button_text))
+@router.message(StateFilter(AdminStates.waiting_on_button_text), AdminFilter())
 async def get_button_on_text(message: Message, state: FSMContext):
     """Обработка ввода текста на кнопке."""
     async with async_session() as session:
@@ -183,7 +184,7 @@ async def get_button_on_text(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(ButtonTextCallback.filter())
+@router.callback_query(ButtonTextCallback.filter(), AdminFilter())
 async def button_text_handler(
     callback: CallbackQuery,
     callback_data: ButtonTextCallback,
@@ -200,14 +201,14 @@ async def button_text_handler(
     )
 
 
-@router.message(F.text == "Отмена", StateFilter(AdminStates.waiting_button_text))
+@router.message(F.text == "Отмена", StateFilter(AdminStates.waiting_button_text), AdminFilter())
 async def cancel_button_text_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста при нажатии на кнопку."""
     await message.answer("Отменено", reply_markup=kb.admin)
     await state.clear()
 
 
-@router.message(StateFilter(AdminStates.waiting_button_text))
+@router.message(StateFilter(AdminStates.waiting_button_text), AdminFilter())
 async def get_button_text(message: Message, state: FSMContext):
     """Обработка ввода текста при нажатии на кнопку."""
     async with async_session() as session:
@@ -223,7 +224,7 @@ async def get_button_text(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(ButtonChooseRoleCallback.filter())
+@router.callback_query(ButtonChooseRoleCallback.filter(), AdminFilter())
 async def button_choose_role_handler(
     callback: CallbackQuery, callback_data: ButtonChooseRoleCallback
 ):
@@ -267,7 +268,7 @@ async def button_choose_role_handler(
     )
 
 
-@router.callback_query(ButtonRoleCallback.filter())
+@router.callback_query(ButtonRoleCallback.filter(), AdminFilter())
 async def button_role_handler(
     callback: CallbackQuery, callback_data: ButtonRoleCallback
 ):
@@ -286,7 +287,7 @@ async def button_role_handler(
     await callback.message.answer("Роль изменена", reply_markup=kb.admin)
 
 
-@router.callback_query(ButtonGroupCallback.filter())
+@router.callback_query(ButtonGroupCallback.filter(), AdminFilter())
 async def admin_buttons_handler(
     callback: CallbackQuery, callback_data: ButtonGroupCallback
 ):
@@ -348,7 +349,7 @@ async def admin_buttons_handler(
     )
 
 
-@router.callback_query(ButtonAddCallback.filter())
+@router.callback_query(ButtonAddCallback.filter(), AdminFilter())
 async def button_add_handler(callback: CallbackQuery, callback_data: ButtonAddCallback):
     """Обработка выбора кнопки 'Добавить кнопку'."""
     await callback.answer()
@@ -418,7 +419,7 @@ async def button_add_handler(callback: CallbackQuery, callback_data: ButtonAddCa
     )
 
 
-@router.callback_query(ButtonAddTypeCallback.filter())
+@router.callback_query(ButtonAddTypeCallback.filter(), AdminFilter())
 async def button_add_type_handler(
     callback: CallbackQuery,
     callback_data: ButtonAddTypeCallback,
@@ -438,7 +439,7 @@ async def button_add_type_handler(
 
 
 @router.message(
-    F.text == "Отмена", StateFilter(AdminStates.waiting_on_button_text_create)
+    F.text == "Отмена", StateFilter(AdminStates.waiting_on_button_text_create), AdminFilter()
 )
 async def cancel_on_button_text_create_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста при нажатии на кнопку."""
@@ -446,7 +447,7 @@ async def cancel_on_button_text_create_handler(message: Message, state: FSMConte
     await state.clear()
 
 
-@router.message(StateFilter(AdminStates.waiting_on_button_text_create))
+@router.message(StateFilter(AdminStates.waiting_on_button_text_create), AdminFilter())
 async def get_on_button_text_create(message: Message, state: FSMContext):
     """Обработка ввода текста при нажатии на кнопку."""
     await state.update_data(text=message.text)
@@ -480,14 +481,14 @@ async def get_on_button_text_create(message: Message, state: FSMContext):
         await state.clear()
 
 
-@router.message(StateFilter(AdminStates.waiting_button_text_create), F.text == "Отмена")
+@router.message(StateFilter(AdminStates.waiting_button_text_create), F.text == "Отмена", AdminFilter())
 async def cancel_button_text_create_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста при нажатии на кнопку."""
     await message.answer("Отменено", reply_markup=kb.admin)
     await state.clear()
 
 
-@router.message(StateFilter(AdminStates.waiting_button_text_create))
+@router.message(StateFilter(AdminStates.waiting_button_text_create), AdminFilter())
 async def get_button_text_create(message: Message, state: FSMContext):
     """Обработка ввода текста при нажатии на кнопку."""
     await state.update_data(click_text=message.text)
@@ -511,7 +512,7 @@ async def get_button_text_create(message: Message, state: FSMContext):
         await message.answer("Кнопка добавлена", reply_markup=kb.admin)
 
 
-@router.message(StateFilter(AdminStates.waiting_button_file_create), F.document)
+@router.message(StateFilter(AdminStates.waiting_button_file_create), F.document, AdminFilter())
 async def get_button_file_create(message: Message, state: FSMContext, bot: Bot):
     """Обработка выбора файла при нажатии на кнопку."""
     dest = (
@@ -536,20 +537,20 @@ async def get_button_file_create(message: Message, state: FSMContext, bot: Bot):
     await message.answer("Кнопка добавлена", reply_markup=kb.admin)
 
 
-@router.message(StateFilter(AdminStates.waiting_button_file_create), F.text == "Отмена")
+@router.message(StateFilter(AdminStates.waiting_button_file_create), F.text == "Отмена", AdminFilter())
 async def cancel_button_file_create_handler(message: Message, state: FSMContext):
     """Обработка отмены выбора файла при нажатии на кнопку."""
     await message.answer("Отменено", reply_markup=kb.admin)
     await state.clear()
 
 
-@router.message(StateFilter(AdminStates.waiting_button_file_create))
+@router.message(StateFilter(AdminStates.waiting_button_file_create), AdminFilter())
 async def get_on_button_file_create(message: Message):
     """Обработка ввода некорректного файла при нажатии на кнопку."""
     await message.answer("Отправлен некорректный файл")
 
 
-@router.callback_query(ButtonAddFileCallback.filter())
+@router.callback_query(ButtonAddFileCallback.filter(), AdminFilter())
 async def button_add_file_callback(
     callback: CallbackQuery,
     callback_data: ButtonAddFileCallback,
@@ -564,7 +565,7 @@ async def button_add_file_callback(
     await callback.message.answer("Выберите файл", reply_markup=kb.cancel)
 
 
-@router.message(StateFilter(AdminStates.waiting_button_file), F.document)
+@router.message(StateFilter(AdminStates.waiting_button_file), F.document, AdminFilter())
 async def get_button_file_edit(message: Message, state: FSMContext, bot: Bot):
     """Обработка выбора файла при нажатии на кнопку."""
     dest = (
@@ -586,20 +587,20 @@ async def get_button_file_edit(message: Message, state: FSMContext, bot: Bot):
     await message.answer("Кнопка обновлена", reply_markup=kb.admin)
 
 
-@router.message(StateFilter(AdminStates.waiting_button_file), F.text == "Отмена")
+@router.message(StateFilter(AdminStates.waiting_button_file), F.text == "Отмена", AdminFilter())
 async def cancel_button_file_edit_handler(message: Message, state: FSMContext):
     """Обработка отмены выбора файла при нажатии на кнопку."""
     await message.answer("Отменено", reply_markup=kb.admin)
     await state.clear()
 
 
-@router.message(StateFilter(AdminStates.waiting_button_file))
+@router.message(StateFilter(AdminStates.waiting_button_file), AdminFilter())
 async def get_on_button_file_edit(message: Message):
     """Обработка ввода некорректного файла при нажатии на кнопку."""
     await message.answer("Отправлен некорректный файл")
 
 
-@router.callback_query(ButtonInMainMenuCallback.filter())
+@router.callback_query(ButtonInMainMenuCallback.filter(), AdminFilter())
 async def button_in_main_menu_handler(
     callback: CallbackQuery, callback_data: ButtonInMainMenuCallback
 ):
