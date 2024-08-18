@@ -53,11 +53,11 @@ async def enable_notifications(
     else:
         message_text = "Вы получаете уведомления"
         if user.notification_interval == NotificationIntervalType.USER_CHOICE:
-            message_text += f" по выбранному интервалу: в {user.notificate_at}:00 в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
+            message_text += f" по выбранному интервалу: в {user.notificate_at}:00 по UTC в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
         elif user.notification_interval == NotificationIntervalType.EVERY_DAY:
-            message_text += f" ежедневно в {user.notificate_at}:00"
+            message_text += f" ежедневно в {user.notificate_at}:00 по UTC"
         elif user.notification_interval == NotificationIntervalType.OTHER_DAY:
-            message_text += f" в {user.notificate_at}:00 каждый второй день"
+            message_text += f" в {user.notificate_at}:00 по UTC каждый второй день"
 
     await callback.message.edit_text(message_text, reply_markup=reply_markup)
 
@@ -98,7 +98,7 @@ async def choose_interval_select(
     )
     await callback.message.delete()
     await callback.message.answer(
-        "Укажите время в часах для уведомления (по UTC):",
+        "Укажите время в часах для уведомления (по UTC, пример: 9):",
         reply_markup=kb.cancel,
     )
     await state.set_state(Level.notification_hour)

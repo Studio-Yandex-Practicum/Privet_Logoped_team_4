@@ -8,8 +8,8 @@ from vkbottle.bot import Message
 
 parent_folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(parent_folder_path)
-from db.models import NotificationIntervalType  # noqa
-from db.models import Button, NotificationWeekDayType, VKUser, async_session
+from db.models import (Button, NotificationIntervalType,  # noqa
+                       NotificationWeekDayType, VKUser, async_session)
 
 
 async def enable_notifications(
@@ -55,11 +55,11 @@ async def enable_notifications(
     else:
         message_text = "Вы получаете уведомления"
         if user.notification_interval == NotificationIntervalType.USER_CHOICE:
-            message_text += f" по выбранному интервалу: в {user.notificate_at}:00 в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
+            message_text += f" по выбранному интервалу: в {user.notificate_at}:00 по UTC в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
         elif user.notification_interval == NotificationIntervalType.EVERY_DAY:
-            message_text += f" ежедневно в {user.notificate_at}:00"
+            message_text += f" ежедневно в {user.notificate_at}:00 по UTC"
         elif user.notification_interval == NotificationIntervalType.OTHER_DAY:
-            message_text += f" в {user.notificate_at}:00 каждый второй день"
+            message_text += f" в {user.notificate_at}:00 по UTC каждый второй день"
 
     await bot.api.messages.edit(
         peer_id=event.object.peer_id,
@@ -117,7 +117,7 @@ async def choose_interval_select(bot: Bot, event: GroupTypes.MessageEvent, UserS
     await bot.api.messages.send(
         peer_id=event.object.peer_id,
         random_id=0,
-        message="Укажите время в часах для уведомления (по МСК):",
+        message="Укажите время в часах для уведомления (по UTC, пример: 9):",
         keyboard=kb.cancel_keyboard,
     )
 

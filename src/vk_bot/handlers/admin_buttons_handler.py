@@ -949,18 +949,18 @@ async def button_click_handler(
                 user.notification_interval
                 == NotificationIntervalType.USER_CHOICE
             ):
-                message_text += f" по выбранному интервалу: в {user.notificate_at}:00 в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
+                message_text += f" по выбранному интервалу: в {user.notificate_at}:00 по UTC в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
             elif (
                 user.notification_interval
                 == NotificationIntervalType.EVERY_DAY
             ):
-                message_text += f" ежедневно в {user.notificate_at}:00"
+                message_text += f" ежедневно в {user.notificate_at}:00 по UTC"
             elif (
                 user.notification_interval
                 == NotificationIntervalType.OTHER_DAY
             ):
                 message_text += (
-                    f" в {user.notificate_at}:00 каждый второй день"
+                    f" в {user.notificate_at}:00 по UTC каждый второй день"
                 )
         with suppress(VKAPIError[100], VKAPIError[15]):
             await bot.api.messages.delete(

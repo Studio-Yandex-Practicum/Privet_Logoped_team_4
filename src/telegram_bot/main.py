@@ -29,12 +29,12 @@ async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
         every_day_notification,
-        CronTrigger.from_crontab("0 * * * *"),
+        CronTrigger.from_crontab("0 * * * *", timezone="UTC"),
         args=[bot],
     )
     scheduler.add_job(
         other_day_notification,
-        CronTrigger.from_crontab("0 * */2 * *"),
+        CronTrigger.from_crontab("0 * */2 * *", timezone="UTC"),
         args=[bot],
     )
     scheduler.start()
