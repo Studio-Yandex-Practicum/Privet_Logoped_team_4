@@ -40,7 +40,7 @@ async def send_mailing(callback: CallbackQuery, state: FSMContext):
 @router.message(StateFilter(AdminStates.send_mailing), AdminFilter())
 async def mailing_message(message: Message, state: FSMContext):
     if message.text == "Отмена":
-        await message.answer("Отменено", reply_markup=kb.admin)
+        await message.answer("Отменено, напишите /start для перезапуска бота", reply_markup=kb.admin)
         await state.clear()
         return
     await state.update_data({"message": message.text})

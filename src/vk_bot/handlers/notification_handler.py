@@ -55,7 +55,22 @@ async def enable_notifications(
     else:
         message_text = "Вы получаете уведомления"
         if user.notification_interval == NotificationIntervalType.USER_CHOICE:
-            message_text += f" по выбранному интервалу: в {user.notificate_at}:00 по UTC в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
+            wd = NotificationWeekDayType(user.notification_day)
+            if wd == NotificationWeekDayType.MONDAY:
+                day = "в понедельник"
+            elif wd == NotificationWeekDayType.TUESDAY:
+                day = "во вторник"
+            elif wd == NotificationWeekDayType.WEDNESDAY:
+                day = "в среду"
+            elif wd == NotificationWeekDayType.THURSDAY:
+                day = "в четверг"
+            elif wd == NotificationWeekDayType.FRIDAY:
+                day = "в пятницу"
+            elif wd == NotificationWeekDayType.SATURDAY:
+                day = "в субботу"
+            elif wd == NotificationWeekDayType.SUNDAY:
+                day = "в воскресенье"
+            message_text += f" по выбранному интервалу: в {user.notificate_at}:00 по UTC {day}"
         elif user.notification_interval == NotificationIntervalType.EVERY_DAY:
             message_text += f" ежедневно в {user.notificate_at}:00 по UTC"
         elif user.notification_interval == NotificationIntervalType.OTHER_DAY:
@@ -132,7 +147,7 @@ async def choose_interval_select_hour(bot: Bot, message: Message):
                 user: VKUser = result.scalars().first()
                 data = await bot.state_dispenser.get(message.peer_id)
                 keyboard = kb.get_notifications_keyboard(
-                    data["button_id"], user.notifications_enabled
+                    data.payload["button_id"], user.notifications_enabled
                 )
                 button = await session.execute(
                     select(Button).where(Button.button_id == data["button_id"])
@@ -151,7 +166,7 @@ async def choose_interval_select_hour(bot: Bot, message: Message):
                 payload=back_callback,
             )
         )
-        await message.answer("Отменено", keyboard=keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
     try:
@@ -163,10 +178,19 @@ async def choose_interval_select_hour(bot: Bot, message: Message):
         await message.answer("Вы ввели некорректное значение", reply_markup=kb.cancel)
         return
     data = await bot.state_dispenser.get(message.peer_id)
-    if data.payload["notification_interval"] == NotificationIntervalType.USER_CHOICE:
+    if NotificationIntervalType(data.payload["notification_interval"]) == NotificationIntervalType.USER_CHOICE:
+        async with async_session() as session:
+            async with session.begin():
+                await session.execute(
+                    update(VKUser)
+                    .where(VKUser.user_id == message.from_id)
+                    .values(
+                        notificate_at=hour,
+                    )
+                )
         await message.answer(
             "Выберите день недели для уведомлений:",
-            keyboard=kb.get_notifications_dayofweek_keyboard(data.payload["button_id"]),
+            keyboard=kb.get_notifications_dayofweek_keyboard(data.payload["button_id"]).get_json(),
         )
         return
     async with async_session() as session:
@@ -225,8 +249,8 @@ async def choose_day_of_week(bot: Bot, event: GroupTypes.MessageEvent, UserState
                 update(VKUser)
                 .where(VKUser.user_id == event.object.user_id)
                 .values(
-                    notification_day=event.object.payload["day_of_week"],
-                    notification_interval=event.object.payload["interval"],
+                    notification_day=NotificationWeekDayType(event.object.payload["day_of_week"]),
+                    notification_interval=NotificationIntervalType(event.object.payload["interval"]),
                 )
             )
             keyboard = kb.get_notifications_keyboard(
@@ -254,9 +278,9 @@ async def choose_day_of_week(bot: Bot, event: GroupTypes.MessageEvent, UserState
 
     await bot.api.messages.edit(
         peer_id=event.object.peer_id,
-        message_id=event.object.conversation_message_id,
         message="✅ Сохранено",
         keyboard=keyboard.get_json(),
+        conversation_message_id=event.object.conversation_message_id,
     )
 
     await bot.state_dispenser.delete(event.object.peer_id)

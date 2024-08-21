@@ -7,8 +7,16 @@ from pathlib import Path
 import aiofiles
 from aiohttp import ClientSession
 from sqlalchemy import and_, or_, select, update
-from vkbottle import (Bot, Callback, DocMessagesUploader, GroupTypes, Keyboard,
-                      KeyboardButtonColor, ShowSnackbarEvent, VKAPIError)
+from vkbottle import (
+    Bot,
+    Callback,
+    DocMessagesUploader,
+    GroupTypes,
+    Keyboard,
+    KeyboardButtonColor,
+    ShowSnackbarEvent,
+    VKAPIError,
+)
 from vkbottle.bot import Message
 from vkbottle_types.objects import MessagesMessageAttachmentType
 
@@ -17,12 +25,21 @@ parent_folder_path = os.path.abspath(
 )
 sys.path.append(parent_folder_path)
 from keyboards.keyboards import cancel_keyboard  # noqa
-from keyboards.keyboards import (admin_keyboard, get_main_keyboard,
-                                 get_notifications_keyboard)
+from keyboards.keyboards import (
+    admin_keyboard,
+    get_main_keyboard,
+    get_notifications_keyboard,
+)
 
 from db.models import NotificationIntervalType  # noqa
-from db.models import (Button, ButtonType, NotificationWeekDayType, RoleType,
-                       VKUser, async_session)
+from db.models import (
+    Button,
+    ButtonType,
+    NotificationWeekDayType,
+    RoleType,
+    VKUser,
+    async_session,
+)
 
 
 async def button_info_handler(bot: Bot, event: GroupTypes.MessageEvent):
@@ -350,7 +367,7 @@ async def button_on_text_handler(
 async def get_button_on_text(bot: Bot, message: Message):
     """Обработка ввода текста на кнопке."""
     if message.text.lower() == "отмена":
-        await message.answer("Отменено", keyboard=admin_keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=admin_keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
     async with async_session() as session:
@@ -396,7 +413,7 @@ async def button_text_handler(
 async def get_button_text(message: Message, AdminStates, bot: Bot):
     """Обработка ввода текста при нажатии на кнопку."""
     if message.text.lower() == "отмена":
-        await message.answer("Отменено", keyboard=admin_keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=admin_keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
     async with async_session() as session:
@@ -678,7 +695,7 @@ async def button_add_type_handler(
 async def get_on_button_text_create(message: Message, AdminStates, bot: Bot):
     """Обработка ввода текста при нажатии на кнопку."""
     if message.text.lower() == "отмена":
-        await message.answer("Отменено", keyboard=admin_keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=admin_keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
 
@@ -720,7 +737,7 @@ async def get_on_button_text_create(message: Message, AdminStates, bot: Bot):
 async def get_button_text_create(message: Message, AdminStates, bot: Bot):
     """Обработка ввода текста при нажатии на кнопку."""
     if message.text.lower() == "отмена":
-        await message.answer("Отменено", keyboard=admin_keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=admin_keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
     data = await bot.state_dispenser.get(message.peer_id)
@@ -754,7 +771,7 @@ async def get_button_text_create(message: Message, AdminStates, bot: Bot):
 async def get_button_file_create(message: Message, AdminStates, bot: Bot):
     """Обработка выбора файла при нажатии на кнопку."""
     if message.text.lower() == "отмена":
-        await message.answer("Отменено", keyboard=admin_keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=admin_keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
     if not message.attachments:
@@ -831,7 +848,7 @@ async def button_add_file_callback(
 async def get_button_file_edit(message: Message, AdminStates, bot: Bot):
     """Обработка выбора файла при нажатии на кнопку."""
     if message.text.lower() == "отмена":
-        await message.answer("Отменено", keyboard=admin_keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=admin_keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
     if not message.attachments:
@@ -949,7 +966,22 @@ async def button_click_handler(
                 user.notification_interval
                 == NotificationIntervalType.USER_CHOICE
             ):
-                message_text += f" по выбранному интервалу: в {user.notificate_at}:00 по UTC в этот день недели: {NotificationWeekDayType(user.notification_day).name}"
+                wd = NotificationWeekDayType(user.notification_day)
+                if wd == NotificationWeekDayType.MONDAY:
+                    day = "в понедельник"
+                elif wd == NotificationWeekDayType.TUESDAY:
+                    day = "во вторник"
+                elif wd == NotificationWeekDayType.WEDNESDAY:
+                    day = "в среду"
+                elif wd == NotificationWeekDayType.THURSDAY:
+                    day = "в четверг"
+                elif wd == NotificationWeekDayType.FRIDAY:
+                    day = "в пятницу"
+                elif wd == NotificationWeekDayType.SATURDAY:
+                    day = "в субботу"
+                elif wd == NotificationWeekDayType.SUNDAY:
+                    day = "в воскресенье"
+                message_text += f" по выбранному интервалу: в {user.notificate_at}:00 по UTC {day}"
             elif (
                 user.notification_interval
                 == NotificationIntervalType.EVERY_DAY
@@ -997,12 +1029,38 @@ async def button_click_handler(
             user_id=event.object.user_id,
             peer_id=event.object.peer_id,
         )
-        back_keyboard = Keyboard()
-        back_keyboard.add(Callback(label="Назад", payload=back_callback))
+        async with async_session() as session:
+            async with session.begin():
+                result = await session.execute(
+                    select(VKUser).where(
+                        VKUser.user_id == event.object.user_id
+                    )
+                )
+                user: VKUser = result.scalars().first()
+        kb = Keyboard()
+        if user.is_subscribed:
+            kb.add(
+                Callback(
+                    label="Отписаться от рассылки",
+                    payload={"type": "subscribe", "is_subscribed": False},
+                )
+            )
+        else:
+            kb.add(
+                Callback(
+                    label="Подписаться на рассылку",
+                    payload={"type": "subscribe", "is_subscribed": True},
+                )
+            )
+        kb.row().add(Callback(label="Назад", payload=back_callback))
         await bot.api.messages.send(
             event.object.user_id,
-            message="Тут будет рассылка",
-            keyboard=back_keyboard.get_json(),
+            message=(
+                "Вы подписаны на рассылку"
+                if user.is_subscribed
+                else "Вы не подписаны на рассылки"
+            ),
+            keyboard=kb.get_json(),
             random_id=0,
         )
     elif button.button_type == ButtonType.TEXT:
@@ -1059,6 +1117,11 @@ async def button_click_handler(
             random_id=0,
         )
     elif button.button_type == ButtonType.FILE:
+        await bot.api.messages.send_message_event_answer(
+            event_id=event.object.event_id,
+            user_id=event.object.user_id,
+            peer_id=event.object.peer_id,
+        )
         with open(button.file_path, "rb") as file_object:
             doc = await doc_uploader.upload(
                 file_source=file_object.read(),
@@ -1074,7 +1137,6 @@ async def button_click_handler(
             keyboard=back_keyboard.get_json(),
             random_id=0,
         )
-        pass
 
 
 async def button_list(bot: Bot, event: GroupTypes.MessageEvent):
@@ -1227,7 +1289,7 @@ async def main_menu_button_list(bot: Bot, event: GroupTypes.MessageEvent):
             buttons = buttons.scalars().all()
 
         keyboard = await get_main_keyboard(None)
-        keyboard.add(
+        keyboard.row().add(
             Callback(
                 "Назад",
                 {

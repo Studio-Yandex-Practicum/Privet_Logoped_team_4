@@ -5,7 +5,7 @@ from pathlib import Path
 
 import keyboards.keyboards as kb
 from keyboards.keyboards import cancel_keyboard, role_keyboard
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, or_, select, update
 from sqlalchemy.dialects.postgresql import insert
 from vkbottle import Bot, Callback, DocMessagesUploader, GroupTypes, Keyboard
 from vkbottle.bot import Message
@@ -14,8 +14,13 @@ parent_folder_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../..")
 )
 sys.path.append(parent_folder_path)
-from db.models import VKUser  # noqa
-from db.models import Button, PromoCode, RoleType, async_session
+from db.models import (
+    VKUser,
+    Button,
+    PromoCode,
+    RoleType,
+    async_session,
+)  # noqa
 
 
 async def start_handler(bot: Bot, message: Message, UserStates):
@@ -87,9 +92,7 @@ async def choose_role_handler(
     )
 
 
-async def choose_role_cmd(
-    bot: Bot, message: Message
-):
+async def choose_role_cmd(bot: Bot, message: Message):
     await message.answer(
         message="Здравствуйте! Выберите одну из предложенных ролей, или узнайте больше:",
         keyboard=role_keyboard.get_json(),
@@ -104,7 +107,7 @@ async def promocode_handler(
 ):
     """Обработка ввода промокода."""
     if message.text.lower() == "отмена":
-        await message.answer("Отменено")
+        await message.answer("Отменено, напишите /start для перезапуска бота")
         await bot.state_dispenser.delete(message.peer_id)
         return
     async with async_session() as session:
@@ -113,6 +116,10 @@ async def promocode_handler(
                 select(PromoCode).where(PromoCode.promocode == message.text)
             )
             promocode: PromoCode = result.scalars().first()
+            user_result = await session.execute(
+                select(VKUser).where(VKUser.user_id == message.from_id)
+            )
+            user: VKUser = user_result.scalars().first()
 
     if promocode:
         file_path = Path(promocode.file_path)
@@ -122,8 +129,9 @@ async def promocode_handler(
                 peer_id=message.peer_id,
                 title=promocode.promocode + file_path.suffix,
             )
+        k = kb.get_main_keyboard(user.role)
         await message.answer(
-            f"Вы выбрали промокод {message.text}", attachment=doc
+            f"Вы выбрали промокод {message.text}", attachment=doc, keyboard=k
         )
         if is_command:
             await bot.state_dispenser.delete(message.peer_id)
@@ -174,4 +182,34 @@ async def role_handler(bot: Bot, event: GroupTypes.MessageEvent):
         message="Выберите опцию",
         keyboard=keyboard.get_json(),
         conversation_message_id=event.object.conversation_message_id,
+    )
+
+
+async def subscribe_click_handler(bot: Bot, event: GroupTypes.MessageEvent):
+    await bot.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=event.object.user_id,
+        peer_id=event.object.peer_id,
+    )
+    async with async_session() as session:
+        async with session.begin():
+            user = await session.execute(
+                select(VKUser).where(VKUser.user_id == event.object.user_id)
+            )
+            await session.execute(
+                update(VKUser)
+                .where(VKUser.user_id == event.object.user_id)
+                .values(is_subscribed=event.object.payload["is_subscribed"])
+            )
+            user = user.scalars().first()
+    keyboard = await kb.get_main_keyboard(user.role)
+    await bot.api.messages.send(
+        event.object.peer_id,
+        message=(
+            "Вы подписаны на рассылку"
+            if event.object.payload["is_subscribed"]
+            else "Вы отписались от рассылки"
+        ),
+        keyboard=keyboard.get_json(),
+        random_id=0,
     )

@@ -164,7 +164,7 @@ async def button_type_handler(
 @router.message(F.text == "Отмена", StateFilter(AdminStates.waiting_on_button_text), AdminFilter())
 async def cancel_button_on_text_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста на кнопке."""
-    await message.answer("Отменено", reply_markup=kb.admin)
+    await message.answer("Отменено, напишите /start для перезапуска бота", reply_markup=kb.admin)
     await state.clear()
 
 
@@ -204,7 +204,7 @@ async def button_text_handler(
 @router.message(F.text == "Отмена", StateFilter(AdminStates.waiting_button_text), AdminFilter())
 async def cancel_button_text_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста при нажатии на кнопку."""
-    await message.answer("Отменено", reply_markup=kb.admin)
+    await message.answer("Отменено, напишите /start для перезапуска бота", reply_markup=kb.admin)
     await state.clear()
 
 
@@ -443,7 +443,7 @@ async def button_add_type_handler(
 )
 async def cancel_on_button_text_create_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста при нажатии на кнопку."""
-    await message.answer("Отменено", reply_markup=kb.admin)
+    await message.answer("Отменено, напишите /start для перезапуска бота", reply_markup=kb.admin)
     await state.clear()
 
 
@@ -484,7 +484,7 @@ async def get_on_button_text_create(message: Message, state: FSMContext):
 @router.message(StateFilter(AdminStates.waiting_button_text_create), F.text == "Отмена", AdminFilter())
 async def cancel_button_text_create_handler(message: Message, state: FSMContext):
     """Обработка отмены ввода текста при нажатии на кнопку."""
-    await message.answer("Отменено", reply_markup=kb.admin)
+    await message.answer("Отменено, напишите /start для перезапуска бота", reply_markup=kb.admin)
     await state.clear()
 
 
@@ -540,7 +540,7 @@ async def get_button_file_create(message: Message, state: FSMContext, bot: Bot):
 @router.message(StateFilter(AdminStates.waiting_button_file_create), F.text == "Отмена", AdminFilter())
 async def cancel_button_file_create_handler(message: Message, state: FSMContext):
     """Обработка отмены выбора файла при нажатии на кнопку."""
-    await message.answer("Отменено", reply_markup=kb.admin)
+    await message.answer("Отменено, напишите /start для перезапуска бота", reply_markup=kb.admin)
     await state.clear()
 
 
@@ -590,7 +590,7 @@ async def get_button_file_edit(message: Message, state: FSMContext, bot: Bot):
 @router.message(StateFilter(AdminStates.waiting_button_file), F.text == "Отмена", AdminFilter())
 async def cancel_button_file_edit_handler(message: Message, state: FSMContext):
     """Обработка отмены выбора файла при нажатии на кнопку."""
-    await message.answer("Отменено", reply_markup=kb.admin)
+    await message.answer("Отменено, напишите /start для перезапуска бота", reply_markup=kb.admin)
     await state.clear()
 
 

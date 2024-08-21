@@ -55,7 +55,7 @@ async def send_mailing(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
 
 async def mailing_message(bot: Bot, message: Message, AdminStates):
     if message.text == "Отмена":
-        await message.answer("Отменено", keyboard=admin_keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=admin_keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
     data = await bot.state_dispenser.get(message.peer_id)
@@ -159,6 +159,8 @@ async def send_mailing_messages(bot: Bot, event: GroupTypes.MessageEvent, AdminS
         role = RoleType.PARENT
     elif data.payload["role"] == "speech_therapist":
         role = RoleType.SPEECH_THERAPIST
+    else:
+        role = None
     async with async_session() as session:
         async with session.begin():
             stmt = select(VKUser).where(
@@ -166,7 +168,7 @@ async def send_mailing_messages(bot: Bot, event: GroupTypes.MessageEvent, AdminS
                     (VKUser.role == role if role else True),
                     (
                         VKUser.is_subscribed.is_(True)
-                        if data.payload["ignore_subscribed"]
+                        if not data.payload["ignore_subscribed"]
                         else True
                     ),
                 )
@@ -181,7 +183,6 @@ async def send_mailing_messages(bot: Bot, event: GroupTypes.MessageEvent, AdminS
                     await bot.api.messages.send(
                         user_id=vk_user.user_id,
                         random_id=0,
-                        keyboard=cancel_keyboard,
                         message=data.payload["message"],
                     )
                 except Exception as e:

@@ -90,7 +90,7 @@ async def add_promocode(message: Message, state: FSMContext, bot: Bot):
 async def add_promocode_incorrect(message: Message, state: FSMContext, bot: Bot):
     """Обработка неправильной отправки файла промокода и добавление записи в бд."""
     if message.text == "Отмена":
-        await message.answer("Отменено", reply_markup=kb.promocodes)
+        await message.answer("Отменено, напишите /start для перезапуска бота", reply_markup=kb.promocodes)
         await state.clear()
     else:
         await message.answer("Отправлен некорректный файл.")

@@ -39,7 +39,7 @@ async def add_promocode(bot: Bot, event: GroupTypes.MessageEvent, AdminStates):
 async def add_promocode_text(bot: Bot, message: Message, AdminStates):
     """Обработка добавления промокода из файлов."""
     if message.text.lower() == "отмена":
-        await message.answer("Отменено", keyboard=admin_promocodes_keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=admin_promocodes_keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
     if message.text.lower() == "отмена":
@@ -61,7 +61,7 @@ async def add_promocode_text(bot: Bot, message: Message, AdminStates):
 async def add_promocode_file(bot: Bot, message: Message, AdminStates):
     """Обработка добавления промокода из файлов."""
     if message.text.lower() == "отмена":
-        await message.answer("Отменено", keyboard=admin_promocodes_keyboard)
+        await message.answer("Отменено, напишите /start для перезапуска бота", keyboard=admin_promocodes_keyboard)
         await bot.state_dispenser.delete(message.peer_id)
         return
     if message.text.lower() == "отмена":

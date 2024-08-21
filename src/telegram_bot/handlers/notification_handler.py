@@ -138,7 +138,7 @@ async def choose_interval_select_hour(
                 )
             ]
         )
-        await message.answer("Отменено", reply_markup=reply_markup)
+        await message.answer("Отменено, напишите /start для перезапуска бота", reply_markup=reply_markup)
         await state.clear()
         return
     try:

@@ -372,7 +372,9 @@ def get_notifications_dayofweek_keyboard(
     }
     keyboard = Keyboard(inline=True)
     for day, text in days_of_week.items():
-        keyboard.row().add(
+        if day == NotificationWeekDay.SATURDAY:
+            keyboard.row()
+        keyboard.add(
             Callback(
                 text,
                 payload={

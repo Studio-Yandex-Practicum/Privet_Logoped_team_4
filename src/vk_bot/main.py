@@ -70,7 +70,7 @@ class AdminStates(BaseStateGroup):
     MAILING_SETTINGS = "mailing_settings"
 
 
-@bot.on.private_message(AdminRule(), lev="/admin")
+@bot.on.private_message(lev="/admin")
 async def admin_start(message: Message):
     await admin_start_handler(bot, message, AdminStates)
 
@@ -502,6 +502,17 @@ async def mailing_settings_role(event: MessageEvent):
 async def mailing_settings_role_select(event: MessageEvent):
     await admin_mailing_handler.mailing_settings_role_select(
         bot, event, AdminStates
+    )
+
+
+@bot.on.raw_event(
+    GroupEventType.MESSAGE_EVENT,
+    MessageEvent,
+    PayloadRule({"type": "subscribe"}),
+)
+async def subscribe(event: MessageEvent):
+    await start_handler.subscribe_click_handler(
+        bot, event
     )
 
 
