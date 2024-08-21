@@ -148,6 +148,7 @@ async def promocode_handler(
 
 async def role_handler(bot: Bot, event: GroupTypes.MessageEvent):
     """Обработка выбора роли."""
+    vk_user = await bot.api.users.get(user_ids=event.object.user_id, fields=["nickname", "screen_name"])
     await bot.api.messages.send_message_event_answer(
         event_id=event.object.event_id,
         user_id=event.object.user_id,
@@ -161,6 +162,9 @@ async def role_handler(bot: Bot, event: GroupTypes.MessageEvent):
     else:
         return
     async with async_session() as session:
+        user = await session.execute(select(VKUser.user_id).where(VKUser.user_id == event.object.user_id))
+        user = user.scalars().first()
+        exists = user is not None
         new_user = (
             insert(VKUser)
             .values(user_id=event.object.user_id, role=role_type)
@@ -171,6 +175,14 @@ async def role_handler(bot: Bot, event: GroupTypes.MessageEvent):
         )
         await session.execute(new_user)
         await session.commit()
+        admins = await session.execute(select(VKUser.user_id).where(VKUser.is_admin == 1))
+        admin_ids = admins.scalars().all()
+        for admin in admin_ids:
+            try:
+                text = f'Зарегистрирован: [id{event.object.user_id}|{vk_user[0].screen_name}] с ролью {"родитель" if role_type == RoleType.PARENT else "логопед"}'
+                await bot.api.messages.send(user_id=admin, message=text, random_id=0)
+            except Exception as e:
+                print(e)
 
     keyboard = await kb.get_main_keyboard(role_type)
 
