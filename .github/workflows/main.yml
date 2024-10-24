@@ -17,8 +17,7 @@ jobs:
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        password: ${{ secrets.PASSWORD }}
         script: |
           cd /home/yc-user/Privet_Logoped_team_4/
           git pull origin dev
